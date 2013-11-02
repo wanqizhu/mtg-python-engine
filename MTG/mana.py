@@ -1,12 +1,4 @@
-from enum import Enum
-
-class Color(Enum):
-    """Represents colors of game objects"""
-    WHITE = 0
-    BLUE = 1
-    BLACK = 2
-    RED = 3
-    GREEN = 4
+from .color import Color
 
 class HybridManaCostElement(object):
     """Represents a converted mana cost symbol in a mana cost"""
