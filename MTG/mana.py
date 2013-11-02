@@ -38,6 +38,7 @@ class PhyrexianManaCostElement(object):
 class ManaCost(object):
     """Represents the mana cost of anything"""
     # TODO: Add in snow mana support
+    # TODO: Add in support for that one multi-hybrid card
     def __init__(self, colorless=0, colors={}, phyrexian=None, hybrid=None, variables=[]):
         if phyrexian is not None and phyrexian.amount == 0:
             phyrexian = None
