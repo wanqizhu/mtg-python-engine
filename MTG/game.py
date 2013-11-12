@@ -23,5 +23,3 @@ class Game(object):
                     stack.append(action)
                     action = player.choose_action(self)
         return action_taken
-                    
-            
