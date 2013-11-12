@@ -1,4 +1,6 @@
-import phase
+import random
+
+import .phase
 
 turn_phases = (phase.beginning,
                phase.main,
@@ -10,7 +12,6 @@ class Game(object):
     """Represents the visible state of a game and all players"""
     def __init__(self, players):
         self.players = players
-        self.active_player_index = 0
         self.stack = []
 
     def get_active_player(self):
@@ -56,10 +57,19 @@ class Game(object):
         while self.priority_loop():
             self.resolve_stack()
 
-    def turn_loop(self):
-        """Loops through each phase for each player's turn until the game has
-        ended"""
+    def play(self):
+        """Play through the game until it has ended"""
+        for player in self.players:
+            player.shuffle_library()
+        self.active_player_index = random.choice(range(len(self.players)))
+        players = priority_order_players()
+        taking_mulligan = [p for p in players if p.choose_mulligan()]
+        while taking_mulligan:
+            for player in taking_mulligan:
+                player.mulligan()
+            taking_mulligan = [p for p in players if p.choose_mulligan()]
+        # TODO: Add opening hand actions
         while not self.ended():
-            for player in self.players:
-                for phase in turn_phases:
-                    phase.run(self)
+            for phase in turn_phases:
+                phase.run(self)
+            self.active_player_index = (self.active_player_index + 1) % len(self.players)
