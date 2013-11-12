@@ -11,6 +11,11 @@ class Player(object):
     def draw(self):
         """Draw a card from the library to the hand"""
         self.hand.append(self.library.pop())
+    
+    def discard(self, index):
+        """Discard the chosen card"""
+        graveyard.push(self.hand[index])
+        self.hand = self.hand[:index] + self.hand[index+1:]
 
     def shuffle_library(self):
         """Shuffle the library"""
@@ -27,3 +32,40 @@ class Player(object):
         self.shuffle_library()
         for i in range(hand_size-1):
             self.draw()
+
+    def get_max_hand_size(self):
+        """Returns this player's current maximum hand size"""
+        # TODO: Add in other possibilities besides 7
+        return 7
+
+    def discard_to_max_hand(self):
+        while len(self.hand) > self.get_max_hand_size():
+            self.discard(self.choose_hand_card())
+
+    def choose_action(self, game):
+        """This player chooses what action to take when they have priority.
+        Should return an object with a resolve method. Usually an instance of
+        the action class"""
+        raise NotImplementedError()
+
+    def choose_mulligan(self):
+        """Choose whether to mulligan. Returns a boolean"""
+        raise NotImplementedError()
+
+    def declare_attackers(self, game):
+        """Returns a declaration of attackers"""
+        raise NotImplementedError()
+
+    def declare_blockers(self, game, attackers):
+        """Returns a declaration of blockers"""
+        raise NotImplementedError()
+
+    def choose_hand_card(self):
+        """Choose a card in the hand and return the index in the hand
+        of that card"""
+        raise NotImplementedError()
+
+    def untap(self):
+        """Untaps all permanents that will untap during this untap step"""
+        # TODO: Implement this once permanents are implemented
+        pass
