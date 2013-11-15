@@ -1,0 +1,2 @@
+class Permanent(object):
+    pass

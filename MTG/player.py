@@ -6,6 +6,7 @@ class Player(object):
         self.library = deck
         self.hand = []
         self.graveyard = []
+        self.permanaents = []
         self.life = 20
     
     def draw(self):
@@ -25,6 +26,9 @@ class Player(object):
         for i in range(7):
             self.draw()
 
+    def play_land(self, hand_index):
+        pass
+
     def mulligan(self):
         hand_size = len(self.hand)
         self.library += self.hand
@@ -41,6 +45,11 @@ class Player(object):
     def discard_to_max_hand(self):
         while len(self.hand) > self.get_max_hand_size():
             self.discard(self.choose_hand_card())
+
+    def untap(self):
+        """Untaps all permanents that will untap during this untap step"""
+        # TODO: Implement this once permanents are implemented
+        pass
 
     def choose_action(self, game):
         """This player chooses what action to take when they have priority.
@@ -64,8 +73,3 @@ class Player(object):
         """Choose a card in the hand and return the index in the hand
         of that card"""
         raise NotImplementedError()
-
-    def untap(self):
-        """Untaps all permanents that will untap during this untap step"""
-        # TODO: Implement this once permanents are implemented
-        pass
