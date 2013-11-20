@@ -1,6 +1,6 @@
 import random
 
-import .phase
+from MTG import phase
 
 turn_phases = (phase.beginning,
                phase.main,
@@ -26,7 +26,7 @@ class Game(object):
         """Returns a list of players in priority order, starting with the
         active player"""
         index = self.active_player_index
-        return players[index:] + players[:index]
+        return self.players[index:] + self.players[:index]
 
     def priority_loop(self, is_main=False):
         """Give all players priority in order until all players
@@ -39,7 +39,7 @@ class Game(object):
                 player = players[i]
                 action = player.choose_action(self)
                 while action is not None:
-                    stack.push(action)
+                    self.stack.push(action)
                     action = player.choose_action(self)
         return action_taken
 
