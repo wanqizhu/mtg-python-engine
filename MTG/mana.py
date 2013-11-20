@@ -6,7 +6,7 @@ class HybridManaCostElement(object):
         if not ((len(colors) == 2 and colorless == 0) or (len(colors) == 1 and colorless > 0)):
             raise ValueError("Not enough options for a hybrid")
         self.colorless = colorless
-        self.color_set = set(colors)
+        self._colors = set(colors)
         self.amount = amount
         
     @property
@@ -17,7 +17,7 @@ class HybridManaCostElement(object):
     @property
     def colors(self):
         """Returns the set of all colors represented by this mana symbol"""
-        return self.color_set
+        return self._colors
 
 class PhyrexianManaCostElement(object):
     """Represents a phyrexian mana symbol in a mana cost"""
