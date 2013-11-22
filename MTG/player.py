@@ -1,5 +1,7 @@
 import random
 
+from .card_type import CardType
+
 class Player(object):
     """Represents a player in a game"""
     def __init__(self, deck):
@@ -15,7 +17,7 @@ class Player(object):
     
     def discard(self, index):
         """Discard the chosen card"""
-        graveyard.push(self.hand[index])
+        self.graveyard.append(self.hand[index])
         self.hand = self.hand[:index] + self.hand[index+1:]
 
     def shuffle_library(self):
@@ -27,6 +29,11 @@ class Player(object):
             self.draw()
 
     def play_land(self, hand_index):
+        card = self.hand[hand_index]
+        if CardType.LAND not in card.card_types:
+            raise ValueError("Could not play non-land card as land")
+        self.permanaents.append(card)
+        self.hand.remove(card)
         pass
 
     def mulligan(self):

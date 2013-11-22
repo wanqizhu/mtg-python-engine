@@ -62,7 +62,7 @@ class Game(object):
         for player in self.players:
             player.shuffle_library()
         self.active_player_index = random.choice(range(len(self.players)))
-        players = priority_order_players()
+        players = self.priority_order_players()
         taking_mulligan = [p for p in players if p.choose_mulligan()]
         while taking_mulligan:
             for player in taking_mulligan:
