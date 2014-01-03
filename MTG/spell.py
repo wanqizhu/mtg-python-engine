@@ -9,7 +9,8 @@ class Spell(Action):
         self.payment = payment
         
     def resolve(self):
-        pass
+        for effect in effects:
+            effect.resolve()
     
     def is_instant_speed(self):
         return self.card.is_instant_speed()

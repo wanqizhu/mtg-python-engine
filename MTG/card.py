@@ -6,8 +6,17 @@ from action import LandAction
 
 class Card(object):
     """Superclass for all card classes (which will be generated dynamically)"""
+    def __init__(self, owner):
+        self.owner = owner
+    
     def get_text(self):
         raise NotImplementedError()
+        
+    def get_name(self):
+        return self.name
+        
+    def get_types(self):
+        return self.types
     
     def play(self, controller):
         if CardType.LAND in self.get_types():

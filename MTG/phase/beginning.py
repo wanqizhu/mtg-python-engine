@@ -2,6 +2,8 @@ def run(game):
     """Run through the beginning phase of a turn"""
     
     active_player = game.get_active_player()
+    
+    active_player.zero_lands_played()
 
     ## Untap Step
 

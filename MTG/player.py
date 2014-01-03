@@ -36,6 +36,15 @@ class Player(object):
                 return action
             else:
                 action.resolve()
+                
+    def zero_lands_played(self):
+        self.lands_played = 0
+                
+    def increment_lands_played(self):
+        self.lands_played += 1
+        
+    def can_play_land(self):
+        return self.lands_played < 1
     
     def put_into_play(self, permanent):
         self.permanents.append(permanent)
