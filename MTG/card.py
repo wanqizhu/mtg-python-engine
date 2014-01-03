@@ -17,17 +17,17 @@ class Card(object):
                 return None
         else:
             if self.is_modal():
-                actions = controller.choose_mode(self.actions)
+                effects = controller.choose_mode(self.effects)
             else:
-                actions = self.actions
+                effects = self.effects
             # TODO: Optional costs
             mana_cost = controller.choose_cost(self.cost)
-            targets = controller.choose_targets(actions)
-            divisions = controller.choose_divisions(actions, targets)
-            cost = self.get_total_cost(mana_cost, actions, targets, divisions)
+            targets = controller.choose_targets(effects)
+            divisions = controller.choose_divisions(effects, targets)
+            cost = self.get_total_cost(mana_cost, effects, targets, divisions)
             payment = controller.pay_cost(cost)
             if payment:
-                return Spell(self, controller, actions, targets, divisions, cost, payment)
+                return Spell(self, controller, effects, targets, divisions, cost, payment)
             else:
                 return None
 
