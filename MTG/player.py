@@ -27,14 +27,18 @@ class Player(object):
     def draw_starting_hand(self):
         for i in range(7):
             self.draw()
-
-    def play_land(self, hand_index):
+            
+    def play_card(self, hand_index):
         card = self.hand[hand_index]
-        if CardType.LAND not in card.card_types:
-            raise ValueError("Could not play non-land card as land")
-        self.permanaents.append(card)
-        self.hand.remove(card)
-        pass
+        action = card.play(self)
+        if action is not None:
+            if action.is_stack_action():
+                return action
+            else:
+                action.resolve()
+    
+    def put_into_play(self, permanent):
+        self.permanents.append(permanent)
 
     def mulligan(self):
         hand_size = len(self.hand)

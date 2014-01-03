@@ -2,6 +2,7 @@
 
 from card_type import *
 from spell import Spell
+from action import LandAction
 
 class Card(object):
     """Superclass for all card classes (which will be generated dynamically)"""
@@ -10,8 +11,10 @@ class Card(object):
     
     def play(self, controller):
         if CardType.LAND in self.get_types():
-            #I don't like this. Need consistent output
-            controller.play_land(self)
+            if player.can_play_land():
+                return LandAction(self, controller)
+            else:
+                return None
         else:
             if self.is_modal():
                 actions = controller.choose_mode(self.actions)
