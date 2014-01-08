@@ -4,12 +4,16 @@ from .card_type import CardType
 
 class Player(object):
     """Represents a player in a game"""
-    def __init__(self, deck):
+    def __init__(self, deck, name="Player"):
         self.library = deck
         self.hand = []
         self.graveyard = []
         self.permanaents = []
         self.life = 20
+        self.name = name
+    
+    def __str__(self):
+        return name
     
     def draw(self):
         """Draw a card from the library to the hand"""
