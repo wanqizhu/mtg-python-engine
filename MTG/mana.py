@@ -1,3 +1,5 @@
+from collections import Counter, defaultdict
+
 from .color import Color
 
 class HybridManaCostElement(object):
@@ -94,3 +96,18 @@ class ManaCost(object):
         if self.phyrexian is not None:
             mana[self.phyrexian.color] -= (self.phyrexian.amount - life//2)
         return total_colorless <= sum(mana.values())
+
+class ManaPool(object):
+    def __init__(self):
+        self.pool = defaultdict(Counter)
+
+    def empty(self):
+        self.pool.clear()
+
+    def add(self, source, mana):
+        """
+
+        @param source: The object that created the mana
+        @param mana: A dict mapping colors to numbers
+        """
+        self.pool[source].update(mana)

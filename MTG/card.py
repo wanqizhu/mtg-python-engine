@@ -9,7 +9,8 @@ class Card(object):
     def __init__(self, owner):
         self.owner = owner
     
-    def get_text(self):
+    @property
+    def text(self):
         raise NotImplementedError()
         
     def get_name(self):

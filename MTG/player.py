@@ -1,6 +1,7 @@
 import random
 
 from .card_type import CardType
+from .mana import ManaPool
 
 class Player(object):
     """Represents a player in a game"""
@@ -11,6 +12,7 @@ class Player(object):
         self.permanaents = []
         self.life = 20
         self.name = name
+        self.mana_pool = ManaPool()
     
     def __str__(self):
         return name
