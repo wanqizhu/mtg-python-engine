@@ -1,21 +1,21 @@
-class Permanent(object):
-    def __init__(self, card):
-        self.card = card
-        self.tapped = card.comes_into_play_tapped
-        
-    def get_name(self):
-        return card.get_name()
+__author__ = 'Michael'
 
-    @property
-    def card_type(self):
-        return self.card.card_type
+from MTG.game_object import GameObject
 
-    def tap(self):
-        self.tapped = True
+class Status(object):
+    tapped = False
+    flipped = False
+    face_up = True
+    phased_in = True
 
-    def untap(self):
-        self.tapped = False
+class Permanent(GameObject):
+    def __init__(self, characteristics, controller, status=None):
+        GameObject.__init__(self, characteristics)
+        self.controller = controller
+        if status is None:
+            self.status = Status()
+        else:
+            self.status = status
 
-    @property
-    def activated_abilities(self):
-        return self.card.activated_abilities
+def make_permanent(card, controller):
+    return Permanent(card.characteristics, controller)

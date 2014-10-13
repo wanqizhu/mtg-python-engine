@@ -83,7 +83,9 @@ def matches(game_obj, key, value, match_fun):
         raise ValueError("The passed object is not of the kind that can be matched by this filter")
     
 class Filter(object):
-    def __init__(self, conditions={}):
+    def __init__(self, conditions=None):
+        if conditions is None:
+            conditions = {}
         self.conditions = conditions
         
     def matches(self, game_obj):

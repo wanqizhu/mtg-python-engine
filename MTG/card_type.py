@@ -17,3 +17,11 @@ class CardType(Enum):
     PLANESWALKER = 5
     SORCERY = 6
     TRIBAL = 7
+
+class LandType(Enum):
+    """Represents types of lands"""
+    PLAINS = 0
+    ISLAND = 1
+    SWAMP = 2
+    MOUNTAIN = 3
+    FOREST = 4
