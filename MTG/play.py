@@ -5,21 +5,14 @@ class Play(object):
     """
     Represents anything a player can choose to do when they have priority.
     """
-    def get_action(self):
-        raise NotImplementedError()
+    is_special_action = False
+    is_mana_ability = False
 
-    def is_special_action(self):
-        raise NotImplementedError()
+    ## TODO: implement targets: target selection, validation, conditional targeting, etc.
+    def __init__(self, apply_func):
+        self.apply = apply_func
+        return 
 
-    def is_mana_ability(self):
-        raise NotImplementedError()
 
 class LandPlay(Play):
-    def get_action(self):
-        pass
-
-    def is_special_action(self):
-        return True
-
-    def is_mana_ability(self):
-        return False
+    is_special_action = True

@@ -1,6 +1,6 @@
 from enum import Enum
 
-class Supertype(Enum):
+class SuperType(Enum):
     """Represents supertypes of cards in the game"""
     BASIC = 0
     LEGENDARY = 1
