@@ -2,7 +2,9 @@ from enum import Enum
 
 from MTG.player import Player
 from MTG.zone import *
+from MTG.cards import *
 
+global GAME
 
 class Phase(Enum):
     BEGINNING = 0
@@ -261,7 +263,12 @@ def read_deck(filename):
             i = line.index(" ")
             num = int(line[:i])
             for j in range(num):  # add NUM copies of CARDNAME
-                deck.append(line[i+1:])
+                card = card_from_name(line[i+1:])
+                if card:
+                    deck.append(card)
+                    print(deck[-1].name())
+                else:
+                    print("card {} does not exist\n".format(line[i+1:]))
         except:
             raise DecklistFormatError()
 
@@ -269,6 +276,6 @@ def read_deck(filename):
 
 
 decks = [read_deck('cards/decks/deck1.txt'), read_deck('cards/decks/deck1.txt')]
-g = Game(decks)
-print(g.__dict__)
-# g.run_game()
+GAME = Game(decks)
+print(GAME.__dict__)
+# GAME.run_game()

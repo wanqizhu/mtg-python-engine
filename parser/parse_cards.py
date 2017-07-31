@@ -1,10 +1,9 @@
-__author__ = 'Michael'
-
 from bs4 import BeautifulSoup
 # from lexer import lexer
 from MTG.card import Card
 from MTG.cardType import *
-import pickle
+# import pickle
+import re
 
 cards = []
 
@@ -13,16 +12,24 @@ cards = []
 
 
 def run():
-    with open('parser/cards.xml') as f:
+    with open('parser/cards_sm.xml') as f:
         soup = BeautifulSoup(f, 'xml')
 
     card_list = soup.cockatrice_carddatabase.cards.find_all('card')
     cnt = 0
-    fout = open("card_list.txt", "w")
+    fout = open("MTG/parsed_cards.py", "w")
+    fout.write("from MTG.card import *\nfrom MTG.gameObject import *\n\n")
+
+    id_to_name = {}
+    name_to_id = {}
 
     for card in card_list[:100]:
+        supertype = None
+        types = None
         try:
-            characteristics = {'name': card.find('name').text}
+            ID = 'c' + re.search('(?<=multiverseid=)[0-9]+', card.set['picURL']).group(0)
+            name = card.find('name').text
+            characteristics = {'name': name}
             characteristics['text'] = card.find('text').text
             characteristics['color'] = [c.text for c in card.find_all('color')]
             characteristics['mana_cost'] = card.find('manacost').text
@@ -30,18 +37,46 @@ def run():
             if len(_type) > 1:
                 characteristics['subtype'] = _type[1].split(' ')
             _type = _type[0].split(' ')
+
             if len(_type) > 1:
-                characteristics['supertype'] = SuperType[_type[0].upper()]
-            characteristics['card_type'] = CardType[_type[-1].upper()]
+                supertype = 'SuperType.'+_type[0].upper()
+            types = 'CardType.'+_type[-1].upper()
         except:
             pass
 
-        fout.write("id: {}\n".format(cnt))
-        for i, j in characteristics.items():
-            fout.write("{}: {},\n".format(i, j))
-        fout.write("\n\n")
-        cnt += 1
+        fout.write(
+"""
+class {}(Card):
+    "{}"
+    def __init__(self):
+        super({}, self).__init__(Characteristics(**{}, supertype={}, types={}))
+
+""".format(ID, name, ID, characteristics, supertype, types))
+
+        id_to_name[ID] = name
+        name_to_id[name] = ID
+        
         # cards.append(Card(characteristics))
+
+
+    fout.write(
+"""
+id_to_name_dict = {}
+
+name_to_id_dict = {}
+
+def id_to_name(ID):
+    return id_to_name_dict.get(ID, None)
+
+def name_to_id(name):
+    return name_to_id_dict.get(name, None)
+
+def card_from_name(name):
+    if name_to_id(name) is not None:
+        return eval(name_to_id(name)+'()')
+    else:
+        return None
+""".format(id_to_name, name_to_id))
 
     fout.close()
 

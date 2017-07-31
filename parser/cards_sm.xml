@@ -1,0 +1,465 @@
+<cockatrice_carddatabase version="2">
+    <cards>
+        <card>
+            <name>Plains</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=221309&amp;type=card" picURLHq="" picURLSt="">ARC</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=269637&amp;type=card" picURLHq="" picURLSt="">AVR</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=22361&amp;type=card" picURLHq="" picURLSt="">BRB</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=79063&amp;type=card" picURLHq="" picURLSt="">CHK</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=14734&amp;type=card" picURLHq="" picURLSt="">6E</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=376454&amp;type=card" picURLHq="" picURLSt="">C13</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=249376&amp;type=card" picURLHq="" picURLSt="">DDH</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=197256&amp;type=card" picURLHq="" picURLSt="">DDC</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=222752&amp;type=card" picURLHq="" picURLSt="">DDF</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=373369&amp;type=card" picURLHq="" picURLSt="">DDL</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=243457&amp;type=card" picURLHq="" picURLSt="">DDG</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=210513&amp;type=card" picURLHq="" picURLSt="">DDE</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=368473&amp;type=card" picURLHq="" picURLSt="">DDK</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=284497&amp;type=card" picURLHq="" picURLSt="">DDI</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=46438&amp;type=card" picURLHq="" picURLSt="">8E</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=4205&amp;type=card" picURLHq="" picURLSt="">5E</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=2386&amp;type=card" picURLHq="" picURLSt="">4E</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=2773&amp;type=card" picURLHq="" picURLSt="">ICE</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=245230&amp;type=card" picURLHq="" picURLSt="">ISD</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=26298&amp;type=card" picURLHq="" picURLSt="">INV</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=295&amp;type=card" picURLHq="" picURLSt="">LEA</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=597&amp;type=card" picURLHq="" picURLSt="">LEB</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=143630&amp;type=card" picURLHq="" picURLSt="">LRW</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=191382&amp;type=card" picURLHq="" picURLSt="">M10</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=213612&amp;type=card" picURLHq="" picURLSt="">M11</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=244331&amp;type=card" picURLHq="" picURLSt="">M12</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=249732&amp;type=card" picURLHq="" picURLSt="">M13</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=370754&amp;type=card" picURLHq="" picURLSt="">M14</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=249813&amp;type=card" picURLHq="" picURLSt="">COM</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=159287&amp;type=card" picURLHq="" picURLSt="">MED</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=206079&amp;type=card" picURLHq="" picURLSt="">ME3</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=20881&amp;type=card" picURLHq="" picURLSt="">MMQ</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=3587&amp;type=card" picURLHq="" picURLSt="">MIR</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=48407&amp;type=card" picURLHq="" picURLSt="">MRD</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=220366&amp;type=card" picURLHq="" picURLSt="">MBS</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=227552&amp;type=card" picURLHq="" picURLSt="">NPH</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=83208&amp;type=card" picURLHq="" picURLSt="">9E</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=31629&amp;type=card" picURLHq="" picURLSt="">ODY</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=40123&amp;type=card" picURLHq="" picURLSt="">ONS</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=205430&amp;type=card" picURLHq="" picURLSt="">PCH</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=276459&amp;type=card" picURLHq="" picURLSt="">PC2</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=4427&amp;type=card" picURLHq="" picURLSt="">POR</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=8374&amp;type=card" picURLHq="" picURLSt="">PO2</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=10645&amp;type=card" picURLHq="" picURLSt="">PTK</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=207937&amp;type=card" picURLHq="" picURLSt="">H09</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=95112&amp;type=card" picURLHq="" picURLSt="">RAV</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=289311&amp;type=card" picURLHq="" picURLSt="">RTR</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=1397&amp;type=card" picURLHq="" picURLSt="">3ED</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=205938&amp;type=card" picURLHq="" picURLSt="">ROE</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=214679&amp;type=card" picURLHq="" picURLSt="">SOM</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=11447&amp;type=card" picURLHq="" picURLSt="">7E</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=158236&amp;type=card" picURLHq="" picURLSt="">SHM</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=175030&amp;type=card" picURLHq="" picURLSt="">ALA</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=21792&amp;type=card" picURLHq="" picURLSt="">S99</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=25454&amp;type=card" picURLHq="" picURLSt="">S00</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=4955&amp;type=card" picURLHq="" picURLSt="">TMP</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=129681&amp;type=card" picURLHq="" picURLSt="">10E</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=373533&amp;type=card" picURLHq="" picURLSt="">THS</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=122087&amp;type=card" picURLHq="" picURLSt="">TSP</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=9680&amp;type=card" picURLHq="" picURLSt="">UGL</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=73963&amp;type=card" picURLHq="" picURLSt="">UNH</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=899&amp;type=card" picURLHq="" picURLSt="">2ED</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=8323&amp;type=card" picURLHq="" picURLSt="">USG</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=201972&amp;type=card" picURLHq="" picURLSt="">ZEN</set>
+            <manacost></manacost>
+            <type>Basic Land - Plains</type>
+            <tablerow>0</tablerow>
+            <text>W</text>
+        </card>
+        <card>
+            <name>Island</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=221300&amp;type=card" picURLHq="" picURLSt="">ARC</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=269639&amp;type=card" picURLHq="" picURLSt="">AVR</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=22366&amp;type=card" picURLHq="" picURLSt="">BRB</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=27238&amp;type=card" picURLHq="" picURLSt="">BTD</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=79069&amp;type=card" picURLHq="" picURLSt="">CHK</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=14738&amp;type=card" picURLHq="" picURLSt="">6E</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=376373&amp;type=card" picURLHq="" picURLSt="">C13</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=259287&amp;type=card" picURLHq="" picURLSt="">DDH</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=222727&amp;type=card" picURLHq="" picURLSt="">DDF</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=292765&amp;type=card" picURLHq="" picURLSt="">DDJ</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=190583&amp;type=card" picURLHq="" picURLSt="">D2</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=380217&amp;type=card" picURLHq="" picURLSt="">DDM</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=210511&amp;type=card" picURLHq="" picURLSt="">DDE</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=284491&amp;type=card" picURLHq="" picURLSt="">DDI</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=46442&amp;type=card" picURLHq="" picURLSt="">8E</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=4201&amp;type=card" picURLHq="" picURLSt="">5E</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=2391&amp;type=card" picURLHq="" picURLSt="">4E</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=2769&amp;type=card" picURLHq="" picURLSt="">ICE</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=245235&amp;type=card" picURLHq="" picURLSt="">ISD</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=26301&amp;type=card" picURLHq="" picURLSt="">INV</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=293&amp;type=card" picURLHq="" picURLSt="">LEA</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=594&amp;type=card" picURLHq="" picURLSt="">LEB</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=143624&amp;type=card" picURLHq="" picURLSt="">LRW</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=191389&amp;type=card" picURLHq="" picURLSt="">M10</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=213617&amp;type=card" picURLHq="" picURLSt="">M11</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=244323&amp;type=card" picURLHq="" picURLSt="">M12</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=249725&amp;type=card" picURLHq="" picURLSt="">M13</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=370608&amp;type=card" picURLHq="" picURLSt="">M14</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=249807&amp;type=card" picURLHq="" picURLSt="">COM</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=159281&amp;type=card" picURLHq="" picURLSt="">MED</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=206072&amp;type=card" picURLHq="" picURLSt="">ME3</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=20885&amp;type=card" picURLHq="" picURLSt="">MMQ</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=3583&amp;type=card" picURLHq="" picURLSt="">MIR</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=48411&amp;type=card" picURLHq="" picURLSt="">MRD</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=220365&amp;type=card" picURLHq="" picURLSt="">MBS</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=227530&amp;type=card" picURLHq="" picURLSt="">NPH</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=83137&amp;type=card" picURLHq="" picURLSt="">9E</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=31614&amp;type=card" picURLHq="" picURLSt="">ODY</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=40119&amp;type=card" picURLHq="" picURLSt="">ONS</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=205287&amp;type=card" picURLHq="" picURLSt="">PCH</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=276471&amp;type=card" picURLHq="" picURLSt="">PC2</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=4423&amp;type=card" picURLHq="" picURLSt="">POR</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=8390&amp;type=card" picURLHq="" picURLSt="">PO2</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=10641&amp;type=card" picURLHq="" picURLSt="">PTK</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=207935&amp;type=card" picURLHq="" picURLSt="">H09</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=95107&amp;type=card" picURLHq="" picURLSt="">RAV</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=289315&amp;type=card" picURLHq="" picURLSt="">RTR</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=1394&amp;type=card" picURLHq="" picURLSt="">3ED</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=205939&amp;type=card" picURLHq="" picURLSt="">ROE</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=214666&amp;type=card" picURLHq="" picURLSt="">SOM</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=11349&amp;type=card" picURLHq="" picURLSt="">7E</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=157874&amp;type=card" picURLHq="" picURLSt="">SHM</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=174978&amp;type=card" picURLHq="" picURLSt="">ALA</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=21794&amp;type=card" picURLHq="" picURLSt="">S99</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=25452&amp;type=card" picURLHq="" picURLSt="">S00</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=4951&amp;type=card" picURLHq="" picURLSt="">TMP</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=129607&amp;type=card" picURLHq="" picURLSt="">10E</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=373595&amp;type=card" picURLHq="" picURLSt="">THS</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=122077&amp;type=card" picURLHq="" picURLSt="">TSP</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=9677&amp;type=card" picURLHq="" picURLSt="">UGL</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=73951&amp;type=card" picURLHq="" picURLSt="">UNH</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=896&amp;type=card" picURLHq="" picURLSt="">2ED</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=8327&amp;type=card" picURLHq="" picURLSt="">USG</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=201964&amp;type=card" picURLHq="" picURLSt="">ZEN</set>
+            <manacost></manacost>
+            <type>Basic Land - Island</type>
+            <tablerow>0</tablerow>
+            <text>U</text>
+        </card>
+        <card>
+            <name>Tundra Kavu</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=26805&amp;type=card" picURLHq="" picURLSt="">APC</set>
+            <color>R</color>
+            <manacost>2R</manacost>
+            <type>Creature - Kavu</type>
+            <pt>2/2</pt>
+            <tablerow>2</tablerow>
+            <text>{T}: Target land becomes a Plains or an Island until end of turn.</text>
+        </card>
+        <card>
+            <name>Hundred-Talon Kami</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=79145&amp;type=card" picURLHq="" picURLSt="">CHK</set>
+            <color>W</color>
+            <manacost>4W</manacost>
+            <type>Creature - Spirit</type>
+            <pt>2/3</pt>
+            <tablerow>2</tablerow>
+            <text>Flying
+Soulshift 4 (When this creature dies, you may return target Spirit card with converted mana cost 4 or less from your graveyard to your hand.)</text>
+        </card>
+        <card>
+            <name>Blood Bairn</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=370698&amp;type=card" picURLHq="" picURLSt="">M14</set>
+            <color>B</color>
+            <manacost>2B</manacost>
+            <type>Creature - Vampire</type>
+            <pt>2/2</pt>
+            <tablerow>2</tablerow>
+            <text>Sacrifice another creature: Blood Bairn gets +2/+2 until end of turn.</text>
+        </card>
+        <card>
+            <name>Soldevi Sentry</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=3060&amp;type=card" picURLHq="" picURLSt="">ALL</set>
+            <manacost>1</manacost>
+            <type>Artifact Creature - Soldier</type>
+            <pt>1/1</pt>
+            <tablerow>2</tablerow>
+            <text>{1}: Choose target opponent. Regenerate Soldevi Sentry. When it regenerates this way, that player may draw a card.</text>
+        </card>
+        <card>
+            <name>Ancestor's Chosen</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=34243&amp;type=card" picURLHq="" picURLSt="">JUD</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=130550&amp;type=card" picURLHq="" picURLSt="">10E</set>
+            <color>W</color>
+            <manacost>5WW</manacost>
+            <type>Creature - Human Cleric</type>
+            <pt>4/4</pt>
+            <tablerow>2</tablerow>
+            <text>First strike (This creature deals combat damage before creatures without first strike.)
+When Ancestor's Chosen enters the battlefield, you gain 1 life for each card in your graveyard.</text>
+        </card>
+        <card>
+            <name>Hellspark Elemental</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=174799&amp;type=card" picURLHq="" picURLSt="">CFX</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=368477&amp;type=card" picURLHq="" picURLSt="">DDK</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=234711&amp;type=card" picURLHq="" picURLSt="">PD2</set>
+            <color>R</color>
+            <manacost>1R</manacost>
+            <type>Creature - Elemental</type>
+            <pt>3/1</pt>
+            <tablerow>2</tablerow>
+            <text>Trample, haste
+At the beginning of the end step, sacrifice Hellspark Elemental.
+Unearth {1}{R} ({1}{R}: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)</text>
+        </card>
+        <card>
+            <name>Sewn-Eye Drake</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=179594&amp;type=card" picURLHq="" picURLSt="">ARB</set>
+            <color>U</color>
+            <color>B</color>
+            <color>R</color>
+            <manacost>2(U/R)B</manacost>
+            <type>Creature - Zombie Drake</type>
+            <pt>3/1</pt>
+            <tablerow>2</tablerow>
+            <text>Flying, haste</text>
+        </card>
+        <card>
+            <name>Price of Glory</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=29973&amp;type=card" picURLHq="" picURLSt="">ODY</set>
+            <color>R</color>
+            <manacost>2R</manacost>
+            <type>Enchantment</type>
+            <tablerow>1</tablerow>
+            <text>Whenever a player taps a land for mana, if it's not that player's turn, destroy that land.</text>
+        </card>
+        <card>
+            <name>Sun Clasp</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=21190&amp;type=card" picURLHq="" picURLSt="">BRB</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=3728&amp;type=card" picURLHq="" picURLSt="">VIS</set>
+            <color>W</color>
+            <manacost>1W</manacost>
+            <type>Enchantment - Aura</type>
+            <tablerow>1</tablerow>
+            <text>Enchant creature
+Enchanted creature gets +1/+3.
+{W}: Return enchanted creature to its owner's hand.</text>
+        </card>
+        <card>
+            <name>Mind Whip</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=2473&amp;type=card" picURLHq="" picURLSt="">ICE</set>
+            <color>B</color>
+            <manacost>2BB</manacost>
+            <type>Enchantment - Aura</type>
+            <tablerow>1</tablerow>
+            <text>Enchant creature
+At the beginning of the upkeep of enchanted creature's controller, that player may pay {3}. If he or she doesn't, Mind Whip deals 2 damage to that player and you tap that creature.</text>
+        </card>
+        <card>
+            <name>Fluctuator</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=5806&amp;type=card" picURLHq="" picURLSt="">USG</set>
+            <manacost>2</manacost>
+            <type>Artifact</type>
+            <tablerow>1</tablerow>
+            <text>Cycling abilities you activate cost you up to {2} less to activate.</text>
+        </card>
+        <card>
+            <name>Slaughter Cry</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=230762&amp;type=card" picURLHq="" picURLSt="">M12</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=178136&amp;type=card" picURLHq="" picURLSt="">ZEN</set>
+            <color>R</color>
+            <manacost>2R</manacost>
+            <type>Instant</type>
+            <tablerow>3</tablerow>
+            <text>Target creature gets +3/+0 and gains first strike until end of turn. (It deals combat damage before creatures without first strike.)</text>
+        </card>
+        <card>
+            <name>Despoil</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=24615&amp;type=card" picURLHq="" picURLSt="">PCY</set>
+            <color>B</color>
+            <manacost>3B</manacost>
+            <type>Sorcery</type>
+            <tablerow>3</tablerow>
+            <text>Destroy target land. Its controller loses 2 life.</text>
+        </card>
+        <card>
+            <name>Overlaid Terrain</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=22061&amp;type=card" picURLHq="" picURLSt="">NMS</set>
+            <color>G</color>
+            <manacost>2GG</manacost>
+            <type>Enchantment</type>
+            <tablerow>1</tablerow>
+            <text>As Overlaid Terrain enters the battlefield, sacrifice all lands you control.
+Lands you control have &quot;{T}: Add two mana of any one color to your mana pool.&quot;</text>
+        </card>
+        <card>
+            <name>Ogre Geargrabber</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=215101&amp;type=card" picURLHq="" picURLSt="">SOM</set>
+            <color>R</color>
+            <manacost>4RR</manacost>
+            <type>Creature - Ogre Warrior</type>
+            <pt>4/4</pt>
+            <tablerow>2</tablerow>
+            <text>Whenever Ogre Geargrabber attacks, gain control of target Equipment an opponent controls until end of turn. Attach it to Ogre Geargrabber. When you lose control of that Equipment, unattach it.</text>
+        </card>
+        <card>
+            <name>Vedalken Plotter</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=96920&amp;type=card" picURLHq="" picURLSt="">GPT</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=247288&amp;type=card" picURLHq="" picURLSt="">COM</set>
+            <color>U</color>
+            <manacost>2U</manacost>
+            <type>Creature - Vedalken Wizard</type>
+            <pt>1/1</pt>
+            <tablerow>2</tablerow>
+            <text>When Vedalken Plotter enters the battlefield, exchange control of target land you control and target land an opponent controls.</text>
+        </card>
+        <card>
+            <name>Devouring Deep</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=1476&amp;type=card" picURLHq="" picURLSt="">LEG</set>
+            <color>U</color>
+            <manacost>2U</manacost>
+            <type>Creature - Fish</type>
+            <pt>1/2</pt>
+            <tablerow>2</tablerow>
+            <text>Islandwalk</text>
+        </card>
+        <card>
+            <name>Temporal Cascade</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=49055&amp;type=card" picURLHq="" picURLSt="">MRD</set>
+            <color>U</color>
+            <manacost>5UU</manacost>
+            <type>Sorcery</type>
+            <tablerow>3</tablerow>
+            <text>Choose one - Each player shuffles his or her hand and graveyard into his or her library; or each player draws seven cards.
+Entwine {2} (Choose both if you pay the entwine cost.)</text>
+        </card>
+        <card>
+            <name>Myr Quadropod</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=50176&amp;type=card" picURLHq="" picURLSt="">5DN</set>
+            <manacost>4</manacost>
+            <type>Artifact Creature - Myr</type>
+            <pt>1/4</pt>
+            <tablerow>2</tablerow>
+            <text>{3}: Switch Myr Quadropod's power and toughness until end of turn.</text>
+        </card>
+        <card>
+            <name>Flameborn Viron</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=233086&amp;type=card" picURLHq="" picURLSt="">NPH</set>
+            <color>R</color>
+            <manacost>4RR</manacost>
+            <type>Creature - Insect</type>
+            <pt>6/4</pt>
+            <tablerow>2</tablerow>
+            <text></text>
+        </card>
+        <card>
+            <name>Taste of Blood</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=226561&amp;type=card" picURLHq="" picURLSt="">M12</set>
+            <color>B</color>
+            <manacost>B</manacost>
+            <type>Sorcery</type>
+            <tablerow>3</tablerow>
+            <text>Taste of Blood deals 1 damage to target player and you gain 1 life.</text>
+        </card>
+        <card>
+            <name>Homicidal Seclusion</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=240039&amp;type=card" picURLHq="" picURLSt="">AVR</set>
+            <color>B</color>
+            <manacost>4B</manacost>
+            <type>Enchantment</type>
+            <tablerow>1</tablerow>
+            <text>As long as you control exactly one creature, that creature gets +3/+1 and has lifelink.</text>
+        </card>
+        <card>
+            <name>Brood of Cockroaches</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=3610&amp;type=card" picURLHq="" picURLSt="">VIS</set>
+            <color>B</color>
+            <manacost>1B</manacost>
+            <type>Creature - Insect</type>
+            <pt>1/1</pt>
+            <tablerow>2</tablerow>
+            <text>When Brood of Cockroaches is put into your graveyard from the battlefield, at the beginning of the next end step, you lose 1 life and return Brood of Cockroaches to your hand.</text>
+        </card>
+        <card>
+            <name>Orcish Paratroopers</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=73960&amp;type=card" picURLHq="" picURLSt="">UNH</set>
+            <color>R</color>
+            <manacost>2R</manacost>
+            <type>Creature - Orc Paratrooper</type>
+            <pt>4/4</pt>
+            <tablerow>2</tablerow>
+            <text>When Orcish Paratroopers comes into play, flip it from a height of at least one foot. Sacrifice Orcish Paratroopers unless it lands face up after turning over completely.</text>
+        </card>
+        <card>
+            <name>Cho-Arrim Alchemist</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=19647&amp;type=card" picURLHq="" picURLSt="">MMQ</set>
+            <color>W</color>
+            <manacost>W</manacost>
+            <type>Creature - Human Spellshaper</type>
+            <pt>1/1</pt>
+            <tablerow>2</tablerow>
+            <text>{1}{W}{W}, {T}, Discard a card: The next time a source of your choice would deal damage to you this turn, prevent that damage. You gain life equal to the damage prevented this way.</text>
+        </card>
+        <card>
+            <name>Near-Death Experience</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=193467&amp;type=card" picURLHq="" picURLSt="">ROE</set>
+            <color>W</color>
+            <manacost>2WWW</manacost>
+            <type>Enchantment</type>
+            <tablerow>1</tablerow>
+            <text>At the beginning of your upkeep, if you have exactly 1 life, you win the game.</text>
+        </card>
+        <card>
+            <name>Persecute Artist</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=74238&amp;type=card" picURLHq="" picURLSt="">UNH</set>
+            <color>B</color>
+            <manacost>1BB</manacost>
+            <type>Sorcery</type>
+            <tablerow>3</tablerow>
+            <text>Choose an artist other than Rebecca Guay. Target player reveals his or her hand and discards all nonland cards by the chosen artist.</text>
+        </card>
+        <card>
+            <name>Turn // Burn</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=369080&amp;type=card" picURLHq="" picURLSt="">DGM</set>
+            <color>R</color>
+            <manacost>1R</manacost>
+            <type>Instant</type>
+            <tablerow>3</tablerow>
+            <text>Burn deals 2 damage to target creature or player.
+Fuse (You may cast one or both halves of this card from your hand.)
+---
+Target creature loses all abilities and becomes a 0/1 red Weird until end of turn.
+Fuse (You may cast one or both halves of this card from your hand.)</text>
+        </card>
+        <card>
+            <name>Silkbind Faerie</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=142027&amp;type=card" picURLHq="" picURLSt="">SHM</set>
+            <color>W</color>
+            <color>U</color>
+            <manacost>2(W/U)</manacost>
+            <type>Creature - Faerie Rogue</type>
+            <pt>1/3</pt>
+            <tablerow>2</tablerow>
+            <text>Flying
+{1}{(w/u)}, {Q}: Tap target creature. ({Q} is the untap symbol.)</text>
+        </card>
+        <card>
+            <name>Battlefield Percher</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=21320&amp;type=card" picURLHq="" picURLSt="">NMS</set>
+            <color>B</color>
+            <manacost>3BB</manacost>
+            <type>Creature - Bird</type>
+            <pt>2/2</pt>
+            <tablerow>2</tablerow>
+            <text>Flying
+Battlefield Percher can block only creatures with flying.
+{1}{B}: Battlefield Percher gets +1/+1 until end of turn.</text>
+        </card>
+        <card>
+            <name>I Bask in Your Silent Awe</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=212614&amp;type=card" picURLHq="" picURLSt="">ARC</set>
+            <manacost></manacost>
+            <type>Ongoing Scheme</type>
+            <tablerow>1</tablerow>
+            <text>(An ongoing scheme remains face up until it's abandoned.)
+Each opponent can't cast more than one spell each turn.
+At the beginning of your upkeep, if no opponent cast a spell since your last turn ended, abandon this scheme.</text>
+        </card>
+    </cards>
+</cockatrice_carddatabase>

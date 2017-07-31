@@ -1,6 +1,3 @@
-__author__ = 'Michael'
-
-
 class Play(object):
     """
     Represents anything a player can choose to do when they have priority.
@@ -13,6 +10,3 @@ class Play(object):
         self.apply = apply_func
         return 
 
-
-class LandPlay(Play):
-    is_special_action = True
