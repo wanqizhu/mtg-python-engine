@@ -1,10 +1,17 @@
 from enum import Enum
+from itertools import cycle
+import sys
+import os
+sys.path.append('/Users/wanqi/Desktop/Python-MTG')
+os.chdir('/Users/wanqi/Desktop/Python-MTG')
 
 from MTG.player import Player
 from MTG.zone import *
 from MTG.cards import *
 
 global GAME
+
+
 
 class Phase(Enum):
     BEGINNING = 0
@@ -70,19 +77,20 @@ class GameOverException(Exception):
 
 class Game(object):
     """A game object. This represents the entire state of an in-progress MTG game."""
-    passed_priority = 0
-    players = []
-    priority = 0
-    pending_steps = []
-    step = None
-    pending_turns = []
-    current_player = None
+
 
     # start a game by giving each player their deck
     def __init__(self, decks):
         self.battlefield = Battlefield()
         self.stack = Stack()
-        self.players = [Player(decks[i], 'player'+str(i), game=self) for i in range(len(decks))]
+        self.num_players = len(decks)
+        self.players_list = [Player(decks[i], 'player'+str(i), game=self) for i in range(self.num_players)]
+        self.players = cycle(self.players_list)
+        self.passed_priority = 0
+        self.step = None
+        self.pending_turns = []
+        self.pending_steps = []
+
 
     def get_zone(self, zone_type, owner=None):
         return {
@@ -105,18 +113,26 @@ class Game(object):
         """ resolving a spell/effect from stack"""
         pass
 
-    def handle_priority(self, step):
-        while self.passed_priority < len(self.players) or self.stack:  # while not everyone has passed priority
+    def handle_priority(self, step, priority=None):
+        if priority is None:
+            priority = self.players_list.index(self.current_player)
+
+        print("priority")
+        self.passed_priority = 0
+
+        while self.passed_priority < self.num_players or self.stack:  # while not everyone has passed priority
             self.apply_state_based_actions()
-            play = self.players[self.priority].get_action()
+            play = self.players_list[priority].get_action()
             if play is None:  # passes priority
                 self.passed_priority += 1
-                self.priority = (self.priority + 1) % len(self.players)  # who's next to get priority
-                if self.passed_priority == len(self.players) and self.stack:  # resolve top stack item
+                priority = (priority + 1) % self.num_players  # who's next to get priority
+                if self.passed_priority == self.num_players and self.stack:  # resolve top stack item
                     self.apply_stack_item(self.stack.pop())
                 continue
-            else:  # responds with something; must have everyone re-pass priority
-                self.passed_priority = 0
+            
+            # responds with something; must have everyone re-pass priority
+            print(play)
+            self.passed_priority = 0
 
             if play.is_mana_ability or play.is_special_action:  # applies instantly
                 self.play.apply()
@@ -126,8 +142,9 @@ class Game(object):
 
 
     def handle_beginning_phase(self, step):
+        print(step)
         if step is Step.UNTAP:
-            for permanent in self.battlefield:
+            for permanent in self.battlefield.elements:
                 permanent.untap()
 
         elif step is Step.UPKEEP:
@@ -140,22 +157,24 @@ class Game(object):
         
     ## TODO
     def handle_main_phase(self, step):
+        print(step)
         self.handle_priority(step)
         pass
 
     ## TODO
     def handle_combat_phase(self, step):
+        print(step)
         if step is Step.BEGINNING_OF_COMBAT:
-            for permanent in self.battlefield:
+            for permanent in self.battlefield.elements:
                 permanent.trigger(triggerConditions.onEnterCombat)
         elif step is Step.DECLARE_ATTACKERS:
-            for permanent in self.battlefield:
+            for permanent in self.battlefield.elements:
                 permanent.trigger(triggerConditions.onDeclareAttackers)
         elif step is Step.DECLARE_BLOCKERS:
-            for permanent in self.battlefield:
+            for permanent in self.battlefield.elements:
                 permanent.trigger(triggerConditions.onDeclareBlockers)
         elif step is Step.END_OF_COMBAT:
-            for permanent in self.battlefield:
+            for permanent in self.battlefield.elements:
                 permanent.trigger(triggerConditions.onEndofCombat)
 
         if step is Step.DECLARE_ATTACKERS:
@@ -175,9 +194,9 @@ class Game(object):
 
 
     def handle_end_phase(self, step):
+        print(step)
         if step is Step.END:
             self.handle_priority(step)
-            pass
 
         elif step is Step.CLEANUP:
             self.current_player.discard(self.current_player.hand.size() - self.current_player.maxHandSize)
@@ -191,21 +210,22 @@ class Game(object):
         while self.pending_steps:
             self.step = self.pending_steps.pop(0)
             {
-                Step.UNTAP: lambda step: handle_beginning_phase,
-                Step.UPKEEP: lambda step: handle_beginning_phase,
-                Step.DRAW: lambda step: handle_beginning_phase,
+                Step.UNTAP: self.handle_beginning_phase,
+                Step.UPKEEP: self.handle_beginning_phase,
+                Step.DRAW: self.handle_beginning_phase,
                 Step.PRECOMBAT_MAIN: self.handle_main_phase,
-                Step.BEGINNING_OF_COMBAT: lambda step: handle_combat_phase,
-                Step.DECLARE_ATTACKERS: lambda step: handle_combat_phase,
-                Step.DECLARE_BLOCKERS: lambda step: handle_combat_phase,
-                Step.FIRST_STRIKE_COMBAT_DAMAGE: lambda step: handle_combat_phase,
-                Step.COMBAT_DAMAGE: lambda step: handle_combat_phase,
-                Step.END_OF_COMBAT: lambda step: handle_combat_phase,
+                Step.BEGINNING_OF_COMBAT: self.handle_combat_phase,
+                Step.DECLARE_ATTACKERS: self.handle_combat_phase,
+                Step.DECLARE_BLOCKERS: self.handle_combat_phase,
+                Step.FIRST_STRIKE_COMBAT_DAMAGE: self.handle_combat_phase,
+                Step.COMBAT_DAMAGE: self.handle_combat_phase,
+                Step.END_OF_COMBAT: self.handle_combat_phase,
                 Step.POSTCOMBAT_MAIN: self.handle_main_phase,
-                Step.END: lambda step: handle_end_phase,
-                Step.CLEANUP: lambda step: handle_end_phase
+                Step.END: self.handle_end_phase,
+                Step.CLEANUP: self.handle_end_phase
             }[self.step](self.step)
         self.pending_turns.append(self.current_player)
+        self.current_player = next(self.players)  # cycles to next player's turn
 
 
 
@@ -232,13 +252,16 @@ class Game(object):
 ## TODO
     def set_up_game(self):
         print("setting up game...")
-        pass
+        for player in self.players_list:
+            player.draw(7)
 
 
     def run_game(self):
+        self.current_player = next(self.players)
         self.set_up_game()
-        while len(self.players):
-            self.pending_turns.extend(self.players)  # everyone gets a turn queued up, in order
+        while self.num_players:
+            self.pending_turns.extend(self.players_list)  # everyone gets a turn queued up, in order
+            
             try:
                 self.handle_turn()
             except GameOverException:
@@ -278,4 +301,4 @@ def read_deck(filename):
 decks = [read_deck('cards/decks/deck1.txt'), read_deck('cards/decks/deck1.txt')]
 GAME = Game(decks)
 print(GAME.__dict__)
-# GAME.run_game()
+GAME.run_game()

@@ -52,6 +52,7 @@ class Card(GameObject):
 
 	def play_func(self):  # defaults to permanent
 		make_permanent(self)
+		pass
 	
 
 

@@ -30,11 +30,15 @@ class Zone(object):
         except ValueError:
             return False
 
-    def pop(self):
-        return self.elements.pop()
+    def pop(self, pos=-1):
+        return self.elements.pop(pos)
 
     def size(self):
         return len(self.elements)
+
+    def show(self):
+        for elem in self.elements:
+            print(elem, elem.name())
 
     def __bool__(self):
         return bool(self.elements)

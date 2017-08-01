@@ -35,6 +35,7 @@ class Player(object):
         play = None
 
         while answer and play is None:
+            print(answer)
             try:
                 if answer[0] == 'h':  # playing card from hand -- 'h3' == plays third card in hand
                     num = int(answer[1:])
@@ -50,6 +51,12 @@ class Player(object):
                     else:
                         self.hand.append(card)  # illegal casting, revert
 
+                #elif
+
+                #elif
+                else:
+                    raise BadFormatException()
+
             except:
                 answer = input("Bad format.\nWhat would you like to do?\n")
                 continue
@@ -62,16 +69,16 @@ class Player(object):
 
 
     def draw(self, num=1):
-        for i in num:
+        for i in range(num):
             try:
-                self.hand.add(self.Library.pop())
+                self.hand.add(self.library.pop())
             except IndexError:
                 raise EmptyLibraryException()
 
     def discard(self, num=1):
         if num > self.hand.size():
             return False
-        for i in num:
+        for i in range(num):
             self.graveyard.add(self.hand.pop())
 
 

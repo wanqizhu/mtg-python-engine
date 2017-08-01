@@ -20,7 +20,7 @@ class Permanent(GameObject):
         else:
             self.status = status
         # add to battlefield
-        self.controller.game.battlefield.append(self)
+        self.controller.game.battlefield.add(self)
 
     def untap(self):
         if (self.status.tapped):
@@ -38,6 +38,9 @@ class Permanent(GameObject):
         # if self.is_creature() and self.status.damage_taken >= self.characteristics.toughness:
         #     # send state-based action for death
         #     pass
+
+    def trigger(self, condition):
+        pass
 
 
 
