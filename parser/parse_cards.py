@@ -24,8 +24,8 @@ def run():
     name_to_id = {}
 
     for card in card_list[:100]:
-        supertype = None
-        types = None
+        supertype = []
+        types = []
         try:
             ID = 'c' + re.search('(?<=multiverseid=)[0-9]+', card.set['picURL']).group(0)
             name = card.find('name').text
@@ -38,9 +38,11 @@ def run():
                 characteristics['subtype'] = _type[1].split(' ')
             _type = _type[0].split(' ')
 
-            if len(_type) > 1:
-                supertype = 'SuperType.'+_type[0].upper()
-            types = 'CardType.'+_type[-1].upper()
+            if len(_type) > 1 and _type[0].upper() in SuperType._member_names_:
+                supertype = '[SuperType.'+_type[0].upper() + ']'
+                _type.pop(0)
+
+            types = '[' + ', '.join(['CardType.'+i.upper() for i in _type]) + ']'
         except:
             pass
 

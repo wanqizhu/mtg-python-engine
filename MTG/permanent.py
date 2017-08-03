@@ -21,6 +21,11 @@ class Permanent(GameObject):
             self.status = status
         # add to battlefield
         self.controller.game.battlefield.add(self)
+        print("making permanent... {}\n".format(self))
+
+    def __repr__(self):
+        return super(Permanent, self).__repr__() + ' controlled by ' + str(self.controller if self.controller else 'None')
+
 
     def untap(self):
         if (self.status.tapped):

@@ -111,7 +111,10 @@ class Game(object):
     ## TODO
     def apply_stack_item(self, stack_item):
         """ resolving a spell/effect from stack"""
+        stack_item.apply()
         pass
+
+
 
     def handle_priority(self, step, priority=None):
         if priority is None:
@@ -135,7 +138,7 @@ class Game(object):
             self.passed_priority = 0
 
             if play.is_mana_ability or play.is_special_action:  # applies instantly
-                self.play.apply()
+                play.apply()
             else:
                 self.stack.add(play)  # add to stack
 
@@ -235,18 +238,22 @@ class Game(object):
     # print each player's states
     # print debug variables
     def print_game_state(self):
+        print("\n\n\nPRINTING GAME STATE")
         print("\n\n\n")
         print("battlefield:\n")
-        print(self.battlefield)
+        print(self.battlefield.elements)
 
         print("\n\n\n")
         print("stack:\n")
-        print(self.stack)
+        print(self.stack.elements)
 
-        # for player in players:
-        #     player.print_player_state()
+        print("\n\n\n")
+        for player in self.players_list:
+            player.print_player_state()
 
 
+    def __repr__(self):
+        return self.print_game_state()
 
 
 ## TODO
@@ -300,5 +307,4 @@ def read_deck(filename):
 
 decks = [read_deck('cards/decks/deck1.txt'), read_deck('cards/decks/deck1.txt')]
 GAME = Game(decks)
-print(GAME.__dict__)
 GAME.run_game()

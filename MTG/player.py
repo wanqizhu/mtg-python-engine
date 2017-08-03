@@ -1,7 +1,7 @@
 from MTG.mana import *
 from MTG.zone import *
 from MTG.play import *
-import re
+import re, sys
 
 
 
@@ -18,11 +18,17 @@ class Player(object):
         self.life = startingLife
         self.maxHandSize = maxHandSize
         self.library = Library(deck)
+        for card in self.library.elements:
+            card.controller = self
+            card.owner = self
         self.hand = Hand()
         self.graveyard = Graveyard()
         self.exile = Exile()
         self.mana = ManaPool()
         self.game = game
+
+    def __repr__(self):
+        return self.name
 
 
     ## TODO
@@ -35,7 +41,6 @@ class Player(object):
         play = None
 
         while answer and play is None:
-            print(answer)
             try:
                 if answer[0] == 'h':  # playing card from hand -- 'h3' == plays third card in hand
                     num = int(answer[1:])
@@ -51,13 +56,16 @@ class Player(object):
                     else:
                         self.hand.append(card)  # illegal casting, revert
 
-                #elif
+                elif answer == 'debug':
+                    self.game.print_game_state()
+                    answer = input("What would you like to do?\n")
 
                 #elif
                 else:
                     raise BadFormatException()
 
-            except:
+            except BadFormatException:
+                print(sys.exc_info())
                 answer = input("Bad format.\nWhat would you like to do?\n")
                 continue
 
@@ -71,7 +79,9 @@ class Player(object):
     def draw(self, num=1):
         for i in range(num):
             try:
-                self.hand.add(self.library.pop())
+                card = self.library.pop()
+                card.zone = ZoneType.HAND
+                self.hand.add(card)
             except IndexError:
                 raise EmptyLibraryException()
 
@@ -98,3 +108,26 @@ class Player(object):
         self.life -= life
         self.ManaPool.pay(mana)
         return True
+
+
+
+    def print_player_state(self):
+        print("\nPLAYER {}\nlife: {}\n".format(self.name, self.life))
+
+        print("mana: {}\n".format(self.mana))
+
+        print("\n\n\n")
+        print("hand:\n")
+        print(self.hand)
+
+        print("\n\n\n")
+        print("library:\n")
+        print(self.library)
+
+        print("\n\n\n")
+        print("graveyard:\n")
+        print(self.graveyard)
+
+        print("\n\n\n")
+        print("exile:\n")
+        print(self.exile)

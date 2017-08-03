@@ -19,6 +19,11 @@ class Zone(object):
             self.elements = []
         else:
             self.elements = elements
+            for ele in self.elements:
+                ele.zone = ZoneType.LIBRARY
+
+    def __repr__(self):
+        return self.__class__.__name__ + str(self.elements)
         
     def add(self, obj):
         self.elements.append(obj)

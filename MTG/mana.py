@@ -23,3 +23,6 @@ class ManaPool():
 
     def clear(self):
         self.pool.clear()
+
+    def __repr__(self):
+        return '  '.join([str(manatype) + ': ' + str(self.pool[manatype]) for manatype in Mana])

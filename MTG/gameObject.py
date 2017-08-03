@@ -5,10 +5,10 @@ class Characteristics():
                  name='',
                  mana_cost=None,
                  color=None,
-                 types=None,
-                 subtype=None,
-                 supertype=None,
-                 text=None,
+                 types=[],
+                 subtype=[],
+                 supertype=[],
+                 text='',
                  abilities=None,
                  power=None,
                  toughness=None,
@@ -25,15 +25,22 @@ class Characteristics():
         self.toughness = toughness
         self.loyalty = loyalty
 
+    def __repr__(self):
+        return str(self.__dict__)
+
 
 class GameObject():
-    def __init__(self, characteristics=Characteristics(), controller=None, zone=None):
+    def __init__(self, characteristics=Characteristics(), controller=None, owner=None, zone=None):
         self.characteristics = characteristics
         self.controller = controller
+        self.owner = owner
         self.zone = zone
 
+    def __repr__(self):
+        return self.characteristics.name + ' in ' + str(self.zone if self.zone else 'None')
+
     def is_land(self):
-        return CardType.Land in self.types
+        return CardType.LAND in self.characteristics.types
 
     def is_creature(self):
-        return CardType.Creature in self.types
+        return CardType.CREATURE in self.characteristics.types
