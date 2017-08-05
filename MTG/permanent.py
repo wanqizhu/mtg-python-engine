@@ -1,13 +1,20 @@
 from MTG.gameObject import GameObject
 from MTG.zone import ZoneType
+import sys
 
 class Status(object):
-    tapped = False
-    flipped = False
-    face_up = True
-    phased_in = True
-    summoning_sick = True
-    damage_taken = 0
+    def __init__(self):
+        self.tapped = False
+        self.flipped = False
+        self.face_up = True
+        self.phased_in = True
+        self.summoning_sick = True
+        self.damage_taken = 0
+
+    def __repr__(self):
+        return str(self.__dict__)
+
+
 
 class Permanent(GameObject):
     def __init__(self, characteristics, controller, original_card=None, status=None):
@@ -19,6 +26,12 @@ class Permanent(GameObject):
             self.status = Status()
         else:
             self.status = status
+
+        if original_card:
+            self.activated_abilities = original_card.activated_abilities
+            self._activated_abilities_costs = original_card._activated_abilities_costs
+            self._activated_abilities_effects = original_card._activated_abilities_effects
+
         # add to battlefield
         self.controller.game.battlefield.add(self)
         print("making permanent... {}\n".format(self))
@@ -27,6 +40,20 @@ class Permanent(GameObject):
         return super(Permanent, self).__repr__() + ' controlled by ' + str(self.controller if self.controller else 'None')
 
 
+    def activate_ability(self, num=0):
+        try:
+            self._activated_abilities_costs[num](self)
+            self._activated_abilities_effects[num](self)
+            return True
+        except:
+            print(sys.exc_info())
+            return False
+
+
+    def tap(self):
+        self.status.tapped = True
+
+        
     def untap(self):
         if (self.status.tapped):
             self.status.tapped = False

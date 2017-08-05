@@ -67,18 +67,20 @@ id_to_name_dict = {}
 
 name_to_id_dict = {}
 
-def id_to_name(ID):
-    return id_to_name_dict.get(ID, None)
 
-def name_to_id(name):
-    return name_to_id_dict.get(name, None)
-
-def card_from_name(name):
-    if name_to_id(name) is not None:
-        return eval(name_to_id(name)+'()')
-    else:
-        return None
 """.format(id_to_name, name_to_id))
+
+# def id_to_name(ID):
+#     return id_to_name_dict.get(ID, None)
+
+# def name_to_id(name):
+#     return name_to_id_dict.get(name, None)
+
+# def card_from_name(name):
+#     if name_to_id(name) is not None:
+#         return eval(name_to_id(name)+'()')
+#     else:
+#         return None
 
     fout.close()
 

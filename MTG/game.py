@@ -252,8 +252,8 @@ class Game(object):
             player.print_player_state()
 
 
-    def __repr__(self):
-        return self.print_game_state()
+    # def __repr__(self):
+    #     return self.print_game_state()
 
 
 ## TODO
