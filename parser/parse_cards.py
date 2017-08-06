@@ -70,6 +70,10 @@ def run():
 """
 class {}(Card):
     "{}"
+    activated_abilities = []
+    _activated_abilities_costs = []
+    _activated_abilities_effects = []
+    _activated_abilities_costs_validation = []
     def __init__(self):
         super({}, self).__init__(Characteristics(**{}, supertype={}, types={}, abilities={}))
 

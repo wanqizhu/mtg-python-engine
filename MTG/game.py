@@ -92,15 +92,15 @@ class Game(object):
         self.pending_steps = []
 
 
-    def get_zone(self, zone_type, owner=None):
+    def get_zone(self, zone_type, player=None):
         return {
-            ZoneType.LIBRARY: owner.library,
-            ZoneType.HAND: owner.hand,
+            ZoneType.LIBRARY: player.library,
+            ZoneType.HAND: player.hand,
             ZoneType.BATTLEFIELD: self.battlefield,
-            ZoneType.GRAVEYARD: owner.graveyard,
+            ZoneType.GRAVEYARD: player.graveyard,
             ZoneType.STACK: self.stack,
-            ZoneType.EXILE: owner.exile,
-            # ZoneType.COMMAND: owner.command
+            ZoneType.EXILE: player.exile,
+            # ZoneType.COMMAND: player.command
         }[zone_type]
 
     ## TODO

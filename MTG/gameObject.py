@@ -1,5 +1,5 @@
 from MTG.cardType import *
-
+from MTG.abilities import *
 
 class Characteristics():
     def __init__(self,
@@ -36,6 +36,7 @@ class GameObject():
         self.controller = controller
         self.owner = owner
         self.zone = zone
+        self.previousState = None
 
     def __repr__(self):
         return self.characteristics.name + ' in ' + str(self.zone if self.zone else 'None')

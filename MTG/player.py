@@ -9,6 +9,9 @@ import re, sys, pdb
 class EmptyLibraryException(Exception):
     pass
 
+class BadFormatException(Exception):
+    pass
+
 
 class Player(object):
 
@@ -37,18 +40,27 @@ class Player(object):
 
         this gets called whenever a player has priority
         """
-        answer = input("\nWhat would you like to do?\n")
+        answer = 'placeholder'
         play = None
 
         while answer and play is None:
+            answer = input("What would you like to do?\n")
+            if answer == '':
+                break
             try:
                 if answer[0] == 'h':  # playing card from hand -- 'h3' == plays third card in hand
                     num = int(answer[1:])
                     assert num < self.hand.size()
                     card = self.hand.pop(num)
                     ## pay mana costs
+                    can_pay = self.mana.canPay(card.manacost())  # False, or a dict of mana costs
                     ## choose targets
-                    if True:
+                    can_target = True
+
+                    if can_pay and can_target:
+                        self.mana.pay(can_pay)
+                        # apply targets
+
                         play = Play(card.play_func)
                         # special actions
                         if card.is_land():
@@ -56,7 +68,10 @@ class Player(object):
                     else:
                         self.hand.append(card)  # illegal casting, revert
 
-                elif answer[0] == 'b':  # activate ability from battlefield -- 'b3_1' plays 2nd (index starts at 0) ability from 3rd permanent
+
+
+                # activate ability from battlefield -- 'b3_1' plays 2nd (index starts at 0) ability from 3rd permanent
+                elif answer[0] == 'b':
                     nums = answer[1:].split('_')
                     if len(nums) == 1:
                         nums.append(0)
@@ -72,12 +87,15 @@ class Player(object):
                     # ability activation
                     if card._activated_abilities_costs_validation[nums[1]](card):
                         play = Play(lambda: card.activate_ability(nums[1]))
+                        if card.activated_abilities[nums[1]][2]:  # special action
+                            play.is_mana_ability = True
 
+                elif answer == 'print':
+                    self.game.print_game_state()
+                    
 
                 elif answer == 'debug':
                     pdb.set_trace()
-                    # self.game.print_game_state()
-                    answer = input("What would you like to do?\n")
 
                 #elif
                 else:

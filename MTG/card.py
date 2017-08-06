@@ -43,15 +43,13 @@ class triggerConditions(Enum):
 
 
 class Card(GameObject):
-	previousState = None
-	activated_abilities = []
-	_activated_abilities_costs = []
-	_activated_abilities_effects = []
-	_activated_abilities_costs_validation = []
 
 
 	def name(self):
 		return self.characteristics.name
+		
+	def manacost(self):
+		return self.characteristics.mana_cost
 		
 	def ID(self):
 		pass

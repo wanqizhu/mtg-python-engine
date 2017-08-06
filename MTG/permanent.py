@@ -17,9 +17,10 @@ class Status(object):
 
 
 class Permanent(GameObject):
-    def __init__(self, characteristics, controller, original_card=None, status=None):
+    def __init__(self, characteristics, controller, owner=None, original_card=None, status=None):
         GameObject.__init__(self, characteristics)
         self.controller = controller
+        self.owner = owner if owner else controller
         self.zone = ZoneType.BATTLEFIELD
         self.original_card = original_card
         if status is None:
@@ -80,4 +81,4 @@ class Permanent(GameObject):
 
 
 def make_permanent(card):
-    return Permanent(card.characteristics, card.controller, card)
+    return Permanent(card.characteristics, card.controller, card.owner, card)

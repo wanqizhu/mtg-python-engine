@@ -19,8 +19,7 @@ class Zone(object):
             self.elements = []
         else:
             self.elements = elements
-            for ele in self.elements:
-                ele.zone = ZoneType.LIBRARY
+            
 
     def __repr__(self):
         return self.__class__.__name__ + str(self.elements)
@@ -68,4 +67,9 @@ class Exile(Zone):
 class Library(Zone):
     def shuffle(self):
         random.shuffle(self.elements)
-    pass
+
+    def __init__(self, elements:list=None):
+        super(Library, self).__init__(elements)
+        for ele in self.elements:
+            ele.zone = ZoneType.LIBRARY
+        self.shuffle()
