@@ -29,6 +29,7 @@ class Permanent(GameObject):
 
         if original_card:
             self.activated_abilities = original_card.activated_abilities
+            self._activated_abilities_costs_validation = original_card._activated_abilities_costs_validation
             self._activated_abilities_costs = original_card._activated_abilities_costs
             self._activated_abilities_effects = original_card._activated_abilities_effects
 
@@ -42,6 +43,8 @@ class Permanent(GameObject):
 
     def activate_ability(self, num=0):
         try:
+            # if self._activated_abilities_costs_validation[num](self):
+            print("activating...")
             self._activated_abilities_costs[num](self)
             self._activated_abilities_effects[num](self)
             return True

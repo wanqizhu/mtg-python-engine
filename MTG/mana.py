@@ -11,7 +11,8 @@ class Mana(Enum):
 
 
 class ManaPool():
-    pool = defaultdict(lambda: 0)
+    def __init__(self):
+        self.pool = defaultdict(lambda: 0)
 
     def add(self, mana, amount):
         self.pool[mana] += amount

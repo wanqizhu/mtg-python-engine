@@ -1,5 +1,6 @@
 from MTG.cardType import *
 
+
 class Characteristics():
     def __init__(self,
                  name='',
@@ -9,7 +10,7 @@ class Characteristics():
                  subtype=[],
                  supertype=[],
                  text='',
-                 abilities=None,
+                 abilities=[],
                  power=None,
                  toughness=None,
                  loyalty=None):

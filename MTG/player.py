@@ -1,7 +1,7 @@
 from MTG.mana import *
 from MTG.zone import *
 from MTG.play import *
-import re, sys
+import re, sys, pdb
 
 
 
@@ -37,7 +37,7 @@ class Player(object):
 
         this gets called whenever a player has priority
         """
-        answer = input("What would you like to do?\n")
+        answer = input("\nWhat would you like to do?\n")
         play = None
 
         while answer and play is None:
@@ -56,8 +56,27 @@ class Player(object):
                     else:
                         self.hand.append(card)  # illegal casting, revert
 
+                elif answer[0] == 'b':  # activate ability from battlefield -- 'b3_1' plays 2nd (index starts at 0) ability from 3rd permanent
+                    nums = answer[1:].split('_')
+                    if len(nums) == 1:
+                        nums.append(0)
+
+                    nums[0] = int(nums[0])
+                    nums[1] = int(nums[1])
+
+                    assert nums[0] < self.game.battlefield.size()
+                    card = self.game.battlefield.elements[nums[0]]
+
+                    assert nums[1] <= len(card.activated_abilities)
+                    
+                    # ability activation
+                    if card._activated_abilities_costs_validation[nums[1]](card):
+                        play = Play(lambda: card.activate_ability(nums[1]))
+
+
                 elif answer == 'debug':
-                    self.game.print_game_state()
+                    pdb.set_trace()
+                    # self.game.print_game_state()
                     answer = input("What would you like to do?\n")
 
                 #elif

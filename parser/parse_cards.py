@@ -2,8 +2,9 @@ from bs4 import BeautifulSoup
 # from lexer import lexer
 from MTG.card import Card
 from MTG.cardType import *
+from MTG.abilities import *
 # import pickle
-import re
+import re, sys
 
 cards = []
 
@@ -33,6 +34,8 @@ def run():
             characteristics['text'] = card.find('text').text
             characteristics['color'] = [c.text for c in card.find_all('color')]
             characteristics['mana_cost'] = card.find('manacost').text
+
+            # types
             _type = card.find('type').text.split(' - ')
             if len(_type) > 1:
                 characteristics['subtype'] = _type[1].split(' ')
@@ -43,7 +46,24 @@ def run():
                 _type.pop(0)
 
             types = '[' + ', '.join(['CardType.'+i.upper() for i in _type]) + ']'
+        
+            if 'Creature' in _type:
+                characteristics['power'], characteristics['toughness'] = map(int, card.find('pt').text.split('/'))
+
+            # static abilities
+            _abilities = []
+
+            texts = characteristics['text'].replace(' ', '_')
+            for ability in StaticAbilities._member_names_:
+                if ability in texts or ',_' + ability.lower() in texts.lower():
+                    _abilities.append(ability)
+
+            if len(_abilities):
+                _abilities = '[StaticAbilities.' + ', StaticAbilities.'.join(_abilities) + ']'
+
         except:
+
+            print(sys.exc_info())
             pass
 
         fout.write(
@@ -51,9 +71,9 @@ def run():
 class {}(Card):
     "{}"
     def __init__(self):
-        super({}, self).__init__(Characteristics(**{}, supertype={}, types={}))
+        super({}, self).__init__(Characteristics(**{}, supertype={}, types={}, abilities={}))
 
-""".format(ID, name, ID, characteristics, supertype, types))
+""".format(ID, name, ID, characteristics, supertype, types, _abilities))
 
         id_to_name[ID] = name
         name_to_id[name] = ID
@@ -89,14 +109,7 @@ name_to_id_dict = {}
 
         # try:
         #     card.find('text').text.replace(card.find('name').text, '<self>'))
-        #     print("Card: {}".format(card.find('name').text))
-        #     for tok in lexer:
-        #         print(tok)
-        #         pass
-        #     print()
-        # except ValueError as e:
-        #     print(e)
-        #     continue
+
 
 if __name__ == '__main__':
     run()

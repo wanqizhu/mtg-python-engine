@@ -21,13 +21,16 @@ def make_activated_ability(cardname, cost, effect):
 
     _costs = cost.split(', ')
     costs = ""
+    costs_validation = "True"
     if 'T' in _costs:
         costs += "self.tap();"
+        costs_validation += " and not self.status.tapped"
     # elif MANA
 
     card.activated_abilities.append((costs, effect))
 
     card._activated_abilities_costs.append(lambda self: exec(costs))
+    card._activated_abilities_costs_validation.append(lambda self: eval(costs_validation))
     card._activated_abilities_effects.append(lambda self: exec(effect))
 
 

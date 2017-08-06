@@ -47,6 +47,7 @@ class Card(GameObject):
 	activated_abilities = []
 	_activated_abilities_costs = []
 	_activated_abilities_effects = []
+	_activated_abilities_costs_validation = []
 
 
 	def name(self):

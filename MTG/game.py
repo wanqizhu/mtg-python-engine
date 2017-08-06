@@ -256,7 +256,7 @@ class Game(object):
     #     return self.print_game_state()
 
 
-## TODO
+    ## TODO
     def set_up_game(self):
         print("setting up game...")
         for player in self.players_list:
@@ -296,9 +296,10 @@ def read_deck(filename):
                 card = card_from_name(line[i+1:])
                 if card:
                     deck.append(card)
-                    print(deck[-1].name())
+                    # print(deck[-1].name())
                 else:
-                    print("card {} does not exist\n".format(line[i+1:]))
+                    pass
+                    # print("card {} does not exist\n".format(line[i+1:]))
         except:
             raise DecklistFormatError()
 
