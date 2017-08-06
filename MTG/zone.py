@@ -14,11 +14,14 @@ class ZoneType(Enum):
     # COMMAND = 6
 
 class Zone(object):
-    def __init__(self, elements:list=None):
+    def __init__(self, controller=None, elements:list=None):
         if elements is None:
             self.elements = []
         else:
             self.elements = elements
+            for ele in elements:
+                ele.controller = controller
+        self.controller = controller
             
 
     def __repr__(self):
@@ -68,8 +71,8 @@ class Library(Zone):
     def shuffle(self):
         random.shuffle(self.elements)
 
-    def __init__(self, elements:list=None):
-        super(Library, self).__init__(elements)
+    def __init__(self, controller=None, elements:list=None):
+        super(Library, self).__init__(controller, elements)
         for ele in self.elements:
             ele.zone = ZoneType.LIBRARY
         self.shuffle()

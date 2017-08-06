@@ -13,9 +13,10 @@ class Mana(Enum):
 class ManaPool():
     manachr = ['W', 'U', 'B', 'R', 'G', 'C']
 
-    def __init__(self):
+    def __init__(self, controller=None):
         self.pool = defaultdict(lambda: 0)
-
+        self.controller = controller
+        
     def add(self, mana, amount):
         self.pool[mana] += amount
 

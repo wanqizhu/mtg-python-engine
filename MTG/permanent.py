@@ -35,7 +35,7 @@ class Permanent(GameObject):
             self._activated_abilities_effects = original_card._activated_abilities_effects
 
         # add to battlefield
-        self.controller.game.battlefield.add(self)
+        self.controller.battlefield.add(self)
         print("making permanent... {}\n".format(self))
 
     def __repr__(self):

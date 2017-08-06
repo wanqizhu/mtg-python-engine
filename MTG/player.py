@@ -20,14 +20,16 @@ class Player(object):
         # self.ID = None
         self.life = startingLife
         self.maxHandSize = maxHandSize
-        self.library = Library(deck)
+        self.library = Library(self, deck)
         for card in self.library.elements:
             card.controller = self
             card.owner = self
-        self.hand = Hand()
-        self.graveyard = Graveyard()
-        self.exile = Exile()
-        self.mana = ManaPool()
+
+        self.battlefield = Battlefield(self)
+        self.hand = Hand(self)
+        self.graveyard = Graveyard(self)
+        self.exile = Exile(self)
+        self.mana = ManaPool(self)
         self.game = game
 
     def __repr__(self):
@@ -79,8 +81,8 @@ class Player(object):
                     nums[0] = int(nums[0])
                     nums[1] = int(nums[1])
 
-                    assert nums[0] < self.game.battlefield.size()
-                    card = self.game.battlefield.elements[nums[0]]
+                    assert nums[0] < self.battlefield.size()
+                    card = self.battlefield.elements[nums[0]]
 
                     assert nums[1] <= len(card.activated_abilities)
                     
@@ -154,17 +156,21 @@ class Player(object):
         print("mana: {}\n".format(self.mana))
 
         print("\n\n\n")
-        print("hand:\n")
+        print("battlefield: {}\n".format(self.battlefield.size()))
+        print(self.battlefield)
+
+        print("\n\n\n")
+        print("hand: {}\n".format(self.hand.size()))
         print(self.hand)
 
         print("\n\n\n")
-        print("library:\n")
+        print("library: {}\n".format(self.library.size()))
         print(self.library)
 
         print("\n\n\n")
-        print("graveyard:\n")
+        print("graveyard: {}\n".format(self.graveyard.size()))
         print(self.graveyard)
 
         print("\n\n\n")
-        print("exile:\n")
+        print("exile: {}\n".format(self.exile.size()))
         print(self.exile)

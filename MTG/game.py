@@ -81,7 +81,6 @@ class Game(object):
 
     # start a game by giving each player their deck
     def __init__(self, decks):
-        self.battlefield = Battlefield()
         self.stack = Stack()
         self.num_players = len(decks)
         self.players_list = [Player(decks[i], 'player'+str(i), game=self) for i in range(self.num_players)]
@@ -96,7 +95,7 @@ class Game(object):
         return {
             ZoneType.LIBRARY: player.library,
             ZoneType.HAND: player.hand,
-            ZoneType.BATTLEFIELD: self.battlefield,
+            ZoneType.BATTLEFIELD: player.battlefield,
             ZoneType.GRAVEYARD: player.graveyard,
             ZoneType.STACK: self.stack,
             ZoneType.EXILE: player.exile,
@@ -114,6 +113,13 @@ class Game(object):
         stack_item.apply()
         pass
 
+
+    def apply_to_battlefield(self, apply_func, condition=lambda p: True):
+        "Apply some function to all permanents on the battlefield (filtered out by a condition function if necessary)"
+        for player in self.players_list:
+            for permanent in player.battlefield.elements:
+                if condition(permanent):
+                    apply_func(permanent)
 
 
     def handle_priority(self, step, priority=None):
@@ -147,8 +153,7 @@ class Game(object):
     def handle_beginning_phase(self, step):
         print(step)
         if step is Step.UNTAP:
-            for permanent in self.battlefield.elements:
-                permanent.untap()
+            self.apply_to_battlefield(lambda permanent: permanent.untap())
 
         elif step is Step.UPKEEP:
             self.handle_priority(step)
@@ -168,17 +173,13 @@ class Game(object):
     def handle_combat_phase(self, step):
         print(step)
         if step is Step.BEGINNING_OF_COMBAT:
-            for permanent in self.battlefield.elements:
-                permanent.trigger(triggerConditions.onEnterCombat)
+            self.apply_to_battlefield(lambda p: p.trigger(triggerConditions.onEnterCombat))
         elif step is Step.DECLARE_ATTACKERS:
-            for permanent in self.battlefield.elements:
-                permanent.trigger(triggerConditions.onDeclareAttackers)
+            self.apply_to_battlefield(lambda p: p.trigger(triggerConditions.onDeclareAttackers))
         elif step is Step.DECLARE_BLOCKERS:
-            for permanent in self.battlefield.elements:
-                permanent.trigger(triggerConditions.onDeclareBlockers)
+            self.apply_to_battlefield(lambda p: p.trigger(triggerConditions.onDeclareBlockers))
         elif step is Step.END_OF_COMBAT:
-            for permanent in self.battlefield.elements:
-                permanent.trigger(triggerConditions.onEndofCombat)
+            self.apply_to_battlefield(lambda p: p.trigger(triggerConditions.onEndofCombat))
 
         if step is Step.DECLARE_ATTACKERS:
             pass
@@ -239,9 +240,6 @@ class Game(object):
     # print debug variables
     def print_game_state(self):
         print("\n\n\nPRINTING GAME STATE")
-        print("\n\n\n")
-        print("battlefield:\n")
-        print(self.battlefield.elements)
 
         print("\n\n\n")
         print("stack:\n")
