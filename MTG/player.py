@@ -22,6 +22,7 @@ class Player(object):
         self.maxHandSize = maxHandSize
         self.landPerTurn = 1
         self.landPlayed = 0
+        self.passPriorityUntil = None
 
         self.library = Library(self, deck)
         for card in self.library.elements:
@@ -49,11 +50,24 @@ class Player(object):
         play = None
 
         while answer and play is None:
-            answer = input("What would you like to do?\n")
+            answer = input("What would you like to do? {}, {}\n".format(self.name, self.game.step))
             if answer == '':
                 break
             try:
-                if answer[0] == 'h':  # playing card from hand -- 'h3' == plays third card in hand
+                if answer == 'print':
+                    self.game.print_game_state() 
+
+                elif answer == 'hand':
+                    print(self.hand)
+
+                elif answer == 'battlefield':
+                    print(self.battlefield)
+
+                elif answer == 'debug':
+                    pdb.set_trace()
+
+
+                elif answer[0] == 'p':  # playing card from hand -- 'p3' == plays third card in hand
                     num = int(answer[1:])
                     assert num < self.hand.size()
                     card = self.hand.pop(num)
@@ -66,7 +80,7 @@ class Player(object):
                     can_play = True
                     if card.is_land() and self.landPlayed >= self.landPerTurn:
                         can_play = False
-                    if not (card.is_instant() or card.has_ability('Flash')) and (self.game.stack or self.game.step.phase not in [Phase.PRECOMBAT_MAIN, Phase.POSTCOMBAT_MAIN]):
+                    if not (card.is_instant() or card.has_ability('Flash')) and (self.game.stack or self.game.step.phase not in [Phase.PRECOMBAT_MAIN, Phase.POSTCOMBAT_MAIN] or self.game.current_player != self):
                         can_play = False
 
                     if can_pay and can_target and can_play:
@@ -89,8 +103,8 @@ class Player(object):
 
 
 
-                # activate ability from battlefield -- 'b3_1' plays 2nd (index starts at 0) ability from 3rd permanent
-                elif answer[0] == 'b':
+                # activate ability from battlefield -- 'a3_1' plays 2nd (index starts at 0) ability from 3rd permanent
+                elif answer[0] == 'a':
                     nums = answer[1:].split('_')
                     if len(nums) == 1:
                         nums.append(0)
@@ -109,12 +123,11 @@ class Player(object):
                         if card.activated_abilities[nums[1]][2]:  # special action
                             play.is_mana_ability = True
 
-                elif answer == 'print':
-                    self.game.print_game_state()
-                    
-
-                elif answer == 'debug':
-                    pdb.set_trace()
+                # skip priority until something happens / certain step
+                elif answer[0] == 's':
+                    assert answer[1:].upper() in Step._member_names_
+                    self.passPriorityUntil = Step[answer[1:].upper()]
+                    break
 
                 #elif
                 else:

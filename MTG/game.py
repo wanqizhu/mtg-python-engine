@@ -70,12 +70,19 @@ class Game(object):
         if priority is None:
             priority = self.players_list.index(self.current_player)
 
-        print("priority")
+        # print("priority")
         self.passed_priority = 0
 
         while self.passed_priority < self.num_players or self.stack:  # while not everyone has passed priority
             self.apply_state_based_actions()
-            play = self.players_list[priority].get_action()
+
+            if self.players_list[priority].passPriorityUntil not in [None, step]:  # auto pass priority
+                play = None
+            else:
+                self.players_list[priority].passPriorityUntil = None
+                play = self.players_list[priority].get_action()
+                
+
             if play is None:  # passes priority
                 self.passed_priority += 1
                 priority = (priority + 1) % self.num_players  # who's next to get priority
@@ -102,6 +109,7 @@ class Game(object):
 
         elif step is Step.UPKEEP:
             self.handle_priority(step)
+            self.apply_to_battlefield(lambda p: p.trigger(triggerConditions.onUpkeep))
 
         elif step is Step.DRAW:
             self.current_player.draw()
@@ -133,6 +141,12 @@ class Game(object):
             self.apply_to_battlefield(lambda p: p.trigger(triggerConditions.onEndofCombat))
 
         if step is Step.DECLARE_ATTACKERS:
+            print("Choose all creatures you'd like to attack with\n")
+            can_atk = []
+            self.apply_to_battlefield(lambda p: can_atk.append(p), 
+                                    lambda p: p.is_creature() and p.controller == self.current_player and not p.status.tapped and not p.status.summoning_sick)
+            
+            print(can_atk)
             pass
             # declare attackers
 
@@ -157,6 +171,8 @@ class Game(object):
 
         elif step is Step.CLEANUP:
             self.current_player.discard(self.current_player.hand.size() - self.current_player.maxHandSize)
+            self.apply_to_battlefield(lambda p: p.trigger(triggerConditions.onCleanup))
+
 
         for player in self.players_list:
             player.mana.clear()
