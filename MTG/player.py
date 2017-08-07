@@ -1,6 +1,7 @@
 from MTG.mana import *
 from MTG.zone import *
 from MTG.play import *
+from MTG.gamesteps import *
 import re, sys, pdb
 
 
@@ -14,12 +15,14 @@ class BadFormatException(Exception):
 
 
 class Player(object):
-
     def __init__(self, deck, name='player', startingLife=20, maxHandSize=7, game=None):
         self.name = name
         # self.ID = None
         self.life = startingLife
         self.maxHandSize = maxHandSize
+        self.landPerTurn = 1
+        self.landPlayed = 0
+
         self.library = Library(self, deck)
         for card in self.library.elements:
             card.controller = self
@@ -59,7 +62,14 @@ class Player(object):
                     ## choose targets
                     can_target = True
 
-                    if can_pay and can_target:
+                    # timing & restrictions
+                    can_play = True
+                    if card.is_land() and self.landPlayed >= self.landPerTurn:
+                        can_play = False
+                    if not (card.is_instant() or card.has_ability('Flash')) and (self.game.stack or self.game.step.phase not in [Phase.PRECOMBAT_MAIN, Phase.POSTCOMBAT_MAIN]):
+                        can_play = False
+
+                    if can_pay and can_target and can_play:
                         self.mana.pay(can_pay)
                         # apply targets
 
@@ -67,8 +77,15 @@ class Player(object):
                         # special actions
                         if card.is_land():
                             play.is_special_action = True
+                            self.landPlayed += 1
                     else:
-                        self.hand.append(card)  # illegal casting, revert
+                        self.hand.add(card)  # illegal casting, revert
+                        if not can_pay:
+                            print("Cannot pay mana costs\n")
+                        if not can_target:
+                            print("Cannot target\n")
+                        if not can_play:
+                            print("Cannot play this right now\n")
 
 
 

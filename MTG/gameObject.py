@@ -46,3 +46,9 @@ class GameObject():
 
     def is_creature(self):
         return CardType.CREATURE in self.characteristics.types
+
+    def is_instant(self):
+        return CardType.INSTANT in self.characteristics.types
+
+    def has_ability(self, ability):
+        return StaticAbilities[ability] in self.characteristics.abilities

@@ -1,4 +1,3 @@
-from enum import Enum
 from itertools import cycle
 import sys
 import os
@@ -8,68 +7,13 @@ os.chdir('/Users/wanqi/Desktop/Python-MTG')
 from MTG.player import Player
 from MTG.zone import *
 from MTG.cards import *
+from MTG.gamesteps import *
 
 global GAME
 
 
 
-class Phase(Enum):
-    BEGINNING = 0
-    PRECOMBAT_MAIN = 1
-    COMBAT = 2
-    POSTCOMBAT_MAIN = 3
-    ENDING = 4
 
-    @property
-    def steps(self):
-        return {
-            Phase.BEGINNING: (Step.UNTAP, Step.UPKEEP, Step.DRAW),
-            Phase.PRECOMBAT_MAIN: (Step.PRECOMBAT_MAIN,),
-            Phase.COMBAT: (
-                Step.BEGINNING_OF_COMBAT,
-                Step.DECLARE_ATTACKERS,
-                Step.DECLARE_BLOCKERS,
-                Step.FIRST_STRIKE_COMBAT_DAMAGE,
-                Step.COMBAT_DAMAGE,
-                Step.END_OF_COMBAT
-            ),
-            Phase.POSTCOMBAT_MAIN: (Step.POSTCOMBAT_MAIN,),
-            Phase.ENDING: (Step.END, Step.CLEANUP)
-        }[self]
-
-
-class Step(Enum):
-    UNTAP = 0
-    UPKEEP = 1
-    DRAW = 2
-    PRECOMBAT_MAIN = 3
-    BEGINNING_OF_COMBAT = 4
-    DECLARE_ATTACKERS = 5
-    DECLARE_BLOCKERS = 6
-    FIRST_STRIKE_COMBAT_DAMAGE = 7
-    COMBAT_DAMAGE = 8
-    END_OF_COMBAT = 9
-    POSTCOMBAT_MAIN = 10
-    END = 11
-    CLEANUP = 12
-
-    @property
-    def phase(self):
-        return {
-            Step.UNTAP: Phase.BEGINNING,
-            Step.UPKEEP: Phase.BEGINNING,
-            Step.DRAW: Phase.BEGINNING,
-            Step.PRECOMBAT_MAIN: Phase.PRECOMBAT_MAIN,
-            Step.BEGINNING_OF_COMBAT: Phase.COMBAT,
-            Step.DECLARE_ATTACKERS: Phase.COMBAT,
-            Step.DECLARE_BLOCKERS: Phase.COMBAT,
-            Step.FIRST_STRIKE_COMBAT_DAMAGE: Phase.COMBAT,
-            Step.COMBAT_DAMAGE: Phase.COMBAT,
-            Step.END_OF_COMBAT: Phase.COMBAT,
-            Step.POSTCOMBAT_MAIN: Phase.POSTCOMBAT_MAIN,
-            Step.END: Phase.ENDING,
-            Step.CLEANUP: Phase.ENDING
-        }[self]
 
 class GameOverException(Exception):
     """Indicates that the game is over: that every player has either won, lost, or conceded"""
@@ -154,13 +98,17 @@ class Game(object):
         print(step)
         if step is Step.UNTAP:
             self.apply_to_battlefield(lambda permanent: permanent.untap())
+            self.current_player.landPlayed = 0
 
         elif step is Step.UPKEEP:
             self.handle_priority(step)
-            pass
 
         elif step is Step.DRAW:
             self.current_player.draw()
+            self.handle_priority(step)
+        
+        for player in self.players_list:
+            player.mana.clear()
 
         
     ## TODO
@@ -168,6 +116,9 @@ class Game(object):
         print(step)
         self.handle_priority(step)
         pass
+
+        for player in self.players_list:
+            player.mana.clear()
 
     ## TODO
     def handle_combat_phase(self, step):
@@ -194,6 +145,8 @@ class Game(object):
 
         self.handle_priority(step)
         pass
+        for player in self.players_list:
+            player.mana.clear()
 
 
 
@@ -205,6 +158,8 @@ class Game(object):
         elif step is Step.CLEANUP:
             self.current_player.discard(self.current_player.hand.size() - self.current_player.maxHandSize)
 
+        for player in self.players_list:
+            player.mana.clear()
 
 
     def handle_turn(self):
