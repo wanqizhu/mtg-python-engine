@@ -8,6 +8,7 @@ from MTG.player import Player
 from MTG.zone import *
 from MTG.cards import *
 from MTG.gamesteps import *
+from MTG.combat import *
 
 global GAME
 
@@ -157,6 +158,7 @@ class Game(object):
                     # space-separated list of indices of creatures in can_atk, starting at 0
                     answer = input("\n{}, Choose all creatures you'd like to attack {} with\n".format(self.current_player, player.name))
 
+                    ## TODO: planeswalkers
                     answer = answer.split(" ")
                     for ind in answer:
                         try:
@@ -173,7 +175,7 @@ class Game(object):
                     print(creature.name, creature.is_attacking)
 
 
-
+                # check remove-from-combat abilities/events
 
 
         if step is Step.DECLARE_BLOCKERS:
@@ -193,6 +195,7 @@ class Game(object):
                     self.apply_to_battlefield(lambda p: can_block.append(p), 
                                         lambda p: p.controller == player and p.can_block())
                 
+                    ## check blocking restrictions (e.g. flying)
                     print("creatures that can block: {}\n", can_block)
 
 
@@ -207,10 +210,28 @@ class Game(object):
                             else:
                                 print("creature #{} is out of bounds\n".format(ind))
 
-        if step is Step.END_OF_COMBAT:
+                    ## attacker declare multi-block dmg order
+                    pass
+
+        if step is  Step.FIRST_STRIKE_COMBAT_DAMAGE:
+            # first strike
             pass
 
-            # resolve damage
+        if step is Step.COMBAT_DAMAGE:
+            is_attacking = []
+            self.apply_to_battlefield(lambda p: is_attacking.append(p), 
+                                        lambda p: p.status.is_attacking)
+
+            for creature in is_attacking:
+                if isinstance(creature.status.is_attacking, Player):
+                    creature.status.is_attacking.take_damage(creature.characteristics.power)
+                else:
+                    fight(creature, creature.status.is_attacking)
+
+            # damage resolve / triggers
+
+        if step is Step.END_OF_COMBAT:
+            pass
 
 
         self.handle_priority(step)

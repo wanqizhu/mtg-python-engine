@@ -178,6 +178,10 @@ class Player(object):
         self.ManaPool.pay(mana)
         return True
 
+    def take_damage(self, damage):
+        # trigger
+        self.life -= damage
+
 
 
     def print_player_state(self):

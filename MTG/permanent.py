@@ -123,7 +123,7 @@ class Permanent(GameObject):
     def blocks(self, creature):
         # trigger
         self.status.is_blocking = creature
-        creature.status.is_attacking = self
+        creature.status.is_attacking = self  ## TODO: multi-blocks
 
     def take_damage(self, dmg):
         self.status.damage_taken += dmg
