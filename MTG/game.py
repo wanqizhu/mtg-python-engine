@@ -141,24 +141,80 @@ class Game(object):
             self.apply_to_battlefield(lambda p: p.trigger(triggerConditions.onEndofCombat))
 
         if step is Step.DECLARE_ATTACKERS:
-            print("Choose all creatures you'd like to attack with\n")
+            
             can_atk = []
             self.apply_to_battlefield(lambda p: can_atk.append(p), 
-                                    lambda p: p.is_creature() and p.controller == self.current_player and not p.status.tapped and not p.status.summoning_sick)
+                                    lambda p: p.controller == self.current_player and p.can_attack())
             
-            print(can_atk)
-            pass
-            # declare attackers
+            if can_atk:
+                print("Creatures that can attack:", can_atk)
+                
+
+                for player in self.players_list:
+                    if player == self.current_player:
+                        continue
+                    # declare attackers
+                    # space-separated list of indices of creatures in can_atk, starting at 0
+                    answer = input("\n{}, Choose all creatures you'd like to attack {} with\n".format(self.current_player, player.name))
+
+                    answer = answer.split(" ")
+                    for ind in answer:
+                        try:
+                            ind = int(ind)
+                            if ind < len(can_atk):
+                                can_atk[ind].attacks(player)
+                                can_atk[ind].tap()
+                            else:
+                                print("creature #{} is out of bounds\n".format(str(ind)))
+                        except:
+                            print("wrong format: {}\n".format(ind))
+
+                for creature in can_atk:
+                    print(creature.name, creature.is_attacking)
+
+
+
+
 
         if step is Step.DECLARE_BLOCKERS:
+            # need to figure out which player's turn / priority
+
+            for player in self.players_list:
+                if player == self.current_player:
+                    continue
+                is_attacking = []
+                self.apply_to_battlefield(lambda p: is_attacking.append(p), 
+                                        lambda p: p.status.is_attacking == player)
+
+                if is_attacking:
+                    print("all attacking creatures: {}\n", is_attacking)
+
+                    can_block = []
+                    self.apply_to_battlefield(lambda p: can_block.append(p), 
+                                        lambda p: p.controller == player and p.can_block())
+                
+                    print("creatures that can block: {}\n", can_block)
+
+
+                    # declare blockers
+                    for creature in is_attacking:
+                        answer = input("\n{}, Choose all creatures you'd like to block {} with\n".format(player, creature))
+
+                        answer = map(int, answer.split(" "))
+                        for ind in answer:
+                            if ind < len(can_block):
+                                can_block[ind].blocks(creature)
+                            else:
+                                print("creature #{} is out of bounds\n".format(ind))
+
+        if step is Step.END_OF_COMBAT:
             pass
-            # declare blockers
 
             # resolve damage
 
 
         self.handle_priority(step)
-        pass
+
         for player in self.players_list:
             player.mana.clear()
 

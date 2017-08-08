@@ -41,6 +41,13 @@ class GameObject():
     def __repr__(self):
         return self.characteristics.name + ' in ' + str(self.zone if self.zone else 'None')
 
+
+    def name(self):
+        return self.characteristics.name
+        
+    def manacost(self):
+        return self.characteristics.mana_cost
+
     def is_land(self):
         return CardType.LAND in self.characteristics.types
 

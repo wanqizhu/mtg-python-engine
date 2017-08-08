@@ -52,6 +52,8 @@ class Status(object):
         self.phased_in = True
         self.summoning_sick = True
         self.damage_taken = 0
+        self.is_attacking = None
+        self.is_blocking = None
 
     def __repr__(self):
         return str(self.__dict__)
@@ -109,7 +111,19 @@ class Permanent(GameObject):
         return CardType.CREATURE in self.characteristics.types
 
     def can_attack(self):
-        return is_creature and not self.status.summoning_sick
+        return self.is_creature() and not self.status.tapped and not self.status.summoning_sick
+
+    def can_block(self):
+        return self.is_creature() and not self.status.tapped
+
+    def attacks(self, player):
+        # trigger
+        self.status.is_attacking = player
+
+    def blocks(self, creature):
+        # trigger
+        self.status.is_blocking = creature
+        creature.status.is_attacking = self
 
     def take_damage(self, dmg):
         self.status.damage_taken += dmg

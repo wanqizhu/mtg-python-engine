@@ -24,6 +24,8 @@ def card_from_name(name, get_instance=True):
 
 
 def make_activated_ability(cardname, cost, effect, is_mana_ability=False):
+    if not name_to_id(cardname):
+        return
     card = eval(name_to_id(cardname))
 
     _costs = cost.split(', ')
@@ -44,3 +46,7 @@ def make_activated_ability(cardname, cost, effect, is_mana_ability=False):
 
 make_activated_ability("Plains", 'T', 'self.controller.mana.add(Mana.WHITE, 1)', True)
 make_activated_ability("Island", 'T', 'self.controller.mana.add(Mana.BLUE, 1)', True)
+make_activated_ability("Swamp", 'T', 'self.controller.mana.add(Mana.BLACK, 1)', True)
+make_activated_ability("Mountain", 'T', 'self.controller.mana.add(Mana.RED, 1)', True)
+make_activated_ability("Forest", 'T', 'self.controller.mana.add(Mana.GREEN, 1)', True)
+make_activated_ability("Wastes", 'T', 'self.controller.mana.add(Mana.COLORLESS, 1)', True)
