@@ -1,0 +1,1 @@
+python3 -b MTG/test/mana_test.py

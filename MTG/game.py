@@ -11,7 +11,8 @@ from MTG.gamesteps import *
 from MTG.combat import *
 
 global GAME
-
+global TEST
+TEST = False
 
 
 
@@ -156,7 +157,7 @@ class Game(object):
                         continue
                     # declare attackers
                     # space-separated list of indices of creatures in can_atk, starting at 0
-                    answer = input("\n{}, Choose all creatures you'd like to attack {} with\n".format(self.current_player, player.name))
+                    answer = self.current_player.make_choice("\n{}, Choose all creatures you'd like to attack {} with\n".format(self.current_player, player.name))
 
                     ## TODO: planeswalkers
                     answer = answer.split(" ")

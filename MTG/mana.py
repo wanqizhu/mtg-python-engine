@@ -63,7 +63,7 @@ class ManaPool():
         # note the mana symbols will have already been scanned above, so we need to subtract the cost we're not paying
         hybrid = re.findall('\([WUBRGC2]/[WUBRGC]\)', manacost)
         for h in hybrid:
-            choice = input('How would you like to pay? 0 (default): {}\t 1: {}\n'.format(h[1], h[3]))
+            choice = self.controller.make_choice('How would you like to pay? 0 (default): {}\t 1: {}\n'.format(h[1], h[3]))
        
             if choice == '1':
                 if h[1] != '2':
@@ -76,14 +76,14 @@ class ManaPool():
         
 
         if anyTypeMana > 0:
-            choice = input('How would you like to pay {}? Enter blank for automatic payment, or enter a string of colored mana\n'.format(anyTypeMana))
+            choice = self.controller.make_choice('How would you like to pay {}? Enter blank for automatic payment, or enter a string of colored mana\n'.format(anyTypeMana))
             
             if re.match('[WUBRGC]+', choice) and len(choice) == anyTypeMana:
                 for c in choice:
                     cost[self.chr_to_mana(c)] += 1
                 anyTypeMana = 0
             else:  # default
-                print("automatic payment...\n")
+                # print("automatic payment...\n")
                 for mana in Mana:
                     if anyTypeMana == 0:
                         break

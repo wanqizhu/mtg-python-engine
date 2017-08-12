@@ -40,7 +40,6 @@ class Player(object):
         return self.name
 
 
-    ## TODO
     def get_action(self):
         """ asks the player to do something
 
@@ -50,7 +49,7 @@ class Player(object):
         play = None
 
         while answer and play is None:
-            answer = input("What would you like to do? {}, {}\n".format(self.name, self.game.step))
+            answer = self.make_choice("What would you like to do? {}, {}\n".format(self.name, self.game.step))
             if answer == '':
                 break
             try:
@@ -135,14 +134,19 @@ class Player(object):
 
             except BadFormatException:
                 print(sys.exc_info())
-                answer = input("Bad format.\nWhat would you like to do?\n")
+                answer = self.make_choice("Bad format.\nWhat would you like to do?\n")
                 continue
 
         return play
 
 
-
-
+    # separate func for unit testing
+    def make_choice(self, prompt_string):
+        # if not TEST:
+        return input(prompt_string)
+        # else:
+        #     ## TODO: unit tests
+        #     pass
 
 
     def draw(self, num=1):
