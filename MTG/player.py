@@ -1,8 +1,9 @@
-from MTG.mana import *
-from MTG.zone import *
-from MTG.play import *
-from MTG.gamesteps import *
 import re, sys, pdb
+
+from MTG import mana
+from MTG import zone
+from MTG import play
+from MTG import gamesteps
 
 
 
@@ -24,16 +25,16 @@ class Player(object):
         self.landPlayed = 0
         self.passPriorityUntil = None
 
-        self.library = Library(self, deck)
+        self.library = zone.Library(self, deck)
         for card in self.library.elements:
             card.controller = self
             card.owner = self
 
-        self.battlefield = Battlefield(self)
-        self.hand = Hand(self)
-        self.graveyard = Graveyard(self)
-        self.exile = Exile(self)
-        self.mana = ManaPool(self)
+        self.battlefield = zone.Battlefield(self)
+        self.hand = zone.Hand(self)
+        self.graveyard = zone.Graveyard(self)
+        self.exile = zone.Exile(self)
+        self.mana = mana.ManaPool(self)
         self.game = game
 
     def __repr__(self):
@@ -46,9 +47,9 @@ class Player(object):
         this gets called whenever a player has priority
         """
         answer = 'placeholder'
-        play = None
+        _play = None
 
-        while answer and play is None:
+        while answer and _play is None:
             answer = self.make_choice("What would you like to do? {}, {}\n".format(self.name, self.game.step))
             if answer == '':
                 break
@@ -66,10 +67,18 @@ class Player(object):
                     pdb.set_trace()
 
 
-                elif answer[0] == 'p':  # playing card from hand -- 'p3' == plays third card in hand
-                    num = int(answer[1:])
-                    assert num < self.hand.size()
-                    card = self.hand.pop(num)
+                elif answer[0] == 'p':  # playing card from hand
+                    if answer[1] == ' ':  # 'p Island' == plays 'Island'
+                        name = answer[2:]
+                        card = self.hand.get_card_by_name(name)
+                        assert card
+
+                    else:  # 'p3' == plays third card in hand
+                        num = int(answer[1:])
+                        assert num < self.hand.size()
+                        card = self.hand.pop(num)
+
+
                     ## pay mana costs
                     can_pay = self.mana.canPay(card.manacost())  # False, or a dict of mana costs
                     ## choose targets
@@ -79,17 +88,23 @@ class Player(object):
                     can_play = True
                     if card.is_land() and self.landPlayed >= self.landPerTurn:
                         can_play = False
-                    if not (card.is_instant() or card.has_ability('Flash')) and (self.game.stack or self.game.step.phase not in [Phase.PRECOMBAT_MAIN, Phase.POSTCOMBAT_MAIN] or self.game.current_player != self):
+                        
+                    if not (card.is_instant() or card.has_ability('Flash')) and (
+                                self.game.stack 
+                                or self.game.step.phase not in [
+                                    gamesteps.Phase.PRECOMBAT_MAIN, 
+                                    gamesteps.Phase.POSTCOMBAT_MAIN]
+                                or self.game.current_player != self):
                         can_play = False
 
                     if can_pay and can_target and can_play:
                         self.mana.pay(can_pay)
                         # apply targets
 
-                        play = Play(card.play_func)
+                        _play = play.Play(card.play_func)
                         # special actions
                         if card.is_land():
-                            play.is_special_action = True
+                            _play.is_special_action = True
                             self.landPlayed += 1
                     else:
                         self.hand.add(card)  # illegal casting, revert
@@ -118,14 +133,14 @@ class Player(object):
                     
                     # ability activation
                     if card._activated_abilities_costs_validation[nums[1]](card):
-                        play = Play(lambda: card.activate_ability(nums[1]))
+                        _play = play.Play(lambda: card.activate_ability(nums[1]))
                         if card.activated_abilities[nums[1]][2]:  # special action
-                            play.is_mana_ability = True
+                            _play.is_mana_ability = True
 
                 # skip priority until something happens / certain step
                 elif answer[0] == 's':
-                    assert answer[1:].upper() in Step._member_names_
-                    self.passPriorityUntil = Step[answer[1:].upper()]
+                    assert answer[1:].upper() in gamesteps.Step._member_names_
+                    self.passPriorityUntil = gamesteps.Step[answer[1:].upper()]
                     break
 
                 #elif
@@ -134,10 +149,10 @@ class Player(object):
 
             except BadFormatException:
                 print(sys.exc_info())
-                answer = self.make_choice("Bad format.\nWhat would you like to do?\n")
+                print("Bad format.\n")
                 continue
 
-        return play
+        return _play
 
 
     # separate func for unit testing
@@ -148,12 +163,19 @@ class Player(object):
         #     ## TODO: unit tests
         #     pass
 
+    def play_card(self, card):
+        _play = play.Play(card.play_func)
+        if _play.is_mana_ability or _play.is_special_action:  # applies instantly
+            _play.apply()
+        else:
+            self.game.stack.add(play)  # add to stack
+
 
     def draw(self, num=1):
         for i in range(num):
             try:
                 card = self.library.pop()
-                card.zone = ZoneType.HAND
+                card.zone = zone.ZoneType.HAND
                 self.hand.add(card)
             except IndexError:
                 raise EmptyLibraryException()

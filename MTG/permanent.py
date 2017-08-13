@@ -1,8 +1,11 @@
-from MTG.gameObject import GameObject
-from MTG.zone import ZoneType
-from MTG.cardType import *
-import sys
+import sys, pdb
 from enum import Enum
+
+from MTG import gameobject
+from MTG import zone
+from MTG import cardtype
+from MTG import mana
+
 
 
 class triggerConditions(Enum):
@@ -44,7 +47,7 @@ class triggerConditions(Enum):
     onCounterPutOnPermanent = 35
 
 
-class Status(object):
+class Status():
     def __init__(self):
         self.tapped = False
         self.flipped = False
@@ -60,12 +63,12 @@ class Status(object):
 
 
 
-class Permanent(GameObject):
+class Permanent(gameobject.GameObject):
     def __init__(self, characteristics, controller, owner=None, original_card=None, status=None):
-        GameObject.__init__(self, characteristics)
+        self.characteristics = characteristics
         self.controller = controller
         self.owner = owner if owner else controller
-        self.zone = ZoneType.BATTLEFIELD
+        self.zone = zone.ZoneType.BATTLEFIELD
         self.original_card = original_card
         if status is None:
             self.status = Status()
@@ -80,6 +83,7 @@ class Permanent(GameObject):
 
         # add to battlefield
         self.controller.battlefield.add(self)
+        # pdb.set_trace()
         print("making permanent... {}\n".format(self))
 
     def __repr__(self):
@@ -108,7 +112,7 @@ class Permanent(GameObject):
             #self.untapTrigger()
 
     def is_creature(self):
-        return CardType.CREATURE in self.characteristics.types
+        return cardtype.CardType.CREATURE in self.characteristics.types
 
     def can_attack(self):
         return self.is_creature() and not self.status.tapped and not self.status.summoning_sick

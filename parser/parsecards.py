@@ -1,12 +1,12 @@
-from bs4 import BeautifulSoup
-# from lexer import lexer
-from MTG.card import Card
-from MTG.cardType import *
-from MTG.abilities import *
-# import pickle
 import re, sys
 
-cards = []
+from bs4 import BeautifulSoup
+# from lexer import lexer
+# import pickle
+
+from MTG import card
+from MTG import cardtype
+from MTG import abilities
 
 
 
@@ -18,8 +18,12 @@ def run():
 
     card_list = soup.cockatrice_carddatabase.cards.find_all('card')
     cnt = 0
-    fout = open("MTG/parsed_cards.py", "w")
-    fout.write("from MTG.card import *\nfrom MTG.gameObject import *\n\n")
+    fout = open("MTG/parsedcards.py", "w")
+    fout.write("from MTG import card\n"
+        "from MTG import gameobject\n"
+        "from MTG import cardtype\n"
+        "from MTG import abilities\n"
+        "from MTG import mana\n\n")
 
     id_to_name = {}
     name_to_id = {}
@@ -41,11 +45,11 @@ def run():
                 characteristics['subtype'] = _type[1].split(' ')
             _type = _type[0].split(' ')
 
-            if len(_type) > 1 and _type[0].upper() in SuperType._member_names_:
-                supertype = '[SuperType.'+_type[0].upper() + ']'
+            if len(_type) > 1 and _type[0].upper() in cardtype.SuperType._member_names_:
+                supertype = '[cardtype.SuperType.'+_type[0].upper() + ']'
                 _type.pop(0)
 
-            types = '[' + ', '.join(['CardType.'+i.upper() for i in _type]) + ']'
+            types = '[' + ', '.join(['cardtype.CardType.'+i.upper() for i in _type]) + ']'
         
             if 'Creature' in _type:
                 characteristics['power'], characteristics['toughness'] = map(int, card.find('pt').text.split('/'))
@@ -54,61 +58,47 @@ def run():
             _abilities = []
 
             texts = characteristics['text'].replace(' ', '_')
-            for ability in StaticAbilities._member_names_:
+            for ability in abilities.StaticAbilities._member_names_:
                 if ability in texts or ',_' + ability.lower() in texts.lower():
                     _abilities.append(ability)
 
             if len(_abilities):
-                _abilities = '[StaticAbilities.' + ', StaticAbilities.'.join(_abilities) + ']'
+                _abilities = '[abilities.StaticAbilities.' + ', abilities.StaticAbilities.'.join(_abilities) + ']'
 
         except:
 
             print(sys.exc_info())
             pass
 
+
+
         fout.write(
-"""
-class {}(Card):
+"""class {}(card.Card):
     "{}"
     activated_abilities = []
     _activated_abilities_costs = []
     _activated_abilities_effects = []
     _activated_abilities_costs_validation = []
     def __init__(self):
-        super({}, self).__init__(Characteristics(**{}, supertype={}, types={}, abilities={}))
+        super({}, self).__init__(gameobject.Characteristics(**{}, supertype={}, types={}, abilities={}))
 
 """.format(ID, name, ID, characteristics, supertype, types, _abilities))
 
         id_to_name[ID] = name
         name_to_id[name] = ID
         
-        # cards.append(Card(characteristics))
 
 
     fout.write(
-"""
-id_to_name_dict = {}
+"""id_to_name_dict = {}
 
 name_to_id_dict = {}
 
 
 """.format(id_to_name, name_to_id))
 
-# def id_to_name(ID):
-#     return id_to_name_dict.get(ID, None)
-
-# def name_to_id(name):
-#     return name_to_id_dict.get(name, None)
-
-# def card_from_name(name):
-#     if name_to_id(name) is not None:
-#         return eval(name_to_id(name)+'()')
-#     else:
-#         return None
 
     fout.close()
-
-    # return cards
 
 
         # try:

@@ -1,10 +1,13 @@
-from MTG.cardType import *
-from MTG.abilities import *
+import pdb
+
+from MTG import cardtype
+from MTG import abilities
+
 
 class Characteristics():
     def __init__(self,
                  name='',
-                 mana_cost=None,
+                 mana_cost='',
                  color=None,
                  types=[],
                  subtype=[],
@@ -29,16 +32,31 @@ class Characteristics():
     def __repr__(self):
         return str(self.__dict__)
 
+    # see if this matches another Characteristics() instance
+    def satisfy(self, criteria):
+        if criteria is None:
+            return True
+
+        for c in criteria.__dict__:
+            value = criteria.__dict__[c]
+            # if value is not None, check if it matches
+            if value and value != self.__dict__[c]:
+                return False
+
+        return True
+
 
 class GameObject():
-    def __init__(self, characteristics=Characteristics(), controller=None, owner=None, zone=None):
+    def __init__(self, characteristics=Characteristics(),
+             controller=None, owner=None, zone=None, previousState=None):
         self.characteristics = characteristics
         self.controller = controller
         self.owner = owner
         self.zone = zone
-        self.previousState = None
+        self.previousState = previousState
 
     def __repr__(self):
+        # pdb.set_trace()
         return self.characteristics.name + ' in ' + str(self.zone if self.zone else 'None')
 
 
@@ -49,13 +67,13 @@ class GameObject():
         return self.characteristics.mana_cost
 
     def is_land(self):
-        return CardType.LAND in self.characteristics.types
+        return cardtype.CardType.LAND in self.characteristics.types
 
     def is_creature(self):
-        return CardType.CREATURE in self.characteristics.types
+        return cardtype.CardType.CREATURE in self.characteristics.types
 
     def is_instant(self):
-        return CardType.INSTANT in self.characteristics.types
+        return cardtype.CardType.INSTANT in self.characteristics.types
 
     def has_ability(self, ability):
-        return StaticAbilities[ability] in self.characteristics.abilities
+        return abilities.StaticAbilities[ability] in self.characteristics.abilities

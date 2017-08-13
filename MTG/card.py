@@ -1,18 +1,15 @@
-from MTG.gameObject import *
-from MTG.zone import *
-from MTG.permanent import *
+from MTG import gameobject
+from MTG import permanent
 
 
-
-
-class Card(GameObject):
+class Card(gameobject.GameObject):
 
 
 	def ID(self):
 		pass
 
 	def play_func(self):  # defaults to permanent
-		make_permanent(self)
+		permanent.make_permanent(self)
 		pass
 
 

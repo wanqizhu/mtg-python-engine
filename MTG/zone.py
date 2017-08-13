@@ -1,8 +1,7 @@
 from enum import Enum
 import random
 
-
-from MTG.gameObject import GameObject
+from MTG import gameobject
 
 class ZoneType(Enum):
     LIBRARY = 0
@@ -13,7 +12,7 @@ class ZoneType(Enum):
     EXILE = 5
     # COMMAND = 6
 
-class Zone(object):
+class Zone():
     def __init__(self, controller=None, elements:list=None):
         if elements is None:
             self.elements = []
@@ -28,6 +27,8 @@ class Zone(object):
         return self.__class__.__name__ + str(self.elements)
         
     def add(self, obj):
+        if type(obj) is str:  # add a new card
+            obj = card_from_name(obj)
         self.elements.append(obj)
 
     def remove(self, obj):
@@ -37,6 +38,25 @@ class Zone(object):
         except ValueError:
             return False
 
+    def filter(self, characteristics=None):
+        found = []
+        assert (characteristics is None 
+                or type(characteristics) is gameobject.Characteristics)
+        
+        for ele in self.elements:
+            if ele.characteristics.satisfy(characteristics):
+                found.append(ele)
+
+        return found
+
+    def get_card_by_name(self, name):
+        cards = self.filter(gameobject.Characteristics(name=name))
+        if cards:
+            return cards[0]
+        else:
+            return None
+
+
     def pop(self, pos=-1):
         return self.elements.pop(pos)
 
@@ -45,7 +65,7 @@ class Zone(object):
 
     def show(self):
         for elem in self.elements:
-            print(elem, elem.name())
+            print(elem)
 
     def __bool__(self):
         return bool(self.elements)
