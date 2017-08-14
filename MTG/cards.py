@@ -26,7 +26,7 @@ def card_from_name(name, get_instance=True):
         return None
 
 def read_deck(filename):
-    """ File format:
+    """File format:
     NUM CARDNAME
 
     e.g.
@@ -34,24 +34,24 @@ def read_deck(filename):
     10 Oreskos Swiftclaw
 
     """
-    f = open(filename, 'r')
-    file = f.read().split("\n")
-    deck = []
-    for line in file:
-        try:
-            i = line.index(" ")
-            num = int(line[:i])
-            for j in range(num):  # add NUM copies of CARDNAME
-                card = card_from_name(line[i+1:])
-                if card:
-                    deck.append(card)
-                    # print(deck[-1].name())
-                else:
-                    pass
-                    # print("card {} does not exist\n".format(line[i+1:]))
-        except:
-            raise DecklistFormatError()
-    f.close()
+    with open(filename, 'r') as f:
+        file = f.read().split("\n")
+        deck = []
+        for line in file:
+            try:
+                i = line.index(" ")
+                num = int(line[:i])
+                for j in range(num):  # add NUM copies of CARDNAME
+                    card = card_from_name(line[i+1:])
+                    if card:
+                        deck.append(card)
+                        # print(deck[-1].name())
+                    else:
+                        pass
+                        # print("card {} does not exist\n".format(line[i+1:]))
+            except:
+                raise DecklistFormatError()
+    
     return deck
 
 

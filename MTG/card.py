@@ -4,7 +4,6 @@ from MTG import permanent
 
 class Card(gameobject.GameObject):
 
-
 	def ID(self):
 		pass
 

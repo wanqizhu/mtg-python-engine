@@ -4,6 +4,7 @@ from MTG import mana
 from MTG import zone
 from MTG import play
 from MTG import gamesteps
+from MTG import cards
 
 
 
@@ -143,7 +144,9 @@ class Player(object):
                     self.passPriorityUntil = gamesteps.Step[answer[1:].upper()]
                     break
 
-                #elif
+                elif answer[:2] == '__':  # for dev purposes
+                    exec(answer[2:])
+
                 else:
                     raise BadFormatException()
 
@@ -164,6 +167,9 @@ class Player(object):
         #     pass
 
     def play_card(self, card):
+        if type(card) is str:  # convert card name to Card object
+            card = cards.card_from_name(card)
+
         _play = play.Play(card.play_func)
         if _play.is_mana_ability or _play.is_special_action:  # applies instantly
             _play.apply()
@@ -179,6 +185,14 @@ class Player(object):
                 self.hand.add(card)
             except IndexError:
                 raise EmptyLibraryException()
+
+    def draw_card(self, card):
+        """ draw a specific card
+
+        card is either a string (name of card) or a Card object
+        """
+        self.hand.add(card)
+
 
     def discard(self, num=1):
         if num > self.hand.size():

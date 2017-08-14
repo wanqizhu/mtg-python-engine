@@ -2,6 +2,7 @@ from enum import Enum
 import random
 
 from MTG import gameobject
+from MTG import cards
 
 class ZoneType(Enum):
     LIBRARY = 0
@@ -27,9 +28,15 @@ class Zone():
         return self.__class__.__name__ + str(self.elements)
         
     def add(self, obj):
-        if type(obj) is str:  # add a new card
-            obj = card_from_name(obj)
+        if type(obj) is str:  # convert string (card's name) to a Card object
+            obj = cards.card_from_name(obj)
+
+        assert isinstance(obj, gameobject.GameObject)
+
         self.elements.append(obj)
+        obj.zone = self.zone_type
+        if not isinstance(self, Stack):
+            obj.controller = self.controller
 
     def remove(self, obj):
         try:
@@ -73,21 +80,28 @@ class Zone():
 
 
 class Battlefield(Zone):
+    zone_type = ZoneType.BATTLEFIELD
     pass
 
 class Stack(Zone):
+    zone_type = ZoneType.STACK
     pass
 
 class Hand(Zone):
+    zone_type = ZoneType.HAND
     pass
 
 class Graveyard(Zone):
+    zone_type = ZoneType.GRAVEYARD
     pass
 
 class Exile(Zone):
+    zone_type = ZoneType.EXILE
     pass
 
 class Library(Zone):
+    zone_type = ZoneType.LIBRARY
+    
     def shuffle(self):
         random.shuffle(self.elements)
 
