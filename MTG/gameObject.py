@@ -8,7 +8,7 @@ class Characteristics():
     def __init__(self,
                  name='',
                  mana_cost='',
-                 color=None,
+                 color=[],
                  types=[],
                  subtype=[],
                  supertype=[],
@@ -75,5 +75,11 @@ class GameObject():
     def is_instant(self):
         return cardtype.CardType.INSTANT in self.characteristics.types
 
+    def is_artifact(self):
+        return cardtype.CardType.ARTIFACT in self.characteristics.types        
+
     def has_ability(self, ability):
         return abilities.StaticAbilities[ability] in self.characteristics.abilities
+
+    def share_color(self, other):
+        return bool(set(self.characteristics.color) & set(other.characteristics.color))

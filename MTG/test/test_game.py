@@ -5,6 +5,7 @@ from MTG import game
 from MTG import cards
 from MTG import player
 from MTG import permanent
+from MTG import gameobject
 
 
 class TestPlayer(unittest.TestCase):
@@ -229,6 +230,7 @@ class TestPlayer(unittest.TestCase):
                 'p Devouring Deep', '', '', '',
                 's precombat_main',  # go to next turn
                 's precombat_main',
+                '__self.battlefield.elements[0].characteristics.power = 2',
                 '', '', '', '',  # skipping to declare_attackers
                 '0', '', '',  # attacking w/ Devouring Deep
                 '0', '', '',  # blocking
@@ -240,8 +242,12 @@ class TestPlayer(unittest.TestCase):
             self.GAME.handle_turn()
             self.GAME.handle_turn()
             self.assertEqual(mock_take_damage.call_count, 2)
-            self.player.battlefield.elements[0].take_damage.assert_called_with(1)
-            self.opponent.battlefield.elements[0].take_damage.assert_called_with(1)
+            c1 = self.player.battlefield.elements[0]
+            c2 = self.opponent.battlefield.elements[0]
+
+            # unfortunately each instance of the patched method share the same call history
+            # so we can't assert that, for example, c1.take_damage was called with source=c2 and vice versa
+            mock_take_damage.assert_has_calls([mock.call(c1, 2), mock.call(c2, 1)])
 
 
 

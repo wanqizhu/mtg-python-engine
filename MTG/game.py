@@ -55,6 +55,8 @@ class Game(object):
     ## TODO
     def apply_state_based_actions(self):
         print("Applying state based actions")
+        self.apply_to_battlefield(lambda p: p.dies(), 
+                lambda p: p.is_creature() and p.status.damage_taken >= p.characteristics.toughness)
         pass
 
     ## TODO
@@ -198,7 +200,8 @@ class Game(object):
                             ok = True
 
                 for creature in can_atk:
-                    print(creature.name(), creature.status.is_attacking)
+                    print("{} is attacking {}\n".format(
+                            creature.name(), creature.status.is_attacking))
 
 
                 # check remove-from-combat abilities/events
@@ -208,15 +211,15 @@ class Game(object):
             ## TODO: need to figure out which player's turn / priority
 
             for _player in self.players_list:
-                if _player == self.current_player:
+                if _player == self.current_player:  # only current player's opponents need to block
                     continue
-                is_attacking = []
+                _is_attacking = []  # get all attacking creatures
                 self.apply_to_battlefield(
-                        lambda p: is_attacking.append(p), 
+                        lambda p: _is_attacking.append(p), 
                         lambda p: p.status.is_attacking == _player)
 
-                if is_attacking:
-                    print("all attacking creatures: {}\n", is_attacking)
+                if _is_attacking:
+                    print("Creatures attacking {}: {}\n\n".format(_player, _is_attacking))
 
                     can_block = []
                     self.apply_to_battlefield(
@@ -224,45 +227,59 @@ class Game(object):
                                 lambda p: p.controller == _player and p.can_block())
                 
                     ## TODO: check blocking restrictions (e.g. flying)
-                    print("creatures that can block: {}\n", can_block)
+                    print("Avaliable blockers: {}\n".format(can_block))
 
 
                     # declare blockers
                     if can_block:
-                        for creature in is_attacking:
+                        for attacker in _is_attacking:
 
                             ok = True
                             while ok:
                                 answer = _player.make_choice("\n{}, Choose all creatures you'd like to block {} with\n"
-                                        .format(_player, creature))
+                                        .format(_player, attacker))
 
                                 try:
-                                    ok = False
+                                    ## TODO: menace / multiple-blocking restrictions
                                     answer = map(int, answer.split(" "))
                                     for ind in answer:
                                         if ind < len(can_block):
-                                            can_block[ind].blocks(creature)
+                                            if can_block[ind].blocks(attacker):
+                                                ok = False
+                                            else:   # oops this blocking is illegal
+                                                print("{} cannot block {}\n".format(can_block[ind], attacker))
                                         else:
                                             print("creature #{} is out of bounds\n".format(ind))
                                 except:
-                                    print("wrong format: {}\n".format(ind))
+                                    print("wrong format: {}\n".format(answer))
                                     ok = True
                         ## TODO: attacker declare multi-block dmg order
+                        ## TODO: check for menace
                         pass
+
+                    for creature in _is_attacking:
+                        print("{} is attacking {}\n".format(
+                            creature.name(), creature.status.is_attacking))
+
 
         if step is  gamesteps.Step.FIRST_STRIKE_COMBAT_DAMAGE:
             ## TODO: first strike
+            self.apply_to_battlefield(
+                    lambda p: p.deals_damage(p.status.is_attacking, p.characteristics.power), 
+                    lambda p: p.status.is_attacking and (p.has_ability("First_Strike")
+                                                 or p.has_ability("Double_Strike")))
             pass
 
         if step is gamesteps.Step.COMBAT_DAMAGE:
-            is_attacking = []
+            _is_attacking = []
             self.apply_to_battlefield(
-                            lambda p: is_attacking.append(p), 
-                            lambda p: p.status.is_attacking)
+                    lambda p: _is_attacking.append(p), 
+                    lambda p: p.status.is_attacking and (not p.has_ability("First_Strike")
+                                                         or p.has_ability("Double_Strike")))
 
-            for creature in is_attacking:
+            for creature in _is_attacking:
                 if isinstance(creature.status.is_attacking, player.Player):
-                    creature.status.is_attacking.take_damage(
+                    creature.deals_damage(creature.status.is_attacking,
                             creature.characteristics.power)
                 else:
                     combat.fight(creature, creature.status.is_attacking)

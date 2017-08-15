@@ -112,19 +112,37 @@ class Permanent(gameobject.GameObject):
         return cardtype.CardType.CREATURE in self.characteristics.types
 
     def can_attack(self):
-        return self.is_creature() and not self.status.tapped and not self.status.summoning_sick
+        return (self.is_creature() and not self.status.tapped and 
+                    (not self.status.summoning_sick or self.has_ability("Haste")))
 
-    def can_block(self):
+    def can_block(self, attacker=None):
+        if attacker:
+            if (attacker.has_ability('Flying') 
+                        and not (self.has_ability('Flying')
+                            or self.has_ability('Reach'))):
+                return False
+
+            if (attacker.has_ability('Intimidate')
+                    and not (self.is_artifact() or self.share_color(attacker))):
+                return False
+            pass  ## TODO: other blocking restrictions (e.g. can't block alone)
+        
         return self.is_creature() and not self.status.tapped
+
+
 
     def attacks(self, player):
         # trigger
         self.status.is_attacking = player
 
     def blocks(self, creature):
-        # trigger
-        self.status.is_blocking = creature
-        creature.status.is_attacking = self  ## TODO: multi-blocks
+        if self.can_block(creature):
+            # trigger
+            self.status.is_blocking = creature
+            creature.status.is_attacking = self  ## TODO: multi-blocks
+            return True
+        else:
+            return False
 
     def in_combat(self):
         return self.status.is_attacking or self.status.is_blocking
@@ -133,13 +151,15 @@ class Permanent(gameobject.GameObject):
         self.status.is_attacking = None
         self.status.is_blocking = None
 
-    def take_damage(self, dmg):
+    def take_damage(self, source, dmg):
+        ## trigger based on source
         self.status.damage_taken += dmg
-        pdb.set_trace()
-        # if self.is_creature() and self.status.damage_taken >= self.characteristics.toughness:
-        #     # send state-based action for death
-        #     pass
+        # pdb.set_trace()
 
+
+    def deals_damage(self, target, dmg):
+        target.take_damage(self, dmg)
+        ## TODO: triggers
 
 
     def trigger(self, condition):
@@ -149,6 +169,12 @@ class Permanent(gameobject.GameObject):
         elif condition == triggerConditions.onCleanup:
             self.status.damage_taken = 0
             # clear end-of-turn effects
+
+    def dies(self):
+        ## trigger
+        self.zone = zone.ZoneType.GRAVEYARD
+        self.controller.battlefield.remove(self)
+        self.controller.graveyard.add(self)
 
 
 

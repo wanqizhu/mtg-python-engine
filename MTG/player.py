@@ -64,6 +64,12 @@ class Player(object):
                 elif answer == 'battlefield':
                     print(self.battlefield)
 
+                elif answer == 'graveyard':
+                    print(self.graveyard)
+
+                elif answer == 'exile':
+                    print(self.exile)
+
                 elif answer == 'debug':
                     pdb.set_trace()
 
@@ -222,7 +228,7 @@ class Player(object):
         self.ManaPool.pay(mana)
         return True
 
-    def take_damage(self, damage):
+    def take_damage(self, source, damage):
         # trigger
         self.life -= damage
 
