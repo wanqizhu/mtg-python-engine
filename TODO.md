@@ -1,5 +1,8 @@
 
 - combat
+	- more robust printouts
+
+- implement "Sewn-Eye Drake" (flying & haste)
 
 - test game w/ vanilla creatures & lands
 

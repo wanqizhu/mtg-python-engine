@@ -11,7 +11,6 @@ class TestPlayer(unittest.TestCase):
     def setUp(self):
         decks = [cards.read_deck('cards/decks/deck1.txt'), cards.read_deck('cards/decks/deck1.txt')]
         self.GAME = game.Game(decks, test=True)
-        self.GAME.current_player = next(self.GAME.players)
         self.GAME.set_up_game()
         self.player = self.GAME.players_list[0]
         self.player.tmp = False

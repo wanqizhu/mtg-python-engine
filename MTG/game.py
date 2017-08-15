@@ -33,7 +33,7 @@ class Game(object):
         self.num_players = len(decks)
         self.players_list = [player.Player(decks[i], 'player'+str(i), game=self)
                              for i in range(self.num_players)]
-        self.players = cycle(self.players_list)
+        # self.players = cycle(self.players_list)
         self.passed_priority = 0
         self.step = None
         self.pending_turns = []
@@ -299,7 +299,7 @@ class Game(object):
 
 
     def handle_turn(self):
-        ## maybe do something with self.pending_turns?
+        self.pending_steps = []
         for phase in gamesteps.Phase:
             self.pending_steps.extend(phase.steps)
 
@@ -324,7 +324,7 @@ class Game(object):
                 _player.mana.clear()
 
         self.pending_turns.append(self.current_player)
-        self.current_player = next(self.players)  # cycles to next player's turn
+        self.current_player = self.pending_turns.pop(0)  # cycles to next player's turn
         return True
 
 
@@ -356,12 +356,12 @@ class Game(object):
             _player.draw(7)
         self.pending_turns.extend(self.players_list)  # everyone gets a turn queued up, in order
         self.first_player_does_not_draw = True
+        self.current_player = self.pending_turns.pop(0)
 
 
     def run_game(self):
-        self.current_player = next(self.players)
         self.set_up_game()
-
+        
         while self.num_players:
             try:
                 self.handle_turn()
