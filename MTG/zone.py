@@ -31,12 +31,15 @@ class Zone():
         if type(obj) is str:  # convert string (card's name) to a Card object
             obj = cards.card_from_name(obj)
 
-        assert isinstance(obj, gameobject.GameObject)
 
-        self.elements.append(obj)
-        obj.zone = self.zone_type
         if not isinstance(self, Stack):
+            assert isinstance(obj, gameobject.GameObject)
             obj.controller = self.controller
+
+        obj.zone = self.zone_type
+        self.elements.append(obj)
+        
+
 
     def remove(self, obj):
         try:
@@ -101,7 +104,7 @@ class Exile(Zone):
 
 class Library(Zone):
     zone_type = ZoneType.LIBRARY
-    
+
     def shuffle(self):
         random.shuffle(self.elements)
 

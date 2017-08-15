@@ -1,5 +1,4 @@
 from MTG import gameobject
-from MTG import permanent
 
 
 class Card(gameobject.GameObject):
@@ -12,4 +11,5 @@ class Card(gameobject.GameObject):
 		pass
 
 
+from MTG import permanent  # need to move this later to avoid circular import stuff
 

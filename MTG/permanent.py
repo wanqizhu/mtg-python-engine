@@ -91,15 +91,12 @@ class Permanent(gameobject.GameObject):
 
 
     def activate_ability(self, num=0):
-        try:
-            # if self._activated_abilities_costs_validation[num](self):
+        if self._activated_abilities_costs_validation[num](self):
             print("activating...")
             self._activated_abilities_costs[num](self)
             self._activated_abilities_effects[num](self)
             return True
-        except:
-            print(sys.exc_info())
-            return False
+        return False
 
 
     def tap(self):
@@ -128,6 +125,13 @@ class Permanent(gameobject.GameObject):
         # trigger
         self.status.is_blocking = creature
         creature.status.is_attacking = self  ## TODO: multi-blocks
+
+    def in_combat(self):
+        return self.status.is_attacking or self.status.is_blocking
+
+    def exits_combat(self):
+        self.status.is_attacking = None
+        self.status.is_blocking = None
 
     def take_damage(self, dmg):
         self.status.damage_taken += dmg

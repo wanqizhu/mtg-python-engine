@@ -1,4 +1,4 @@
-import re, sys, pdb
+import re, sys, pdb, traceback
 
 from MTG import mana
 from MTG import zone
@@ -7,13 +7,6 @@ from MTG import gamesteps
 from MTG import cards
 
 
-
-
-class EmptyLibraryException(Exception):
-    pass
-
-class BadFormatException(Exception):
-    pass
 
 
 class Player(object):
@@ -52,8 +45,15 @@ class Player(object):
 
         while answer and _play is None:
             answer = self.make_choice("What would you like to do? {}, {}\n".format(self.name, self.game.step))
+            
+            if self.game.test:
+                print("\t" + answer + "\n")
+
             if answer == '':
                 break
+
+            
+
             try:
                 if answer == 'print':
                     self.game.print_game_state() 
@@ -69,15 +69,15 @@ class Player(object):
 
 
                 elif answer[0] == 'p':  # playing card from hand
-                    if answer[1] == ' ':  # 'p Island' == plays 'Island'
-                        name = answer[2:]
-                        card = self.hand.get_card_by_name(name)
-                        assert card
-
-                    else:  # 'p3' == plays third card in hand
-                        num = int(answer[1:])
+                    try:
+                        num = int(answer[2:])   # 'p 3' == plays third card in hand
                         assert num < self.hand.size()
                         card = self.hand.pop(num)
+                    except:
+                        name = answer[2:]  # 'p Island' == plays 'Island'
+                        card = self.hand.get_card_by_name(name)
+                        assert card
+                        
 
 
                     ## pay mana costs
@@ -118,9 +118,10 @@ class Player(object):
 
 
 
-                # activate ability from battlefield -- 'a3_1' plays 2nd (index starts at 0) ability from 3rd permanent
-                elif answer[0] == 'a':
-                    nums = answer[1:].split('_')
+                # activate ability from battlefield -- 'a 3_1' plays 2nd (index starts at 0) ability from 3rd permanent
+                # 'a 3' playrs 1st (default) ability of the 3rd permanent
+                elif answer[:2] == 'a ':
+                    nums = answer[2:].split('_')
                     if len(nums) == 1:
                         nums.append(0)
 
@@ -139,9 +140,9 @@ class Player(object):
                             _play.is_mana_ability = True
 
                 # skip priority until something happens / certain step
-                elif answer[0] == 's':
-                    assert answer[1:].upper() in gamesteps.Step._member_names_
-                    self.passPriorityUntil = gamesteps.Step[answer[1:].upper()]
+                elif answer[:2] == 's ':
+                    assert answer[2:].upper() in gamesteps.Step._member_names_
+                    self.passPriorityUntil = gamesteps.Step[answer[2:].upper()]
                     break
 
                 elif answer[:2] == '__':  # for dev purposes
@@ -150,8 +151,9 @@ class Player(object):
                 else:
                     raise BadFormatException()
 
-            except BadFormatException:
-                print(sys.exc_info())
+            except Exception as err:
+                traceback.print_tb(err.__traceback__)
+                # print(sys.exc_info())
                 print("Bad format.\n")
                 continue
 
@@ -197,6 +199,8 @@ class Player(object):
     def discard(self, num=1):
         if num > self.hand.size():
             return False
+
+        ## TODO: prompt player pick which cards
         for i in range(num):
             self.graveyard.add(self.hand.pop())
 
