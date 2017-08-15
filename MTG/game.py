@@ -230,16 +230,23 @@ class Game(object):
                     # declare blockers
                     if can_block:
                         for creature in is_attacking:
-                            answer = input("\n{}, Choose all creatures you'd like to block {} with\n"
-                                    .format(_player, creature))
 
-                            answer = map(int, answer.split(" "))
-                            for ind in answer:
-                                if ind < len(can_block):
-                                    can_block[ind].blocks(creature)
-                                else:
-                                    print("creature #{} is out of bounds\n".format(ind))
+                            ok = True
+                            while ok:
+                                answer = _player.make_choice("\n{}, Choose all creatures you'd like to block {} with\n"
+                                        .format(_player, creature))
 
+                                try:
+                                    ok = False
+                                    answer = map(int, answer.split(" "))
+                                    for ind in answer:
+                                        if ind < len(can_block):
+                                            can_block[ind].blocks(creature)
+                                        else:
+                                            print("creature #{} is out of bounds\n".format(ind))
+                                except:
+                                    print("wrong format: {}\n".format(ind))
+                                    ok = True
                         ## TODO: attacker declare multi-block dmg order
                         pass
 

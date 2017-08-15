@@ -47,7 +47,7 @@ class Player(object):
             answer = self.make_choice("What would you like to do? {}, {}\n".format(self.name, self.game.step))
             
             if self.game.test:
-                print("\t" + answer + "\n")
+                print("\t" + self.name + ", " + str(self.game.step) + ": " + answer + "\n")
 
             if answer == '':
                 break

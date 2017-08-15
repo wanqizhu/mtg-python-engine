@@ -135,11 +135,15 @@ class Permanent(gameobject.GameObject):
 
     def take_damage(self, dmg):
         self.status.damage_taken += dmg
+        pdb.set_trace()
         # if self.is_creature() and self.status.damage_taken >= self.characteristics.toughness:
         #     # send state-based action for death
         #     pass
 
+
+
     def trigger(self, condition):
+        ## TODO: more triggers
         if condition == triggerConditions.onUpkeep:
             self.status.summoning_sick = False
         elif condition == triggerConditions.onCleanup:

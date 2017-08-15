@@ -4,6 +4,7 @@ from MTG import mana
 from MTG import game
 from MTG import cards
 from MTG import player
+from MTG import permanent
 
 
 class TestPlayer(unittest.TestCase):
@@ -211,6 +212,47 @@ class TestPlayer(unittest.TestCase):
             self.assertTrue(self.player.battlefield.get_card_by_name("Devouring Deep").status.tapped)
             self.assertFalse(self.player.battlefield.get_card_by_name("Devouring Deep").in_combat())
             self.assertEqual(self.opponent.life, 19, "incorrect combat damage")
+
+
+    @mock.patch.object(permanent.Permanent, 'take_damage')
+    def test_blocking(self, mock_take_damage):
+        """ single creature blocking single attacker; each do nonlethal damage"""
+  
+        with mock.patch('builtins.input', side_effect=[
+                '__self.discard(7)', '__self.draw_card("Devouring Deep")','',  # p0
+                '__self.discard(7)', '__self.draw_card("Devouring Deep")','',  # p1
+                '', '',
+                '__self.mana.add(mana.Mana.BLUE, 3)',  # player 0
+                'p Devouring Deep', '', '', '',
+                's precombat_main',  # go to next turn
+                's precombat_main',
+                '__self.mana.add(mana.Mana.BLUE, 3)',  # player 1's turn
+                'p Devouring Deep', '', '', '',
+                's precombat_main',  # go to next turn
+                's precombat_main',
+                '', '', '', '',  # skipping to declare_attackers
+                '0', '', '',  # attacking w/ Devouring Deep
+                '0', '', '',  # blocking
+                's precombat_main',
+                's precombat_main',
+                '']):
+
+            self.GAME.handle_turn()
+            self.GAME.handle_turn()
+            self.GAME.handle_turn()
+            self.assertEqual(mock_take_damage.call_count, 2)
+            self.player.battlefield.elements[0].take_damage.assert_called_with(1)
+            self.opponent.battlefield.elements[0].take_damage.assert_called_with(1)
+
+
+
+    # def test_lethal_damage_in_combat(self):
+    #     """ single creature blocking single attacker; both die"""
+    #     self.assertTrue(False, "not implemented")
+
+    # def test_multiple_attacker(self):
+    #     """ multiple attacker, one blocker. Damage goes to both player and creature."""
+    #     self.assertTrue(False, "not implemented")
 
 
 if __name__ == '__main__':
