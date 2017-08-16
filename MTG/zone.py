@@ -39,6 +39,7 @@ class Zone():
 
         obj.zone = self.zone_type
         self.elements.append(obj)
+        return obj
         
 
 
@@ -87,7 +88,7 @@ class Battlefield(Zone):
     zone_type = ZoneType.BATTLEFIELD
 
     def add(self, obj):
-        super(Battlefield, self).add(obj)
+        obj = super(Battlefield, self).add(obj)
         obj.status = permanent.Status()  # reset status upon entering battlefield
     pass
 

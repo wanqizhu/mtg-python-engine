@@ -27,6 +27,12 @@ class ManaPool():
         for manatype in manacost:
             self.pool[manatype] -= manacost[manatype]
 
+    def is_empty(self):
+        for c in self.manachr:
+            if self.pool[self.chr_to_mana(c)] != 0:
+                return False
+        return True
+
 
     def chr_to_mana(self, c):
         assert c in self.manachr

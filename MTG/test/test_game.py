@@ -1,4 +1,5 @@
 import mock, unittest
+from copy import deepcopy
 
 from MTG import mana
 from MTG import game
@@ -6,6 +7,8 @@ from MTG import cards
 from MTG import player
 from MTG import permanent
 from MTG import gameobject
+from MTG.exceptions import *
+
 
 
 class TestPlayer(unittest.TestCase):
@@ -21,6 +24,43 @@ class TestPlayer(unittest.TestCase):
     def test_turn_do_nothing(self):
         with mock.patch('builtins.input', return_value=''):
             self.assertTrue(self.GAME.handle_turn())
+
+    def test_game_over(self):
+        """ Make sure that going to 0 life terminates the game"""
+        with mock.patch('builtins.input', side_effect=['__self.life = 0', '']):
+            with self.assertRaises(GameOverException):
+                self.GAME.handle_turn()
+                self.assertEqual(self.player.life, 0)
+                self.assertTrue(self.player.lost)
+                self.assertTrue(self.player not in self.GAME.players_list)
+
+
+    def test_rewind_to_previous_state(self):
+        """Make sure deepcopy resets everything"""
+        previous_state = deepcopy(self.GAME)
+
+        self.player.take_damage(None, 13)
+        self.player.discard(3)
+        self.player.mana.add(mana.Mana.RED, 13)
+        self.player.battlefield.add("Island")
+        self.GAME.stack.add("Sewn-Eye Drake")
+        self.assertEqual(self.player.life, 7)
+        self.assertEqual(self.player.hand.size(), 4)
+        self.assertFalse(self.player.mana.is_empty())
+        self.assertTrue(self.GAME.stack)
+        self.assertTrue(self.player.battlefield)
+
+        self.GAME = previous_state
+        self.player = self.GAME.players_list[0]
+        
+        self.assertEqual(self.player.life, 20)
+        self.assertEqual(self.player.hand.size(), 7)
+        self.assertTrue(self.player.mana.is_empty())
+        self.assertFalse(self.GAME.stack)
+        self.assertFalse(self.player.battlefield)
+
+
+
 
     def test_skip_priority(self):
         with mock.patch('builtins.input', return_value='s upkeep'):

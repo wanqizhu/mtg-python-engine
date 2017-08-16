@@ -30,6 +30,8 @@ class Player(object):
         self.exile = zone.Exile(self)
         self.mana = mana.ManaPool(self)
         self.game = game
+        self.lost = False
+        self.won = False
 
     def __repr__(self):
         return self.name
@@ -147,6 +149,8 @@ class Player(object):
 
                 # skip priority until something happens / certain step
                 elif answer[:2] == 's ':
+                    if answer[2:] == 'main':
+                        answer = 's precombat_main'   
                     assert answer[2:].upper() in gamesteps.Step._member_names_
                     self.passPriorityUntil = gamesteps.Step[answer[2:].upper()]
                     break
@@ -232,6 +236,11 @@ class Player(object):
         # trigger
         self.life -= damage
 
+
+    def lose(self):
+        print("{} has lost the game\n".format(self))
+        self.lost = True
+        pass
 
 
     def print_player_state(self):

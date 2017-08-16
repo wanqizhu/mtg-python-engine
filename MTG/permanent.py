@@ -154,6 +154,7 @@ class Permanent(gameobject.GameObject):
     def take_damage(self, source, dmg):
         ## trigger based on source
         self.status.damage_taken += dmg
+        print("{} takes {} damage from {}\n".format(self, dmg, source))
         # pdb.set_trace()
 
 
@@ -172,6 +173,7 @@ class Permanent(gameobject.GameObject):
 
     def dies(self):
         ## trigger
+        print("{} has died\n".format(self))
         self.zone = zone.ZoneType.GRAVEYARD
         self.controller.battlefield.remove(self)
         self.controller.graveyard.add(self)

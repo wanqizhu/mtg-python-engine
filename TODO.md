@@ -1,10 +1,10 @@
-
-- combat
-	- more robust printouts
-
-- implement "Sewn-Eye Drake" (flying & haste)
+- implement multi-blocking a single attacker
+ - prevent any creature from blocking multiple attackers
 
 - test game w/ vanilla creatures & lands
+
+- make option to always make default choice with mana payment
+	- smart mana payments when there's only 1 way
 
 - discard prompts user
 	- make sure test cases still work (since new input)
