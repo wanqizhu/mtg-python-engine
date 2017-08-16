@@ -76,7 +76,7 @@ class GameObject():
         return cardtype.CardType.INSTANT in self.characteristics.types
 
     def is_artifact(self):
-        return cardtype.CardType.ARTIFACT in self.characteristics.types        
+        return cardtype.CardType.ARTIFACT in self.characteristics.types
 
     def has_ability(self, ability):
         return abilities.StaticAbilities[ability] in self.characteristics.abilities

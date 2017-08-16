@@ -242,13 +242,13 @@ class Game(object):
                     continue
 
 
-                _is_attacking = []  # get all attacking creatures
+                currently_attacking = []  # get all attacking creatures
                 self.apply_to_battlefield(
-                        lambda p: _is_attacking.append(p), 
+                        lambda p: currently_attacking.append(p), 
                         lambda p: p.status.is_attacking == defender)
 
-                if _is_attacking:
-                    print("Creatures attacking {}: {}\n\n".format(defender, _is_attacking))
+                if currently_attacking:
+                    print("Creatures attacking {}: {}\n\n".format(defender, currently_attacking))
 
                     can_block = []
                     self.apply_to_battlefield(
@@ -263,7 +263,7 @@ class Game(object):
 
                         # declare blockers
                         while True:
-                            for attacking_creature in _is_attacking:
+                            for attacking_creature in currently_attacking:
 
                                 ok = False
                                 while not ok:
@@ -296,7 +296,7 @@ class Game(object):
                                 print("Illigal attack; rewind\n\n")
                                 self = GAME_PREVIOUS_STATE
 
-                        for creature in _is_attacking:
+                        for creature in currently_attacking:
                             print("{} is attacking {}\n".format(
                                 creature.name(), creature.status.is_attacking))
 
@@ -310,18 +310,25 @@ class Game(object):
             pass
 
         if step is gamesteps.Step.COMBAT_DAMAGE:
-            _is_attacking = []
+            # attackers do damage
             self.apply_to_battlefield(
-                    lambda p: _is_attacking.append(p), 
+                    lambda p: p.deals_damage(p.status.is_attacking,
+                            p.characteristics.power), 
                     lambda p: p.status.is_attacking and (not p.has_ability("First_Strike")
                                                          or p.has_ability("Double_Strike")))
+            
+            
+            # blockers do damage
+            self.apply_to_battlefield(
+                    lambda p: p.deals_damage(p.status.is_blocking,
+                        p.characteristics.power), 
+                    lambda p: p.status.is_blocking and (not p.has_ability("First_Strike")
+                                                         or p.has_ability("Double_Strike")))
+            
+           
 
-            for creature in _is_attacking:
-                if isinstance(creature.status.is_attacking, player.Player):
-                    creature.deals_damage(creature.status.is_attacking,
-                            creature.characteristics.power)
-                else:
-                    combat.fight(creature, creature.status.is_attacking)
+
+                    # combat.fight(creature, creature.status.is_attacking)
 
             # damage resolve / triggers
 

@@ -139,7 +139,11 @@ class Permanent(gameobject.GameObject):
         if self.can_block(creature):
             # trigger
             self.status.is_blocking = creature
-            creature.status.is_attacking = self  ## TODO: multi-blocks
+            if type(creature.status.is_attacking) == type(self.controller):
+                creature.status.is_attacking = []  ## TODO: multi-blocks
+            
+            creature.status.is_attacking.append(self)
+
             return True
         else:
             return False
@@ -155,11 +159,29 @@ class Permanent(gameobject.GameObject):
         ## trigger based on source
         self.status.damage_taken += dmg
         print("{} takes {} damage from {}\n".format(self, dmg, source))
+        if source.has_ability("Deathtouch"):
+            self.dies()
         # pdb.set_trace()
 
 
     def deals_damage(self, target, dmg):
-        target.take_damage(self, dmg)
+        """ target could be Player, Creature, or array of creatures"""
+        if isinstance(target, list):
+            dmg_to_assign = self.characteristics.power
+            for blocker in target:
+                if self.has_ability("Deathtouch"):
+                    lethal_dmg = 1
+                else:
+                    lethal_dmg = blocker.characteristics.toughness
+                if dmg_to_assign < lethal_dmg:
+                    blocker.take_damage(self, dmg_to_assign)
+                    dmg_to_assign = 0
+                else:
+                    blocker.take_damage(self, lethal_dmg)
+                    dmg_to_assign -= lethal_dmg
+        else:
+            # a single creature or a player
+            target.take_damage(self, dmg)
         ## TODO: triggers
 
 
