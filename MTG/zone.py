@@ -3,6 +3,7 @@ import random
 
 from MTG import gameobject
 from MTG import cards
+from MTG import card
 from MTG import permanent
 
 class ZoneType(Enum):
@@ -88,8 +89,16 @@ class Battlefield(Zone):
     zone_type = ZoneType.BATTLEFIELD
 
     def add(self, obj):
-        obj = super(Battlefield, self).add(obj)
-        obj.status = permanent.Status()  # reset status upon entering battlefield
+        if type(obj) is str:  # convert string (card's name) to a Card object
+            obj = cards.card_from_name(obj)
+        obj.controller = self.controller
+
+        if isinstance(obj, card.Card):  # convert card to Permanent
+            obj = permanent.make_permanent(obj)
+        else:
+            obj.zone = self.zone_type
+            self.elements.append(obj)
+            obj.status = permanent.Status()  # reset status upon entering battlefield
     pass
 
 class Stack(Zone):

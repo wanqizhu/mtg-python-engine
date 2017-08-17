@@ -173,7 +173,10 @@ class Player(object):
     # separate func for unit testing
     def make_choice(self, prompt_string):
         # if not TEST:
-        return input(prompt_string)
+        ans = input(prompt_string)
+        if ans == 'debug':
+            pdb.set_trace()
+        return ans
         # else:
         #     ## TODO: unit tests
         #     pass

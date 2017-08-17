@@ -55,8 +55,8 @@ class Status():
         self.phased_in = True
         self.summoning_sick = True
         self.damage_taken = 0
-        self.is_attacking = None
-        self.is_blocking = None
+        self.is_attacking = []
+        self.is_blocking = []
 
     def __repr__(self):
         return str(self.__dict__)
@@ -70,6 +70,7 @@ class Permanent(gameobject.GameObject):
         self.owner = owner if owner else controller
         self.zone = zone.ZoneType.BATTLEFIELD
         self.original_card = original_card
+        self.attributes = original_card.attributes
         if status is None:
             self.status = Status()
         else:
@@ -115,17 +116,23 @@ class Permanent(gameobject.GameObject):
         return (self.is_creature() and not self.status.tapped and 
                     (not self.status.summoning_sick or self.has_ability("Haste")))
 
-    def can_block(self, attacker=None):
-        if attacker:
-            if (attacker.has_ability('Flying') 
-                        and not (self.has_ability('Flying')
-                            or self.has_ability('Reach'))):
+    def can_block(self, attackers=None):
+        if attackers:
+            if type(attackers) is not list: attackers = [attackers]
+
+            if self.attributes.num_creatures_can_block < len(attackers):
                 return False
 
-            if (attacker.has_ability('Intimidate')
-                    and not (self.is_artifact() or self.share_color(attacker))):
-                return False
-            pass  ## TODO: other blocking restrictions (e.g. can't block alone)
+            for attacker in attackers:
+                if (attacker.has_ability('Flying') 
+                            and not (self.has_ability('Flying')
+                                or self.has_ability('Reach'))):
+                    return False
+
+                if (attacker.has_ability('Intimidate')
+                        and not (self.is_artifact() or self.share_color(attacker))):
+                    return False
+                pass  ## TODO: other blocking restrictions (e.g. can't block alone)
         
         return self.is_creature() and not self.status.tapped
 
@@ -138,9 +145,11 @@ class Permanent(gameobject.GameObject):
     def blocks(self, creature):
         if self.can_block(creature):
             # trigger
-            self.status.is_blocking = creature
+            # if self.status.is_blocking is None:
+            #     self.status.is_blocking = []
+            self.status.is_blocking.append(creature)
             if type(creature.status.is_attacking) == type(self.controller):
-                creature.status.is_attacking = []  ## TODO: multi-blocks
+                creature.status.is_attacking = []
             
             creature.status.is_attacking.append(self)
 
@@ -152,8 +161,8 @@ class Permanent(gameobject.GameObject):
         return self.status.is_attacking or self.status.is_blocking
 
     def exits_combat(self):
-        self.status.is_attacking = None
-        self.status.is_blocking = None
+        self.status.is_attacking = []
+        self.status.is_blocking = []
 
     def take_damage(self, source, dmg):
         ## trigger based on source
@@ -166,6 +175,9 @@ class Permanent(gameobject.GameObject):
 
     def deals_damage(self, target, dmg):
         """ target could be Player, Creature, or array of creatures"""
+        if dmg < 0:
+            return
+
         if isinstance(target, list):
             dmg_to_assign = self.characteristics.power
             for blocker in target:
@@ -173,12 +185,21 @@ class Permanent(gameobject.GameObject):
                     lethal_dmg = 1
                 else:
                     lethal_dmg = blocker.characteristics.toughness
+
+                if blocker == target[-1]:
+                    if not self.has_ability("Trample"):  # all remaining dmg goes to last creature
+                        lethal_dmg = dmg_to_assign
+
                 if dmg_to_assign < lethal_dmg:
                     blocker.take_damage(self, dmg_to_assign)
                     dmg_to_assign = 0
                 else:
                     blocker.take_damage(self, lethal_dmg)
                     dmg_to_assign -= lethal_dmg
+
+            if self.has_ability("Trample"):  # remaining dmg from trample
+                self.deals_damage(target[0].controller, dmg_to_assign)
+        
         else:
             # a single creature or a player
             target.take_damage(self, dmg)
@@ -198,7 +219,9 @@ class Permanent(gameobject.GameObject):
         print("{} has died\n".format(self))
         self.zone = zone.ZoneType.GRAVEYARD
         self.controller.battlefield.remove(self)
-        self.controller.graveyard.add(self)
+        c = self.original_card
+        c.previousState = self
+        self.controller.graveyard.add(c)
 
 
 

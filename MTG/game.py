@@ -1,5 +1,6 @@
 import sys
 import os
+import traceback
 
 from itertools import cycle
 from copy import deepcopy
@@ -176,28 +177,30 @@ class Game(object):
 
 
         if step is gamesteps.Step.DECLARE_ATTACKERS:
-            avaliable_attackers = []
-            self.apply_to_battlefield(
-                    lambda p: avaliable_attackers.append(p), 
-                    lambda p: p.controller == self.current_player and p.can_attack())
-            
-            if avaliable_attackers:
-                print("Creatures that can attack:", avaliable_attackers)
 
+            GAME_PREVIOUS_STATE = deepcopy(self)
+            ok = False
+            while not ok:
+                avaliable_attackers = []
+                self.apply_to_battlefield(
+                        lambda p: avaliable_attackers.append(p), 
+                        lambda p: p.controller == self.current_player and p.can_attack())
                 
-                for defender in self.players_list:
-                    if defender == self.current_player:
-                        continue
+                if avaliable_attackers:
+                    print("Creatures that can attack:", avaliable_attackers)
+
+                    
+                    for defender in self.players_list:
+                        if defender == self.current_player:
+                            continue
                         
 
-                    GAME_PREVIOUS_STATE = deepcopy(self)
-                    while True:
-                        
                         # declare attackers
                         # space-separated list of indices of creatures in avaliable_attackers, starting at 0
                         answer = self.current_player.make_choice(
                                 "\n{}, Choose all creatures you'd like to attack {} with\n"
                                 .format(self.current_player, defender.name))
+                        if self.test: print(answer)
 
                         if answer:
                             ## TODO: planeswalkers
@@ -214,62 +217,70 @@ class Game(object):
                                                 .format(str(ind)))
                                         continue
                                         
-                            except:
+                            except Exception as err:
+                                traceback.print_tb(err.__traceback__)
                                 print("wrong format: {}\n".format(ind))
                                 continue
                                 
 
-                        if combat.check_valid_attack(self.current_player, defender):
-                            break
-                        else:
-                            print("Illigal attack; rewind\n\n")
-                            self = GAME_PREVIOUS_STATE
+                ok = combat.check_valid_attack(self.current_player)
+                
+                if not ok:
+                    print("Illegal attack; rewind\n\n")
+                    self = deepcopy(GAME_PREVIOUS_STATE)
+                    break
 
 
-                for creature in avaliable_attackers:
-                    print("{} is attacking {}\n".format(
-                            creature.name(), creature.status.is_attacking))
+            for creature in avaliable_attackers:
+                print("{} is attacking {}\n".format(
+                        creature.name(), creature.status.is_attacking))
 
 
-                # check remove-from-combat abilities/events
+            # check remove-from-combat abilities/events
 
 
         if step is gamesteps.Step.DECLARE_BLOCKERS:
             ## TODO: need to figure out which player's turn / priority
 
-            for defender in self.players_list:
-                if defender == self.current_player:  # only current player's opponents need to block
-                    continue
+            ## MULTIPLAYER: refactor code / when-to-rewind
+
+            GAME_PREVIOUS_STATE = deepcopy(self)
+            ok = False
+            while not ok:
+
+                for defender in self.players_list:
+                    if defender == self.current_player:  # only current player's opponents need to block
+                        continue
 
 
-                currently_attacking = []  # get all attacking creatures
-                self.apply_to_battlefield(
-                        lambda p: currently_attacking.append(p), 
-                        lambda p: p.status.is_attacking == defender)
-
-                if currently_attacking:
-                    print("Creatures attacking {}: {}\n\n".format(defender, currently_attacking))
-
-                    can_block = []
+                    currently_attacking = []  # get all attacking creatures
                     self.apply_to_battlefield(
-                                lambda p: can_block.append(p), 
-                                lambda p: p.controller == defender and p.can_block())
+                            lambda p: currently_attacking.append(p), 
+                            lambda p: p.status.is_attacking == defender)
 
-                    
-                    if can_block:
-                        print("Potential blockers: {}\n".format(can_block))
+                    if currently_attacking:
+                        print("Creatures attacking {}: {}\n\n".format(defender, currently_attacking))
 
-                        GAME_PREVIOUS_STATE = deepcopy(self)
+                        can_block = []
+                        self.apply_to_battlefield(
+                                    lambda p: can_block.append(p), 
+                                    lambda p: p.controller == defender and p.can_block())
 
-                        # declare blockers
-                        while True:
+                        
+                        if can_block:
+                            print("Potential blockers: {}\n".format(can_block))
+
+                            
+
+                            # declare blockers
+                        
                             for attacking_creature in currently_attacking:
-
-                                ok = False
-                                while not ok:
+                                _ok = False
+                                while not _ok:
                                     answer = defender.make_choice("\n{}, Choose all creatures you'd like to block {} with\n"
                                             .format(defender, attacking_creature))
 
+                                    if self.test: print(answer)
                                     if not answer: break
 
                                     try:
@@ -283,25 +294,29 @@ class Game(object):
                                                 print("creature #{} is out of bounds\n".format(ind))
                                                 continue
 
-                                        ok = True
+                                        _ok = True
 
-                                    except:
+                                    except Exception as err:
+                                        traceback.print_tb(err.__traceback__)
                                         print("wrong format: {}\n".format(answer))
                                         
-                            ## TODO: attacker declare multi-block dmg order
-                            ## TODO: check for menace
-                            if combat.check_valid_block(self.current_player, defender):
-                                break
-                            else:
-                                print("Illigal attack; rewind\n\n")
-                                self = GAME_PREVIOUS_STATE
+                    ## TODO: attacker declare multi-block dmg order
+                    ## TODO: check for menace
+                    ok = combat.check_valid_block(self.current_player, defender)
+                    
+                    if not ok:
+                        print("Illegal block; rewind\n\n")
+                        self = GAME_PREVIOUS_STATE
+                        break
 
-                        for creature in currently_attacking:
-                            print("{} is attacking {}\n".format(
-                                creature.name(), creature.status.is_attacking))
+                    
+
+            for creature in currently_attacking:
+                print("{} is attacking {}\n".format(
+                    creature.name(), creature.status.is_attacking))
 
 
-        if step is  gamesteps.Step.FIRST_STRIKE_COMBAT_DAMAGE:
+        if step is gamesteps.Step.FIRST_STRIKE_COMBAT_DAMAGE:
             ## TODO: first strike
             self.apply_to_battlefield(
                     lambda p: p.deals_damage(p.status.is_attacking, p.characteristics.power), 
@@ -327,8 +342,6 @@ class Game(object):
             
            
 
-
-                    # combat.fight(creature, creature.status.is_attacking)
 
             # damage resolve / triggers
 

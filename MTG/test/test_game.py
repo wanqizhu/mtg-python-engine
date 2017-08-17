@@ -19,6 +19,7 @@ class TestPlayer(unittest.TestCase):
         self.player = self.GAME.players_list[0]
         self.player.tmp = False
         self.opponent = self.GAME.players_list[1]
+        self.opponent.tmp = False
 
 
     def test_turn_do_nothing(self):
@@ -291,13 +292,117 @@ class TestPlayer(unittest.TestCase):
 
 
 
-    # def test_lethal_damage_in_combat(self):
-    #     """ single creature blocking single attacker; both die"""
-    #     self.assertTrue(False, "not implemented")
+    @mock.patch.object(permanent.Permanent, 'dies')
+    def test_lethal_damage_in_combat(self, mock_dies):
+        """ single creature blocking single attacker; both die"""
+        with mock.patch('builtins.input', side_effect=[
+                '__self.battlefield.add("Sewn-Eye Drake")','',  # p0
+                '__self.battlefield.add("Sewn-Eye Drake")','',  # p1
+                '', '',
+                '', '', '', '',  # skipping to declare_attackers
+                '0', '', '',  # attacking w/ Drake
+                '0',  # blocking
+                's precombat_main',
+                's precombat_main',
+                '']):
 
-    # def test_multiple_attacker(self):
-    #     """ multiple attacker, one blocker. Damage goes to both player and creature."""
-    #     self.assertTrue(False, "not implemented")
+            self.GAME.handle_turn()
+            mock_dies.assert_any_call()
+            self.assertEqual(self.player.life, 20)
+            self.assertEqual(self.opponent.life, 20)
+
+
+    def test_multiple_attacker(self):
+        """ multiple attacker, one blocker. Damage goes to both player and creature."""
+        with mock.patch('builtins.input', side_effect=[
+                '__self.battlefield.add("Sewn-Eye Drake")',
+                '__self.battlefield.add("Sewn-Eye Drake")',
+                '__self.battlefield.add("Sewn-Eye Drake")', '',  # p0
+
+                '__self.battlefield.add("Sewn-Eye Drake")', '',  # p1
+                '', '',
+                '', '', '', '',  # skipping to declare_attackers
+                '0 1 2', '', '',  # attacking w/ everything
+                '', '0', '',  # blocking the second drake
+                's precombat_main',
+                's precombat_main',
+                '']):
+
+            self.GAME.handle_turn()
+            self.assertEqual(self.opponent.life, 14)
+            self.assertEqual(self.player.graveyard.size(), 1)
+            self.assertEqual(self.opponent.graveyard.size(), 1)
+
+
+    def test_multiple_attacker_multiple_blocker(self):
+        with mock.patch('builtins.input', side_effect=[
+                '__self.discard(7)', '__self.draw_card("Devouring Deep")',  # p0
+                '__self.draw_card("Devouring Deep")',
+                '__self.draw_card("Sewn-Eye Drake")',
+                '', '', '', '',
+                '__self.mana.add(mana.Mana.BLUE, 9)',  # player 0, main step
+                '__self.mana.add(mana.Mana.BLACK, 1)',
+                'p Devouring Deep', '', '', '',  # pay mana, letting it resolve
+                'p Devouring Deep', '', '', '',
+                'p Sewn-Eye Drake', '', '', '', '',  # pay mana (choose hybrid & unrestricted), letting it resolve
+                's precombat_main',
+                's precombat_main',
+                '0',  # attacking for 3 w/ haste
+            
+                '__self.discard(7)', '__self.draw_card("Devouring Deep")',
+                '__self.draw_card("Devouring Deep")',  # player 1's turn, main step
+                '__self.draw_card("Sewn-Eye Drake")',
+                '__self.mana.add(mana.Mana.BLUE, 9)',  
+                '__self.mana.add(mana.Mana.BLACK, 1)',
+                'p Devouring Deep', '', '', '',  # pay mana, letting it resolve
+                'p Devouring Deep', '', '', '',
+                'p Sewn-Eye Drake', '', '', '', '',
+                's precombat_main',
+                's precombat_main',
+                '0', '0', '', # attacking w/ flyer, tries to block with Devouring Deep (but should fail due to flying), no blocks
+
+                's precombat_main',  # go to next turn
+                's precombat_main',
+                '',  # no attacks
+                
+                's end_of_combat',  # go to next turn: player 1's attack
+                's end_of_combat',
+                '0 1 2',  # player 1 attacking with everything
+
+                '0 1',  # Devouring Deep #1 gets blocked by both Devouring Deeps
+                '',  # Devouring Deep #2 goes through
+                '2',  # Drakes block each other
+
+                # both drakes kill each other
+                # double-block kills one of Player 1's Devouring Deep
+                # player 0 takes 1 damage
+
+                # player 1
+                '__self.tmp = self.battlefield.elements[0]'
+                        '.status.damage_taken == 0'
+                        ' and self.graveyard.get_card_by_name("Sewn-Eye Drake")'
+                        ' and self.graveyard.get_card_by_name("Devouring Deep")',
+                's draw',
+                # player 0
+                 '__self.tmp = self.game.players_list[0].battlefield.elements[0]'
+                        '.status.damage_taken == 1'
+                        ' and self.game.players_list[0].battlefield.elements[1]'
+                        '.status.damage_taken == 0'
+                        ' and self.graveyard.get_card_by_name("Sewn-Eye Drake")',
+                's draw']):
+
+            self.GAME.handle_turn()
+            self.GAME.handle_turn()
+            self.GAME.handle_turn()
+            self.GAME.handle_turn()
+            self.assertEqual(self.player.battlefield.size(), 2)
+            self.assertEqual(self.opponent.battlefield.size(), 1)
+            self.assertEqual(self.player.life, 16)
+            self.assertEqual(self.opponent.life, 17)
+            self.assertTrue(self.player.tmp)
+            self.assertTrue(self.opponent.tmp)
+
+
 
 
 if __name__ == '__main__':
