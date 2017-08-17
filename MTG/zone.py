@@ -24,7 +24,7 @@ class Zone():
             for ele in elements:
                 ele.controller = controller
         self.controller = controller
-            
+
 
     def __repr__(self):
         return self.__class__.__name__ + str(self.elements)

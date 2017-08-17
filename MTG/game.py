@@ -87,7 +87,7 @@ class Game(object):
         - defaults to all permanents
         """
         for _player in self.players_list:
-            for permanent in _player.battlefield.elements:
+            for permanent in _player.battlefield.elements[:]:  # use [:] to iterate over a copy of the list in case items get changed
                 if condition(permanent):
                     apply_func(permanent)
 
