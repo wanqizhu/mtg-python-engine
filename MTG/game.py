@@ -43,6 +43,12 @@ class Game(object):
         self.test = test
         # self.previous_state = GAME_PREVIOUS_STATE
 
+    def opponent(self, player):
+        """Opponent in 2 player game"""
+        assert player in self.players_list
+        for p in self.players_list:
+            if p != player:
+                return p
 
     def get_zone(self, zone_type, player=None):
         return {

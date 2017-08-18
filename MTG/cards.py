@@ -3,6 +3,7 @@ import sys
 from MTG import card
 from MTG import cardtype
 from MTG import abilities
+from MTG import player
 from MTG.parsedcards import *
 
 
@@ -55,7 +56,7 @@ def read_deck(filename):
     return deck
 
 
-def make_activated_ability(cardname, cost, effect, is_mana_ability=False):
+def add_activated_ability(cardname, cost, effect, is_mana_ability=False):
     if not name_to_id(cardname):
         return
     card = card_from_name(cardname, get_instance=False)
@@ -76,9 +77,23 @@ def make_activated_ability(cardname, cost, effect, is_mana_ability=False):
     card._activated_abilities_effects.append(lambda self: exec(effect))
 
 
-make_activated_ability("Plains", 'T', 'self.controller.mana.add(mana.Mana.WHITE, 1)', True)
-make_activated_ability("Island", 'T', 'self.controller.mana.add(mana.Mana.BLUE, 1)', True)
-make_activated_ability("Swamp", 'T', 'self.controller.mana.add(mana.Mana.BLACK, 1)', True)
-make_activated_ability("Mountain", 'T', 'self.controller.mana.add(mana.Mana.RED, 1)', True)
-make_activated_ability("Forest", 'T', 'self.controller.mana.add(mana.Mana.GREEN, 1)', True)
-make_activated_ability("Wastes", 'T', 'self.controller.mana.add(mana.Mana.COLORLESS, 1)', True)
+
+
+def add_targets(cardname, criterias=[lambda p: True], prompts=["Choose a target\n"]):
+    if not name_to_id(cardname):
+        return
+    card = card_from_name(cardname, get_instance=False)
+
+    card.target_criterias = criterias
+    card.target_prompts = prompts
+
+
+
+add_activated_ability("Plains", 'T', 'self.controller.mana.add(mana.Mana.WHITE, 1)', True)
+add_activated_ability("Island", 'T', 'self.controller.mana.add(mana.Mana.BLUE, 1)', True)
+add_activated_ability("Swamp", 'T', 'self.controller.mana.add(mana.Mana.BLACK, 1)', True)
+add_activated_ability("Mountain", 'T', 'self.controller.mana.add(mana.Mana.RED, 1)', True)
+add_activated_ability("Forest", 'T', 'self.controller.mana.add(mana.Mana.GREEN, 1)', True)
+add_activated_ability("Wastes", 'T', 'self.controller.mana.add(mana.Mana.COLORLESS, 1)', True)
+
+add_targets("Lightning Bolt", [lambda p: p.__class__.__name__ == 'Player' or p.is_creature()])

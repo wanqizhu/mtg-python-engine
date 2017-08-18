@@ -9,7 +9,7 @@ from MTG import cards
 
 
 
-class Player(object):
+class Player():
     def __init__(self, deck, name='player', startingLife=20, maxHandSize=7, game=None):
         self.name = name
         # self.ID = None
@@ -90,8 +90,7 @@ class Player(object):
 
                     ## pay mana costs
                     can_pay = self.mana.canPay(card.manacost())  # False, or a dict of mana costs
-                    ## choose targets
-                    can_target = True
+                    
 
                     # timing & restrictions
                     can_play = True
@@ -106,11 +105,14 @@ class Player(object):
                                 or self.game.current_player != self):
                         can_play = False
 
+                    ## choose targets
+                    can_target = card.targets()
+
                     if can_pay and can_target and can_play:
                         self.mana.pay(can_pay)
                         # apply targets
 
-                        _play = play.Play(card.play_func)
+                        _play = play.Play(card.play_func, card)
                         # special actions
                         if card.is_land():
                             _play.is_special_action = True

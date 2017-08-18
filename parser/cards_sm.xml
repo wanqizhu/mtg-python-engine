@@ -1,6 +1,24 @@
 <cockatrice_carddatabase version="2">
     <cards>
         <card>
+            <name>Lightning Bolt</name>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=27255&amp;type=card" picURLHq="" picURLSt="">BTD</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=2291&amp;type=card" picURLHq="" picURLSt="">4E</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=209&amp;type=card" picURLHq="" picURLSt="">LEA</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=504&amp;type=card" picURLHq="" picURLSt="">LEB</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=191089&amp;type=card" picURLHq="" picURLSt="">M10</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=205227&amp;type=card" picURLHq="" picURLSt="">M11</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=159263&amp;type=card" picURLHq="" picURLSt="">MED</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=234704&amp;type=card" picURLHq="" picURLSt="">PD2</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=1303&amp;type=card" picURLHq="" picURLSt="">3ED</set>
+            <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=806&amp;type=card" picURLHq="" picURLSt="">2ED</set>
+            <color>R</color>
+            <manacost>R</manacost>
+            <type>Instant</type>
+            <tablerow>3</tablerow>
+            <text>Lightning Bolt deals 3 damage to target creature or player.</text>
+        </card>
+        <card>
             <name>Plains</name>
             <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=221309&amp;type=card" picURLHq="" picURLSt="">ARC</set>
             <set picURL="http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=269637&amp;type=card" picURLHq="" picURLSt="">AVR</set>
