@@ -1,3 +1,5 @@
+import traceback
+
 from MTG import gameobject
 
 
@@ -73,13 +75,16 @@ class Card(gameobject.GameObject):
             card = get_card_from_user_input(self.controller, answer)
             print(card)
 
-            # try:
-            if not criteria(card):
+            try:
+                if not criteria(card):
+                    return False
+            except Exception as err:
+                traceback.print_tb(err.__traceback__)
                 return False
-            # except:
-            #     return False
 
             targets_chosen.append(card)
+
+        self.targets_chosen = targets_chosen
         return targets_chosen
 
 

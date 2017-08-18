@@ -21,5 +21,4 @@ rules: http://media.wizards.com/2017/downloads/MagicCompRules_20170707.pdf
 
 
 KNOWN BUGS
-	- after multiple creatures receiving lethal dmg in combat, SOME creatures seem to survive the first state-based-action check and doesn't call dies() until the next state-based-action check
-		- FIXED (?) by iterating over a copy of battlefield (since items were getting removed during iteration)
+	- non-active player would get priority first if they cast a spell during active player's turn

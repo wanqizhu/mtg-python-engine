@@ -82,6 +82,7 @@ class Game(object):
     ## TODO
     def apply_stack_item(self, stack_item):
         """ resolving a spell/effect from stack"""
+        print(stack_item.name)
         stack_item.apply()
         pass
 

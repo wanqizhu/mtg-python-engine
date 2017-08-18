@@ -5,10 +5,13 @@ class Play(object):
     
 
     ## TODO: implement targets: target selection, validation, conditional targeting, etc.
-    def __init__(self, apply_func, card=None):
+    def __init__(self, apply_func, card=None, name=None):
         self.is_special_action = False
         self.is_mana_ability = False
         self.apply = apply_func
         self.original_card = card
-        return 
+        self.name = name
+        if not name and card:
+            self.name = card.name()
+
 

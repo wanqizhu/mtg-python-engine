@@ -88,6 +88,17 @@ def add_targets(cardname, criterias=[lambda p: True], prompts=["Choose a target\
     card.target_prompts = prompts
 
 
+def make_play_func_deal_damage_to_single_target(cardname, dmg):
+    if not name_to_id(cardname):
+        return
+    card = card_from_name(cardname, get_instance=False)
+
+    def play_func(self):
+        if self.targets_chosen and self.target_criterias[0](self.targets_chosen[0]):
+            self.targets_chosen[0].take_damage(self, dmg)
+
+    card.play_func = play_func
+
 
 add_activated_ability("Plains", 'T', 'self.controller.mana.add(mana.Mana.WHITE, 1)', True)
 add_activated_ability("Island", 'T', 'self.controller.mana.add(mana.Mana.BLUE, 1)', True)
@@ -97,3 +108,4 @@ add_activated_ability("Forest", 'T', 'self.controller.mana.add(mana.Mana.GREEN, 
 add_activated_ability("Wastes", 'T', 'self.controller.mana.add(mana.Mana.COLORLESS, 1)', True)
 
 add_targets("Lightning Bolt", [lambda p: p.__class__.__name__ == 'Player' or p.is_creature()])
+make_play_func_deal_damage_to_single_target("Lightning Bolt", 3)

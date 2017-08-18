@@ -84,6 +84,7 @@ class Player():
                     except:
                         name = answer[2:]  # 'p Island' == plays 'Island'
                         card = self.hand.get_card_by_name(name)
+                        self.hand.remove(card)
                         assert card
                         
 
