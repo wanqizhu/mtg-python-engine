@@ -94,7 +94,7 @@ class Game(object):
         - defaults to all permanents
         """
         for _player in self.players_list:
-            for permanent in _player.battlefield.elements[:]:  # use [:] to iterate over a copy of the list in case items get changed
+            for permanent in _player.battlefield[:]:  # use [:] to iterate over a copy of the list in case items get changed
                 if condition(permanent):
                     apply_func(permanent)
 
@@ -370,7 +370,7 @@ class Game(object):
             self.handle_priority(step)
 
         elif step is gamesteps.Step.CLEANUP:
-            self.current_player.discard(self.current_player.hand.size()
+            self.current_player.discard(len(self.current_player.hand)
                                      - self.current_player.maxHandSize)
             self.apply_to_battlefield(
                     lambda p: p.trigger(permanent.triggerConditions.onCleanup))
@@ -420,7 +420,7 @@ class Game(object):
 
         print("\n\n\n")
         print("stack:\n")
-        print(self.stack.elements)
+        print(self.stack)
 
         print("\n\n\n")
         for _player in self.players_list:

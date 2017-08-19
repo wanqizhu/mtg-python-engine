@@ -10,8 +10,8 @@ class TestPlayer(unittest.TestCase):
 		pass
 
 
-	def test_basic_mana_payment(self):
-		pass
+	# def test_basic_mana_payment(self):
+	# 	pass
 		# self.assertEqual(self.m.canPay('U')[mana.Mana.BLUE], 1)
 		
 

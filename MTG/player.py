@@ -20,7 +20,7 @@ class Player():
         self.passPriorityUntil = None
 
         self.library = zone.Library(self, deck)
-        for card in self.library.elements:
+        for card in self.library:
             card.controller = self
             card.owner = self
 
@@ -34,7 +34,7 @@ class Player():
         self.won = False
 
     def __repr__(self):
-        return self.name
+        return 'player.Player(name=%r)' % self.name
 
 
     def get_action(self):
@@ -79,7 +79,7 @@ class Player():
                 elif answer[0] == 'p':  # playing card from hand
                     try:
                         num = int(answer[2:])   # 'p 3' == plays third card in hand
-                        assert num < self.hand.size()
+                        assert num < len(self.hand)
                         card = self.hand.pop(num)
                     except:
                         name = answer[2:]  # 'p Island' == plays 'Island'
@@ -139,8 +139,8 @@ class Player():
                     nums[0] = int(nums[0])
                     nums[1] = int(nums[1])
 
-                    assert nums[0] < self.battlefield.size()
-                    card = self.battlefield.elements[nums[0]]
+                    assert nums[0] < len(self.battlefield)
+                    card = self.battlefield[nums[0]]
 
                     assert nums[1] <= len(card.activated_abilities)
                     
@@ -172,6 +172,9 @@ class Player():
 
         return _play
 
+
+    def opponent(self):
+        return self.game.opponent(self)
 
     # separate func for unit testing
     def make_choice(self, prompt_string):
@@ -213,7 +216,7 @@ class Player():
 
 
     def discard(self, num=1):
-        if num > self.hand.size():
+        if num > len(self.hand):
             return False
 
         ## TODO: prompt player pick which cards
@@ -238,9 +241,10 @@ class Player():
         self.ManaPool.pay(mana)
         return True
 
-    def take_damage(self, source, damage):
+    def take_damage(self, source, dmg):
         # trigger
-        self.life -= damage
+        print("{} takes {} damage from {}\n".format(self, dmg, source))
+        self.life -= dmg
 
 
     def lose(self):
@@ -255,21 +259,21 @@ class Player():
         print("mana: {}\n".format(self.mana))
 
         print("\n\n\n")
-        print("battlefield: {}\n".format(self.battlefield.size()))
+        print("battlefield: {}\n".format(len(self.battlefield)))
         print(self.battlefield)
 
         print("\n\n\n")
-        print("hand: {}\n".format(self.hand.size()))
+        print("hand: {}\n".format(len(self.hand)))
         print(self.hand)
 
         print("\n\n\n")
-        print("library: {}\n".format(self.library.size()))
+        print("library: {}\n".format(len(self.library)))
         print(self.library)
 
         print("\n\n\n")
-        print("graveyard: {}\n".format(self.graveyard.size()))
+        print("graveyard: {}\n".format(len(self.graveyard)))
         print(self.graveyard)
 
         print("\n\n\n")
-        print("exile: {}\n".format(self.exile.size()))
+        print("exile: {}\n".format(len(self.exile)))
         print(self.exile)

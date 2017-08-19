@@ -27,7 +27,16 @@ class Zone():
 
 
     def __repr__(self):
-        return self.__class__.__name__ + str(self.elements)
+        return 'zone.Zone %r len=%r\n%r' % (self.__class__.__name__,
+                                            len(self), self.elements)
+    def __len__(self):
+        return len(self.elements)
+
+    def __bool__(self):
+        return bool(self.elements)
+
+    def __getitem__(self, pos):
+        return self.elements[pos]
         
     def add(self, obj):
         if type(obj) is str:  # convert string (card's name) to a Card object
@@ -56,7 +65,7 @@ class Zone():
         assert (characteristics is None 
                 or type(characteristics) is gameobject.Characteristics)
         
-        for ele in self.elements:
+        for ele in self:
             if ele.characteristics.satisfy(characteristics):
                 found.append(ele)
 
@@ -73,15 +82,7 @@ class Zone():
     def pop(self, pos=-1):
         return self.elements.pop(pos)
 
-    def size(self):
-        return len(self.elements)
 
-    def show(self):
-        for elem in self.elements:
-            print(elem)
-
-    def __bool__(self):
-        return bool(self.elements)
 
 
 

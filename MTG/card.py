@@ -36,8 +36,8 @@ def get_card_from_user_input(player, string):
 
     try:
         i = int(string[2:])
-        if i < zone.size():
-            return zone.elements[i]
+        if i < len(zone):
+            return zone[i]
         else:
             return None
     except:

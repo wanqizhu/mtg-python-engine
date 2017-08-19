@@ -36,29 +36,29 @@ class TestPlayer(unittest.TestCase):
                 self.assertTrue(self.player not in self.GAME.players_list)
 
 
-    def test_rewind_to_previous_state(self):
-        """Make sure deepcopy resets everything"""
-        previous_state = deepcopy(self.GAME)
+    # def test_rewind_to_previous_state(self):
+    #     """Make sure deepcopy resets everything"""
+    #     previous_state = deepcopy(self.GAME)
 
-        self.player.take_damage(None, 13)
-        self.player.discard(3)
-        self.player.mana.add(mana.Mana.RED, 13)
-        self.player.battlefield.add("Island")
-        self.GAME.stack.add("Sewn-Eye Drake")
-        self.assertEqual(self.player.life, 7)
-        self.assertEqual(self.player.hand.size(), 4)
-        self.assertFalse(self.player.mana.is_empty())
-        self.assertTrue(self.GAME.stack)
-        self.assertTrue(self.player.battlefield)
+    #     self.player.take_damage(None, 13)
+    #     self.player.discard(3)
+    #     self.player.mana.add(mana.Mana.RED, 13)
+    #     self.player.battlefield.add("Island")
+    #     self.GAME.stack.add("Sewn-Eye Drake")
+    #     self.assertEqual(self.player.life, 7)
+    #     self.assertEqual(len(self.player.hand), 4)
+    #     self.assertFalse(self.player.mana.is_empty())
+    #     self.assertTrue(self.GAME.stack)
+    #     self.assertTrue(self.player.battlefield)
 
-        self.GAME = previous_state
-        self.player = self.GAME.players_list[0]
+    #     self.GAME = previous_state
+    #     self.player = self.GAME.players_list[0]
         
-        self.assertEqual(self.player.life, 20)
-        self.assertEqual(self.player.hand.size(), 7)
-        self.assertTrue(self.player.mana.is_empty())
-        self.assertFalse(self.GAME.stack)
-        self.assertFalse(self.player.battlefield)
+    #     self.assertEqual(self.player.life, 20)
+    #     self.assertEqual(len(self.player.hand), 7)
+    #     self.assertTrue(self.player.mana.is_empty())
+    #     self.assertFalse(self.GAME.stack)
+    #     self.assertFalse(self.player.battlefield)
 
 
 
@@ -86,17 +86,17 @@ class TestPlayer(unittest.TestCase):
 
     def test_drawing_cards(self):
         with mock.patch('builtins.input', side_effect=['', '', '', '',
-                '__self.tmp = self.hand.size() == 7',
+                '__self.tmp = len(self.hand) == 7',
                 '__self.draw_card("Swamp")',
                 '__self.draw(5)',
-                '__self.tmp = self.tmp and self.hand.size() == 13',
+                '__self.tmp = self.tmp and len(self.hand) == 13',
                 's draw',
                 's draw',
                 '']):
 
             self.assertTrue(self.GAME.handle_turn())
             self.assertTrue(self.player.tmp)
-            self.assertEqual(self.player.hand.size(), 7)  # discard down to 7 eot
+            self.assertEqual(len(self.player.hand), 7)  # discard down to 7 eot
 
 
     def test_discard(self):
@@ -109,8 +109,8 @@ class TestPlayer(unittest.TestCase):
 
             self.assertTrue(self.GAME.handle_turn())
             
-            self.assertEqual(self.player.hand.size(), 6)  # discard down to 7 eot
-            self.assertEqual(self.player.graveyard.size(), 5)
+            self.assertEqual(len(self.player.hand), 6)  # discard down to 7 eot
+            self.assertEqual(len(self.player.graveyard), 5)
 
 
 
@@ -171,7 +171,7 @@ class TestPlayer(unittest.TestCase):
 
 
     def test_play_creature_over_three_turns(self):
-        """ Fetch 3 lands, play them over 3 turns, tap for mana, play Devouring Deep
+        """ Fetch three lands, play them over three turns, tap for mana, play Devouring Deep
 
         Validate that creature uses the stack & is added to battlefield correctly
         Validate multiple turns pose no problem
@@ -192,7 +192,7 @@ class TestPlayer(unittest.TestCase):
                 'p Island',
                 'a 0', 'a 1', 'a 2',
                 'p Devouring Deep', '',
-                '__self.tmp = self.game.stack.size() == 1',
+                '__self.tmp = len(self.game.stack) == 1',
                 '', '',
                 's precombat_main',
                 's precombat_main']):
@@ -204,7 +204,7 @@ class TestPlayer(unittest.TestCase):
             self.GAME.handle_turn()
 
             self.assertTrue(self.player.tmp)
-            self.assertEqual(self.player.battlefield.size(), 4)
+            self.assertEqual(len(self.player.battlefield), 4)
             self.assertTrue(self.player.battlefield.get_card_by_name("Devouring Deep"))
         
 
@@ -271,7 +271,7 @@ class TestPlayer(unittest.TestCase):
                 'p Devouring Deep', '', '', '',
                 's precombat_main',  # go to next turn
                 's precombat_main',
-                '__self.battlefield.elements[0].characteristics.power = 2',
+                '__self.battlefield[0].characteristics.power = 2',
                 '', '', '', '',  # skipping to declare_attackers
                 '0', '', '',  # attacking w/ Devouring Deep
                 '0', '', '',  # blocking
@@ -283,8 +283,8 @@ class TestPlayer(unittest.TestCase):
             self.GAME.handle_turn()
             self.GAME.handle_turn()
             self.assertEqual(mock_take_damage.call_count, 2)
-            c1 = self.player.battlefield.elements[0]
-            c2 = self.opponent.battlefield.elements[0]
+            c1 = self.player.battlefield[0]
+            c2 = self.opponent.battlefield[0]
 
             # unfortunately each instance of the patched method share the same call history
             # so we can't assert that, for example, c1.take_damage was called with source=c2 and vice versa
@@ -330,8 +330,8 @@ class TestPlayer(unittest.TestCase):
 
             self.GAME.handle_turn()
             self.assertEqual(self.opponent.life, 14)
-            self.assertEqual(self.player.graveyard.size(), 1)
-            self.assertEqual(self.opponent.graveyard.size(), 1)
+            self.assertEqual(len(self.player.graveyard), 1)
+            self.assertEqual(len(self.opponent.graveyard), 1)
 
 
     def test_multiple_attacker_multiple_blocker(self):
@@ -378,15 +378,15 @@ class TestPlayer(unittest.TestCase):
                 # player 0 takes 1 damage
 
                 # player 1
-                '__self.tmp = self.battlefield.elements[0]'
+                '__self.tmp = self.battlefield[0]'
                         '.status.damage_taken == 0'
                         ' and self.graveyard.get_card_by_name("Sewn-Eye Drake")'
                         ' and self.graveyard.get_card_by_name("Devouring Deep")',
                 's draw',
                 # player 0
-                 '__self.tmp = self.game.players_list[0].battlefield.elements[0]'
+                 '__self.tmp = self.game.players_list[0].battlefield[0]'
                         '.status.damage_taken == 1'
-                        ' and self.game.players_list[0].battlefield.elements[1]'
+                        ' and self.game.players_list[0].battlefield[1]'
                         '.status.damage_taken == 0'
                         ' and self.graveyard.get_card_by_name("Sewn-Eye Drake")',
                 's draw']):
@@ -395,14 +395,73 @@ class TestPlayer(unittest.TestCase):
             self.GAME.handle_turn()
             self.GAME.handle_turn()
             self.GAME.handle_turn()
-            self.assertEqual(self.player.battlefield.size(), 2)
-            self.assertEqual(self.opponent.battlefield.size(), 1)
+            self.assertEqual(len(self.player.battlefield), 2)
+            self.assertEqual(len(self.opponent.battlefield), 1)
             self.assertEqual(self.player.life, 16)
             self.assertEqual(self.opponent.life, 17)
             self.assertTrue(self.player.tmp)
             self.assertTrue(self.opponent.tmp)
 
 
+
+    # def test_trample(self):
+    #     pass
+
+    # def test_deathtouch(self):
+    #     pass
+
+    # def test_flying(self):
+    #     pass
+
+
+    def test_haste(self):
+        with mock.patch('builtins.input', side_effect=[
+                '__self.battlefield.add("Sewn-Eye Drake")',
+                '__self.battlefield.add("Devouring Deep")',
+                '__self.tmp = self.battlefield[0].has_ability("Haste")'
+                            ' and not self.battlefield[1].has_ability("Haste")'
+                            ' and self.battlefield[0].can_attack()'
+                            ' and not self.battlefield[1].can_attack()',
+                's upkeep',
+                's upkeep',
+                '']):  # no attack
+
+            self.GAME.handle_turn()
+            self.assertTrue(self.player.tmp)
+
+
+    def test_lightning_bolt(self):
+        """Casts three lightning bolt in succession; verify stack resolve order"""
+        with mock.patch('builtins.input', side_effect=[
+                '__self.battlefield.add("Sewn-Eye Drake")', '',
+                '__self.battlefield.add("Devouring Deep")', '', # player 1
+                '__self.draw_card("Lightning Bolt")',
+                '__self.draw_card("Lightning Bolt")',
+                '__self.draw_card("Lightning Bolt")',
+                '__self.mana.add(mana.Mana.RED, 3)',
+                'p Lightning Bolt',
+                'b 0',
+                'p Lightning Bolt',  # play another in response
+                'ob 0',
+                'p Lightning Bolt',
+                'op',
+                '', '',  # resolve last one
+                '__self.tmp = self.opponent().life == 17'
+                            ' and len(self.battlefield) == 1'
+                            ' and len(self.opponent().battlefield) == 1',
+                '', '',
+                '__self.tmp = self.tmp'
+                            ' and len(self.battlefield) == 1'
+                            ' and len(self.opponent().battlefield) == 0',
+                '', '',
+                '__self.tmp = self.tmp'
+                            ' and len(self.battlefield) == 0'
+                            ' and len(self.graveyard) == 4',  # 3 lightning bolt & dead creature
+                's upkeep',
+                's upkeep']):  # no attack
+
+            self.GAME.handle_turn()
+            self.assertTrue(self.player.tmp)
 
 
 if __name__ == '__main__':

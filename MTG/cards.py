@@ -4,6 +4,7 @@ from MTG import card
 from MTG import cardtype
 from MTG import abilities
 from MTG import player
+from MTG import zone
 from MTG.parsedcards import *
 
 
@@ -96,6 +97,7 @@ def make_play_func_deal_damage_to_single_target(cardname, dmg):
     def play_func(self):
         if self.targets_chosen and self.target_criterias[0](self.targets_chosen[0]):
             self.targets_chosen[0].take_damage(self, dmg)
+        self.controller.graveyard.add(self)
 
     card.play_func = play_func
 
@@ -107,5 +109,6 @@ add_activated_ability("Mountain", 'T', 'self.controller.mana.add(mana.Mana.RED, 
 add_activated_ability("Forest", 'T', 'self.controller.mana.add(mana.Mana.GREEN, 1)', True)
 add_activated_ability("Wastes", 'T', 'self.controller.mana.add(mana.Mana.COLORLESS, 1)', True)
 
-add_targets("Lightning Bolt", [lambda p: p.__class__.__name__ == 'Player' or p.is_creature()])
+add_targets("Lightning Bolt", [lambda p: p.__class__.__name__ == 'Player' 
+                            or p.is_creature() and p.zone == zone.ZoneType.BATTLEFIELD])
 make_play_func_deal_damage_to_single_target("Lightning Bolt", 3)

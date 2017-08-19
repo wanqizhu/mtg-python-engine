@@ -1,7 +1,8 @@
 (Flameborn Viron - vanilla 6/4 for 4RR)
 
+- TEST CASES!!! (break them down into SMALLER units)
 
-- test game w/ vanilla creatures & lands
+- add ID to each card/gameobject
 
 - make option to always make default choice with mana payment
 	- smart mana payments when there's only 1 way
@@ -10,7 +11,16 @@
 	- make sure test cases still work (since new input)
 
 
-- TARGETS -- implement Lightning Bolt
+- make a few more spells w/ targets: giant growth, etc.
+- make Ponder (spells w/ no targets)
+
+
+- Triggered Abilities
+
+
+- Activated Abilities
+
+- look through M13 cards -- start implementing them
 
 
 rules: http://media.wizards.com/2017/downloads/MagicCompRules_20170707.pdf
