@@ -102,7 +102,7 @@ class TestPlayer(unittest.TestCase):
     def test_discard(self):
         with mock.patch('builtins.input', side_effect=['', '', '', '',
                 '__self.draw(4)',
-                '__self.discard(5)', '',
+                '__self.discard(5)', '',  # auto discard
                 's draw',
                 's draw',
                 '']):
@@ -177,7 +177,7 @@ class TestPlayer(unittest.TestCase):
         Validate multiple turns pose no problem
         """
 
-        with mock.patch('builtins.input', side_effect=['__self.discard(7)',
+        with mock.patch('builtins.input', side_effect=['__self.discard(-1)',
                 '__self.draw_card("Island")',
                 '__self.draw_card("Island")',
                 '__self.draw_card("Plains")',
@@ -226,7 +226,7 @@ class TestPlayer(unittest.TestCase):
 
 
     def test_attacking(self):
-        with mock.patch('builtins.input', side_effect=['__self.discard(7)',
+        with mock.patch('builtins.input', side_effect=['__self.discard(-1)',
                 '__self.draw_card("Devouring Deep")',
                 '', '', '', '',
                 '__self.mana.add(mana.Mana.BLUE, 3)',
@@ -260,8 +260,8 @@ class TestPlayer(unittest.TestCase):
         """ single creature blocking single attacker; each do nonlethal damage"""
   
         with mock.patch('builtins.input', side_effect=[
-                '__self.discard(7)', '__self.draw_card("Devouring Deep")','',  # p0
-                '__self.discard(7)', '__self.draw_card("Devouring Deep")','',  # p1
+                '__self.discard(-1)', '__self.draw_card("Devouring Deep")','',  # p0
+                '__self.discard(-1)', '__self.draw_card("Devouring Deep")','',  # p1
                 '', '',
                 '__self.mana.add(mana.Mana.BLUE, 3)',  # player 0
                 'p Devouring Deep', '', '', '',
@@ -336,7 +336,7 @@ class TestPlayer(unittest.TestCase):
 
     def test_multiple_attacker_multiple_blocker(self):
         with mock.patch('builtins.input', side_effect=[
-                '__self.discard(7)', '__self.draw_card("Devouring Deep")',  # p0
+                '__self.discard(-1)', '__self.draw_card("Devouring Deep")',  # p0
                 '__self.draw_card("Devouring Deep")',
                 '__self.draw_card("Sewn-Eye Drake")',
                 '', '', '', '',
@@ -349,7 +349,7 @@ class TestPlayer(unittest.TestCase):
                 's precombat_main',
                 '0',  # attacking for 3 w/ haste
             
-                '__self.discard(7)', '__self.draw_card("Devouring Deep")',
+                '__self.discard(-1)', '__self.draw_card("Devouring Deep")',
                 '__self.draw_card("Devouring Deep")',  # player 1's turn, main step
                 '__self.draw_card("Sewn-Eye Drake")',
                 '__self.mana.add(mana.Mana.BLUE, 9)',  

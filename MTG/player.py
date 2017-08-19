@@ -1,4 +1,4 @@
-import re, sys, pdb, traceback
+import re, sys, pdb, traceback, random
 
 from MTG import mana
 from MTG import zone
@@ -18,6 +18,7 @@ class Player():
         self.landPerTurn = 1
         self.landPlayed = 0
         self.passPriorityUntil = None
+        self.autoPayMana = False
 
         self.library = zone.Library(self, deck)
         for card in self.library:
@@ -178,8 +179,9 @@ class Player():
 
     # separate func for unit testing
     def make_choice(self, prompt_string):
+        print(prompt_string)
         # if not TEST:
-        ans = input(prompt_string)
+        ans = input("")
         if ans == 'debug':
             pdb.set_trace()
         return ans
@@ -215,13 +217,56 @@ class Player():
         self.hand.add(card)
 
 
-    def discard(self, num=1):
-        if num > len(self.hand):
-            return False
+    def discard(self, num=1, down_to=None, random=False):
+        """Discarding from hand; prompts user for card choices
 
-        ## TODO: prompt player pick which cards
-        for i in range(num):
-            self.graveyard.add(self.hand.pop())
+        If down_to is specified, number is ignored and set to len(self.hand) - down_to
+        """
+
+        ## TODO: triggers
+        if num == -1: num = len(self.hand)  # -1 to discard whole hand
+        if down_to: num = len(self.hand) - down_to  # discard down_to e.g. 3 cards left in hand
+        if num > len(self.hand): return False
+        if num <= 0: return True
+
+        
+        if num == len(self.hand):
+            cards_to_discard = self.hand[:]
+            self.hand.remove(cards_to_discard)
+            return self.graveyard.add(cards_to_discard)
+
+        if random:
+            cards_to_discard = random.sample(self.hand, num)
+            self.hand.remove(cards_to_discard)
+            return self.graveyard.add(cards_to_discard)
+
+        # prompt player pick which cards
+        answer = self.make_choice("%r\nWhich cards would you like to discard? (discarding %i) \n" % (self.hand, num))
+        cards_to_discard = []
+        hand = self.hand[:]
+
+        if not answer:  # '' to auto discard
+            print("Auto discarding\n")
+        else:
+            answer = answer.split(" ")
+            try:
+                for ind in answer:
+                    ind = int(ind)
+                    if ind < len(hand):
+                        cards_to_discard.append(hand[ind])
+                        self.hand.pop(ind)
+                    else:
+                        print("Card #{} is out of bounds\n".format(ind))
+                        continue
+            except:
+                print("Error processing discard")
+
+        while len(cards_to_discard) < num:
+            cards_to_discard.append(self.hand.pop())
+            if not answer:
+                print("Auto discarding last card...\n")
+
+        return self.graveyard.add(cards_to_discard)
 
 
     def pay(self, mana, life=0):

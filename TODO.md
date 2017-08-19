@@ -4,8 +4,6 @@
 
 - add ID to each card/gameobject
 
-- make option to always make default choice with mana payment
-	- smart mana payments when there's only 1 way
 
 - discard prompts user
 	- make sure test cases still work (since new input)

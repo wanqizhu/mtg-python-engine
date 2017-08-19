@@ -42,6 +42,15 @@ class Zone():
         if type(obj) is str:  # convert string (card's name) to a Card object
             obj = cards.card_from_name(obj)
 
+        if type(obj) is list:
+            for o in obj:
+                o.zone = self.zone_type
+                if not isinstance(self, Stack):
+                    assert isinstance(o, gameobject.GameObject)
+                o.controller = self.controller
+            self.elements.extend(obj)
+            return
+
 
         if not isinstance(self, Stack):
             assert isinstance(obj, gameobject.GameObject)
@@ -54,6 +63,9 @@ class Zone():
 
 
     def remove(self, obj):
+        if type(obj) is list:
+            return all([self.remove(o) for o in obj])
+
         try:
             self.elements.remove(obj)
             return True

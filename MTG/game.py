@@ -370,8 +370,7 @@ class Game(object):
             self.handle_priority(step)
 
         elif step is gamesteps.Step.CLEANUP:
-            self.current_player.discard(len(self.current_player.hand)
-                                     - self.current_player.maxHandSize)
+            self.current_player.discard(down_to=self.current_player.maxHandSize)
             self.apply_to_battlefield(
                     lambda p: p.trigger(permanent.triggerConditions.onCleanup))
 
