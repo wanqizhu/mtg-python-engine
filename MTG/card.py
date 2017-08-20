@@ -78,8 +78,8 @@ class Card(gameobject.GameObject):
             try:
                 if not criteria(card):
                     return False
-            except Exception as err:
-                traceback.print_tb(err.__traceback__)
+            except:
+                traceback.print_exc()
                 return False
 
             targets_chosen.append(card)

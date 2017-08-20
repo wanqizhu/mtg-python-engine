@@ -5,6 +5,7 @@ from MTG import zone
 from MTG import play
 from MTG import gamesteps
 from MTG import cards
+from MTG.exceptions import *
 
 
 
@@ -165,9 +166,8 @@ class Player():
                 else:
                     raise BadFormatException()
 
-            except Exception as err:
-                traceback.print_tb(err.__traceback__)
-                # print(sys.exc_info())
+            except:
+                traceback.print_exc()
                 print("Bad format.\n")
                 continue
 
@@ -216,8 +216,7 @@ class Player():
         """
         self.hand.add(card)
 
-
-    def discard(self, num=1, down_to=None, random=False):
+    def discard(self, num=1, down_to=None, rand=False):
         """Discarding from hand; prompts user for card choices
 
         If down_to is specified, number is ignored and set to len(self.hand) - down_to
@@ -229,43 +228,40 @@ class Player():
         if num > len(self.hand): return False
         if num <= 0: return True
 
-        
+
         if num == len(self.hand):
             cards_to_discard = self.hand[:]
-            self.hand.remove(cards_to_discard)
-            return self.graveyard.add(cards_to_discard)
-
-        if random:
-            cards_to_discard = random.sample(self.hand, num)
-            self.hand.remove(cards_to_discard)
-            return self.graveyard.add(cards_to_discard)
-
-        # prompt player pick which cards
-        answer = self.make_choice("%r\nWhich cards would you like to discard? (discarding %i) \n" % (self.hand, num))
-        cards_to_discard = []
-        hand = self.hand[:]
-
-        if not answer:  # '' to auto discard
-            print("Auto discarding\n")
+        
+        elif rand:
+            print("randomly discarding %i...\n" % num)
+            cards_to_discard = random.sample(self.hand.elements, num)
+            
         else:
-            answer = answer.split(" ")
-            try:
-                for ind in answer:
-                    ind = int(ind)
-                    if ind < len(hand):
-                        cards_to_discard.append(hand[ind])
-                        self.hand.pop(ind)
-                    else:
-                        print("Card #{} is out of bounds\n".format(ind))
-                        continue
-            except:
-                print("Error processing discard")
+            # prompt player pick which cards
+            answer = self.make_choice("%r\nWhich cards would you like to discard? (discarding %i) \n" % (self.hand, num))
+            cards_to_discard = []
 
-        while len(cards_to_discard) < num:
-            cards_to_discard.append(self.hand.pop())
-            if not answer:
-                print("Auto discarding last card...\n")
+            if not answer:  # '' to auto discard
+                print("Auto discarding\n")
+            else:
+                answer = answer.split(" ")
+                try:
+                    for ind in answer:
+                        ind = int(ind)
+                        if ind < len(self.hand):
+                            cards_to_discard.append(self.hand[ind])
+                        else:
+                            print("Card #{} is out of bounds\n".format(ind))
+                            continue
+                except:
+                    traceback.print_exc()
+                    print("Error processing discard")
 
+            cards_left = num - len(cards_to_discard)
+            if cards_left > 0:
+                cards_to_discard.extend(self.hand[-cards_left:])
+
+        self.hand.remove(cards_to_discard)
         return self.graveyard.add(cards_to_discard)
 
 

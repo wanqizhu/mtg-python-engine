@@ -1,26 +1,22 @@
-import mock, unittest
+import mock
+import unittest
 from copy import deepcopy
 
-from MTG import mana
 from MTG import game
 from MTG import cards
-from MTG import player
 from MTG import permanent
-from MTG import gameobject
 from MTG.exceptions import *
-
-
 
 class TestPlayer(unittest.TestCase):
     def setUp(self):
-        decks = [cards.read_deck('cards/decks/deck1.txt'), cards.read_deck('cards/decks/deck1.txt')]
+        decks = [cards.read_deck('data/decks/deck1.txt'),
+                 cards.read_deck('data/decks/deck1.txt')]
         self.GAME = game.Game(decks, test=True)
         self.GAME.set_up_game()
         self.player = self.GAME.players_list[0]
         self.player.tmp = False
         self.opponent = self.GAME.players_list[1]
         self.opponent.tmp = False
-
 
     def test_turn_do_nothing(self):
         with mock.patch('builtins.input', return_value=''):
@@ -34,7 +30,6 @@ class TestPlayer(unittest.TestCase):
                 self.assertEqual(self.player.life, 0)
                 self.assertTrue(self.player.lost)
                 self.assertTrue(self.player not in self.GAME.players_list)
-
 
     # def test_rewind_to_previous_state(self):
     #     """Make sure deepcopy resets everything"""
@@ -60,17 +55,14 @@ class TestPlayer(unittest.TestCase):
     #     self.assertFalse(self.GAME.stack)
     #     self.assertFalse(self.player.battlefield)
 
-
-
-
     def test_skip_priority(self):
         with mock.patch('builtins.input', return_value='s upkeep'):
             self.assertTrue(self.GAME.handle_turn())
 
-
     def test_mana_emptying(self):
         """Verify that both players' mana pool empties at end of phase"""
-        with mock.patch('builtins.input', side_effect=['__self.mana.add(mana.Mana.WHITE, 2)',
+        with mock.patch('builtins.input', side_effect=[
+                '__self.mana.add(mana.Mana.WHITE, 2)',
                 '__self.mana.add(mana.Mana.RED, 3)', '',  # player 0
                 '__self.mana.add(mana.Mana.BLUE, 2)', '',  # player 1
                 '__self.tmp = self.mana.pool[mana.Mana.WHITE] '
@@ -83,9 +75,9 @@ class TestPlayer(unittest.TestCase):
             self.assertTrue(self.player.tmp)
             self.assertTrue(self.opponent.tmp)
 
-
     def test_drawing_cards(self):
-        with mock.patch('builtins.input', side_effect=['', '', '', '',
+        with mock.patch('builtins.input', side_effect=[
+                '', '', '', '',
                 '__self.tmp = len(self.hand) == 7',
                 '__self.draw_card("Swamp")',
                 '__self.draw(5)',
@@ -98,9 +90,9 @@ class TestPlayer(unittest.TestCase):
             self.assertTrue(self.player.tmp)
             self.assertEqual(len(self.player.hand), 7)  # discard down to 7 eot
 
-
     def test_discard(self):
-        with mock.patch('builtins.input', side_effect=['', '', '', '',
+        with mock.patch('builtins.input', side_effect=[
+                '', '', '', '',
                 '__self.draw(4)',
                 '__self.discard(5)', '',  # auto discard
                 's draw',
@@ -108,11 +100,39 @@ class TestPlayer(unittest.TestCase):
                 '']):
 
             self.assertTrue(self.GAME.handle_turn())
-            
+
             self.assertEqual(len(self.player.hand), 6)  # discard down to 7 eot
             self.assertEqual(len(self.player.graveyard), 5)
 
+    def test_discard_down_to(self):
+        """ Testing discarding DOWN TO 5 cards left in hand"""
+        with mock.patch('builtins.input', side_effect=[
+                '', '', '', '',
+                '__self.draw(4)',
+                '__self.discard(down_to = 5)', '0 2 3 5 8 1',
+                's draw',
+                's draw',
+                '']):
 
+            self.assertTrue(self.GAME.handle_turn())
+
+            self.assertEqual(len(self.player.hand), 5)
+            self.assertEqual(len(self.player.graveyard), 6)
+
+    def test_discard_random(self):
+        """ Testing random discard"""
+        with mock.patch('builtins.input', side_effect=[
+                '', '', '', '',
+                '__self.draw(7)',
+                '__self.discard(9, rand=True)',
+                's draw',
+                's draw',
+                '']):
+
+            self.assertTrue(self.GAME.handle_turn())
+
+            self.assertEqual(len(self.player.hand), 5)
+            self.assertEqual(len(self.player.graveyard), 9)
 
     def test_play_land(self):
         """Fetch an island from deck, play it, add blue mana.
@@ -120,7 +140,8 @@ class TestPlayer(unittest.TestCase):
         Validate that mana is correctly added & landPlayed count went up
         """
 
-        with mock.patch('builtins.input', side_effect=['__self.draw_card("Island")',
+        with mock.patch('builtins.input', side_effect=[
+                '__self.draw_card("Island")',
                 '', '', '', '',
                 'p Island',
                 'a 0',
@@ -133,28 +154,28 @@ class TestPlayer(unittest.TestCase):
             self.assertTrue(self.player.tmp)
             self.assertEqual(self.player.landPlayed, 1)
 
-
-
     def test_play_creature_basic(self):
         """Play a creature while having sufficient mana (automatic payment)
 
         Devouring Deep costs 2U
         """
-        with mock.patch('builtins.input', side_effect=['__self.draw_card("Devouring Deep")',
+        with mock.patch('builtins.input', side_effect=[
+                '__self.draw_card("Devouring Deep")',
                 '', '', '', '',
                 '__self.mana.add(mana.Mana.BLUE, 3)',
-                'p Devouring Deep', '',  # extra '' is used for automatic mana payment
+                'p Devouring Deep', '',  # automatic mana payment
                 's draw',
                 's draw',
                 '']):
 
             self.assertTrue(self.GAME.handle_turn())
-            self.assertTrue(self.player.battlefield.get_card_by_name("Devouring Deep"))
-
+            self.assertTrue(self.player.battlefield.get_card_by_name(
+                            "Devouring Deep"))
 
     def test_play_creature_custom_mana_payment(self):
         """Play a creature while having sufficient mana (custom payment)"""
-        with mock.patch('builtins.input', side_effect=['__self.draw_card("Devouring Deep")',
+        with mock.patch('builtins.input', side_effect=[
+                '__self.draw_card("Devouring Deep")',
                 '', '', '', '',
                 '__self.mana.add(mana.Mana.BLUE, 1)',
                 '__self.mana.add(mana.Mana.RED, 1)',
@@ -167,9 +188,6 @@ class TestPlayer(unittest.TestCase):
             self.assertTrue(self.GAME.handle_turn())
             self.assertTrue(self.player.battlefield.get_card_by_name("Devouring Deep"))
 
-
-
-
     def test_play_creature_over_three_turns(self):
         """ Fetch three lands, play them over three turns, tap for mana, play Devouring Deep
 
@@ -177,7 +195,8 @@ class TestPlayer(unittest.TestCase):
         Validate multiple turns pose no problem
         """
 
-        with mock.patch('builtins.input', side_effect=['__self.discard(-1)',
+        with mock.patch('builtins.input', side_effect=[
+                '__self.discard(-1)',
                 '__self.draw_card("Island")',
                 '__self.draw_card("Island")',
                 '__self.draw_card("Plains")',
@@ -207,10 +226,9 @@ class TestPlayer(unittest.TestCase):
             self.assertEqual(len(self.player.battlefield), 4)
             self.assertTrue(self.player.battlefield.get_card_by_name("Devouring Deep"))
         
-
-
     def test_summoning_sickness(self):
-        with mock.patch('builtins.input', side_effect=['__self.draw_card("Devouring Deep")',
+        with mock.patch('builtins.input', side_effect=[
+                '__self.draw_card("Devouring Deep")',
                 '', '', '', '',
                 '__self.mana.add(mana.Mana.BLUE, 3)',
                 'p Devouring Deep', '',  # auto payment
@@ -221,12 +239,12 @@ class TestPlayer(unittest.TestCase):
                 '']):
 
             self.GAME.handle_turn()
-            
+
             self.assertTrue(self.player.tmp)
 
-
     def test_attacking(self):
-        with mock.patch('builtins.input', side_effect=['__self.discard(-1)',
+        with mock.patch('builtins.input', side_effect=[
+                '__self.discard(-1)',
                 '__self.draw_card("Devouring Deep")',
                 '', '', '', '',
                 '__self.mana.add(mana.Mana.BLUE, 3)',
@@ -247,13 +265,12 @@ class TestPlayer(unittest.TestCase):
             self.GAME.handle_turn()
             self.GAME.current_player = self.player
             self.GAME.handle_turn()
-            
+
 
             self.assertTrue(self.player.tmp)
             self.assertTrue(self.player.battlefield.get_card_by_name("Devouring Deep").status.tapped)
             self.assertFalse(self.player.battlefield.get_card_by_name("Devouring Deep").in_combat())
             self.assertEqual(self.opponent.life, 19, "incorrect combat damage")
-
 
     @mock.patch.object(permanent.Permanent, 'take_damage')
     def test_blocking(self, mock_take_damage):
@@ -290,8 +307,6 @@ class TestPlayer(unittest.TestCase):
             # so we can't assert that, for example, c1.take_damage was called with source=c2 and vice versa
             mock_take_damage.assert_has_calls([mock.call(c1, 2), mock.call(c2, 1)])
 
-
-
     @mock.patch.object(permanent.Permanent, 'dies')
     def test_lethal_damage_in_combat(self, mock_dies):
         """ single creature blocking single attacker; both die"""
@@ -310,7 +325,6 @@ class TestPlayer(unittest.TestCase):
             mock_dies.assert_any_call()
             self.assertEqual(self.player.life, 20)
             self.assertEqual(self.opponent.life, 20)
-
 
     def test_multiple_attacker(self):
         """ multiple attacker, one blocker. Damage goes to both player and creature."""
@@ -333,7 +347,6 @@ class TestPlayer(unittest.TestCase):
             self.assertEqual(len(self.player.graveyard), 1)
             self.assertEqual(len(self.opponent.graveyard), 1)
 
-
     def test_multiple_attacker_multiple_blocker(self):
         with mock.patch('builtins.input', side_effect=[
                 '__self.discard(-1)', '__self.draw_card("Devouring Deep")',  # p0
@@ -348,7 +361,7 @@ class TestPlayer(unittest.TestCase):
                 's precombat_main',
                 's precombat_main',
                 '0',  # attacking for 3 w/ haste
-            
+
                 '__self.discard(-1)', '__self.draw_card("Devouring Deep")',
                 '__self.draw_card("Devouring Deep")',  # player 1's turn, main step
                 '__self.draw_card("Sewn-Eye Drake")',
@@ -402,8 +415,6 @@ class TestPlayer(unittest.TestCase):
             self.assertTrue(self.player.tmp)
             self.assertTrue(self.opponent.tmp)
 
-
-
     # def test_trample(self):
     #     pass
 
@@ -412,7 +423,6 @@ class TestPlayer(unittest.TestCase):
 
     # def test_flying(self):
     #     pass
-
 
     def test_haste(self):
         with mock.patch('builtins.input', side_effect=[
@@ -428,7 +438,6 @@ class TestPlayer(unittest.TestCase):
 
             self.GAME.handle_turn()
             self.assertTrue(self.player.tmp)
-
 
     def test_lightning_strike(self):
         """Casts three lightning Strike in succession, using auto-pay mana; verify stack resolve order"""

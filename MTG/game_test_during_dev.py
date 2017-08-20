@@ -37,8 +37,8 @@ with mock.patch('builtins.input', side_effect=[
         's precombat_main',
         '',  # no attacks
         ]):
-    decks = [cards.read_deck('cards/decks/deck1.txt'),
-        cards.read_deck('cards/decks/deck1.txt')]
+    decks = [cards.read_deck('data/decks/deck1.txt'),
+        cards.read_deck('data/decks/deck1.txt')]
     GAME = Game(decks)
     GAME.set_up_game()
     GAME.handle_turn()
