@@ -70,7 +70,7 @@ class ManaPool():
         hybrid = re.findall('\([WUBRGC2]/[WUBRGC]\)', manacost)
         for h in hybrid:
             if self.controller.autoPayMana:
-                choice == '0'
+                choice = '0'
             else:
                 choice = self.controller.make_choice('How would you like to pay? 0 (default): {}\t 1: {}\n'.format(h[1], h[3]))
        
@@ -86,7 +86,7 @@ class ManaPool():
 
         if anyTypeMana > 0:
             if self.controller.autoPayMana:
-                choice == ''
+                choice = ''
             else:
                 choice = self.controller.make_choice('How would you like to pay {}? Enter blank for automatic payment, or enter a string of colored mana\n'.format(anyTypeMana))
             

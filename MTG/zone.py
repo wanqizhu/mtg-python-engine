@@ -27,8 +27,8 @@ class Zone():
 
 
     def __repr__(self):
-        return 'zone.Zone %r len=%r\n%r' % (self.__class__.__name__,
-                                            len(self), self.elements)
+        return 'zone.Zone %r controlled by %r len=%s\n%r' % (self.__class__.__name__,
+                                            self.controller, len(self), self.elements)
     def __len__(self):
         return len(self.elements)
 

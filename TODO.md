@@ -4,9 +4,7 @@
 
 - add ID to each card/gameobject
 
-
-- discard prompts user
-	- make sure test cases still work (since new input)
+- distinguish same-named objects in same zone
 
 
 - make a few more spells w/ targets: giant growth, etc.
@@ -18,7 +16,7 @@
 
 - Activated Abilities
 
-- look through M13 cards -- start implementing them
+- look through M15 cards -- start implementing them
 
 
 rules: http://media.wizards.com/2017/downloads/MagicCompRules_20170707.pdf
@@ -26,6 +24,7 @@ rules: http://media.wizards.com/2017/downloads/MagicCompRules_20170707.pdf
 
 - unit tests
 	- mocking: see https://www.toptal.com/python/an-introduction-to-mocking-in-python
+
 
 
 KNOWN BUGS

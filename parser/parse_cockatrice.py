@@ -2,7 +2,7 @@ import re, sys
 
 from bs4 import BeautifulSoup
 # from lexer import lexer
-# import pickle
+import pickle
 
 from MTG import card
 from MTG import cardtype
@@ -13,12 +13,12 @@ from MTG import abilities
 
 
 def run():
-    with open('parser/cards_sm.xml') as f:
+    with open('parser/data/cards_sm.xml') as f:
         soup = BeautifulSoup(f, 'xml')
 
     card_list = soup.cockatrice_carddatabase.cards.find_all('card')
     cnt = 0
-    fout = open("MTG/parsedcards.py", "w")
+    fout = open("cards/test_set_cards.py", "w")
     fout.write("from MTG import card\n"
         "from MTG import gameobject\n"
         "from MTG import cardtype\n"
@@ -28,7 +28,7 @@ def run():
     id_to_name = {}
     name_to_id = {}
 
-    for card in card_list[:100]:
+    for card in card_list:
         supertype = []
         types = []
         try:
@@ -89,14 +89,20 @@ def run():
         
 
 
-    fout.write(
-"""id_to_name_dict = {}
+#     fout.write(
+# """id_to_name_dict = {}
 
-name_to_id_dict = {}
+# name_to_id_dict = {}
 
 
-""".format(id_to_name, name_to_id))
+# """.format(id_to_name, name_to_id))
 
+
+    with open("cards/test_set_id_to_name_dict.pkl", "wb") as f:
+        pickle.dump(id_to_name, f)
+
+    with open("cards/test_set_name_to_id_dict.pkl", "wb") as f:
+        pickle.dump(name_to_id, f)
 
     fout.close()
 

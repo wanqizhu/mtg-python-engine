@@ -430,20 +430,21 @@ class TestPlayer(unittest.TestCase):
             self.assertTrue(self.player.tmp)
 
 
-    def test_lightning_bolt(self):
-        """Casts three lightning bolt in succession; verify stack resolve order"""
+    def test_lightning_strike(self):
+        """Casts three lightning Strike in succession, using auto-pay mana; verify stack resolve order"""
         with mock.patch('builtins.input', side_effect=[
+                '__self.autoPayMana = True',
                 '__self.battlefield.add("Sewn-Eye Drake")', '',
                 '__self.battlefield.add("Devouring Deep")', '', # player 1
-                '__self.draw_card("Lightning Bolt")',
-                '__self.draw_card("Lightning Bolt")',
-                '__self.draw_card("Lightning Bolt")',
-                '__self.mana.add(mana.Mana.RED, 3)',
-                'p Lightning Bolt',
+                '__self.draw_card("Lightning Strike")',
+                '__self.draw_card("Lightning Strike")',
+                '__self.draw_card("Lightning Strike")',
+                '__self.mana.add(mana.Mana.RED, 6)',
+                'p Lightning Strike',
                 'b 0',
-                'p Lightning Bolt',  # play another in response
+                'p Lightning Strike',  # play another in response
                 'ob 0',
-                'p Lightning Bolt',
+                'p Lightning Strike',
                 'op',
                 '', '',  # resolve last one
                 '__self.tmp = self.opponent().life == 17'
@@ -456,7 +457,7 @@ class TestPlayer(unittest.TestCase):
                 '', '',
                 '__self.tmp = self.tmp'
                             ' and len(self.battlefield) == 0'
-                            ' and len(self.graveyard) == 4',  # 3 lightning bolt & dead creature
+                            ' and len(self.graveyard) == 4',  # 3 lightning Strike & dead creature
                 's upkeep',
                 's upkeep']):  # no attack
 

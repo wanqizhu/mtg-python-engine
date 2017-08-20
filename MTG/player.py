@@ -291,6 +291,11 @@ class Player():
         print("{} takes {} damage from {}\n".format(self, dmg, source))
         self.life -= dmg
 
+    def gain_life(self, amount):
+        # trigger
+        print("%r: gaining %i life\n" % (self, amount))
+        self.life += amount
+
 
     def lose(self):
         print("{} has lost the game\n".format(self))

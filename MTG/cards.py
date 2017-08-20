@@ -1,4 +1,4 @@
-import sys
+import sys, pickle
 
 from MTG import card
 from MTG import cardtype
@@ -6,6 +6,25 @@ from MTG import abilities
 from MTG import player
 from MTG import zone
 from MTG.parsedcards import *
+# from cards.parsed_cards import *
+# from cards.M15_cards import *
+
+SETPREFIX = ['M15', 'test_set']
+name_to_id_dict = {}
+id_to_name_dict = {}
+
+for pre in SETPREFIX:
+    try:
+        with open('cards/%s_name_to_id_dict.pkl' % pre, 'rb') as f:
+            name_to_id_dict.update(pickle.load(f))
+    except:
+        print("%s name_to_id_dict not found\n" % pre)
+
+    try:
+        with open('cards/%s_id_to_name_dict.pkl' % pre, 'rb') as f:
+            id_to_name_dict.update(pickle.load(f))
+    except:
+        print("%s id_to_name_dict not found\n" % pre)
 
 
 def id_to_name(ID):
@@ -107,8 +126,12 @@ add_activated_ability("Island", 'T', 'self.controller.mana.add(mana.Mana.BLUE, 1
 add_activated_ability("Swamp", 'T', 'self.controller.mana.add(mana.Mana.BLACK, 1)', True)
 add_activated_ability("Mountain", 'T', 'self.controller.mana.add(mana.Mana.RED, 1)', True)
 add_activated_ability("Forest", 'T', 'self.controller.mana.add(mana.Mana.GREEN, 1)', True)
-add_activated_ability("Wastes", 'T', 'self.controller.mana.add(mana.Mana.COLORLESS, 1)', True)
+# add_activated_ability("Wastes", 'T', 'self.controller.mana.add(mana.Mana.COLORLESS, 1)', True)
 
-add_targets("Lightning Bolt", [lambda p: p.__class__.__name__ == 'Player' 
+# add_targets("Lightning Bolt", [lambda p: p.__class__.__name__ == 'Player' 
+#                             or p.is_creature() and p.zone == zone.ZoneType.BATTLEFIELD])
+# make_play_func_deal_damage_to_single_target("Lightning Bolt", 3)
+
+add_targets("Lightning Strike", [lambda p: p.__class__.__name__ == 'Player' 
                             or p.is_creature() and p.zone == zone.ZoneType.BATTLEFIELD])
-make_play_func_deal_damage_to_single_target("Lightning Bolt", 3)
+make_play_func_deal_damage_to_single_target("Lightning Strike", 3)

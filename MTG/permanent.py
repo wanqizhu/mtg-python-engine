@@ -203,6 +203,10 @@ class Permanent(gameobject.GameObject):
         else:
             # a single creature or a player
             target.take_damage(self, dmg)
+
+        ## TODO: check damage actually went through
+        if self.has_ability("Lifelink"):
+            self.controller.gain_life(dmg)
         ## TODO: triggers
 
 
