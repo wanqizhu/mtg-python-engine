@@ -1,50 +1,16 @@
 import sys, pdb
-from enum import Enum
+from collections import defaultdict
+
 
 from MTG import gameobject
 from MTG import zone
 from MTG import cardtype
 from MTG import mana
+from MTG import triggers
+from MTG import play
 
 
 
-class triggerConditions(Enum):
-    # zone changes
-    onPlay = 0
-    onDraw = 1
-    onDiscard = 2
-    onEtB = 3
-    onPlayfromHand = 4
-    onEnterGrave = 5
-    onDeath = 6
-    onLeaveBattlefield = 7
-    # phase (CONTROLLER ONLY or ALL PLAYERS)
-    onUpkeep = 10
-    onMain1 = 11
-    onMain2 = 12
-    onEnterCombat = 13
-    onDeclareAttackers = 14
-    onDeclareBlockers = 15
-    onEndofCombat = 16
-    onEndstep = 17
-    onCleanup = 18
-    # events
-    onUntap = 8
-    onTap = 9
-    
-    onDealDamageToPlayers = 19
-    onDealDamageToCreatures = 20
-    onDealDamage = 21
-    onTakingDamage = 22
-    onAttack = 23
-    onBlock = 24
-    # global events
-    onRevolt = 30 # permanent leaving battlefield
-    onControllerLifeLoss = 31
-    onLifeLoss = 32
-    onControllerLifeGain = 33
-    onLifeGain = 34
-    onCounterPutOnPermanent = 35
 
 
 class Status():
@@ -57,6 +23,7 @@ class Status():
         self.damage_taken = 0
         self.is_attacking = []
         self.is_blocking = []
+        self.counters = defaultdict(lambda: 0)
 
     def __repr__(self):
         return str(self.__dict__)
@@ -67,6 +34,7 @@ class Permanent(gameobject.GameObject):
     def __init__(self, characteristics, controller, owner=None, original_card=None, status=None):
         self.characteristics = characteristics
         self.controller = controller
+        self.game = controller.game
         self.owner = owner if owner else controller
         self.zone = zone.ZoneType.BATTLEFIELD
         self.original_card = original_card
@@ -81,6 +49,7 @@ class Permanent(gameobject.GameObject):
             self._activated_abilities_costs_validation = original_card._activated_abilities_costs_validation
             self._activated_abilities_costs = original_card._activated_abilities_costs
             self._activated_abilities_effects = original_card._activated_abilities_effects
+            self.trigger_listeners = original_card.trigger_listeners
 
         # add to battlefield
         self.controller.battlefield.add(self)
@@ -109,11 +78,25 @@ class Permanent(gameobject.GameObject):
             self.status.tapped = False
             #self.untapTrigger()
 
-    def is_creature(self):
-        return cardtype.CardType.CREATURE in self.characteristics.types
+    @property
+    def power(self):
+        if self.is_creature:
+            return (self.characteristics.power + self.status.counters["+1/+1"]
+                                              - self.status.counters["-1/-1"])
+        else:
+            return None
+
+    @property
+    def toughness(self):
+        if self.is_creature:
+            return (self.characteristics.toughness + self.status.counters["+1/+1"]
+                                              - self.status.counters["-1/-1"])
+        else:
+            return None
+
 
     def can_attack(self):
-        return (self.is_creature() and not self.status.tapped and 
+        return (self.is_creature and not self.status.tapped and 
                     (not self.status.summoning_sick or self.has_ability("Haste")))
 
     def can_block(self, attackers=None):
@@ -130,11 +113,11 @@ class Permanent(gameobject.GameObject):
                     return False
 
                 if (attacker.has_ability('Intimidate')
-                        and not (self.is_artifact() or self.share_color(attacker))):
+                        and not (self.is_artifact or self.share_color(attacker))):
                     return False
                 pass  ## TODO: other blocking restrictions (e.g. can't block alone)
         
-        return self.is_creature() and not self.status.tapped
+        return self.is_creature and not self.status.tapped
 
 
 
@@ -157,6 +140,7 @@ class Permanent(gameobject.GameObject):
         else:
             return False
 
+    @property
     def in_combat(self):
         return self.status.is_attacking or self.status.is_blocking
 
@@ -179,12 +163,12 @@ class Permanent(gameobject.GameObject):
             return
 
         if isinstance(target, list):
-            dmg_to_assign = self.characteristics.power
+            dmg_to_assign = self.power
             for blocker in target:
                 if self.has_ability("Deathtouch"):
                     lethal_dmg = 1
                 else:
-                    lethal_dmg = blocker.characteristics.toughness
+                    lethal_dmg = blocker.toughness
 
                 if blocker == target[-1]:
                     if not self.has_ability("Trample"):  # all remaining dmg goes to last creature
@@ -212,11 +196,17 @@ class Permanent(gameobject.GameObject):
 
     def trigger(self, condition):
         ## TODO: more triggers
-        if condition == triggerConditions.onUpkeep:
+        if condition == triggers.triggerConditions.onUpkeep:
             self.status.summoning_sick = False
-        elif condition == triggerConditions.onCleanup:
+        elif condition == triggers.triggerConditions.onCleanup:
             self.status.damage_taken = 0
             # clear end-of-turn effects
+
+        if condition in self.trigger_listeners:
+            print("Trigger to be process at next priority...\n")
+            self.game.pending_triggers.extend(
+                [play.Play(lambda: effect(self))
+                 for effect in self.trigger_listeners[condition]])
 
     def dies(self):
         ## trigger
@@ -226,6 +216,10 @@ class Permanent(gameobject.GameObject):
         c = self.original_card
         c.previousState = self
         self.controller.graveyard.add(c)
+
+
+    def add_counter(self, counter, num=1):
+        self.status.counters[counter] += num
 
 
 

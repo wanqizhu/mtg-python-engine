@@ -3,45 +3,7 @@ import traceback
 from MTG import gameobject
 
 
-def get_card_from_user_input(player, string):
-    """Convert a user input (naming a card in a zone) to an actual game object
 
-    b 2 --> 2nd(3rd) card on battlefield
-    b Grizzly Bear --> Grizzly Bear on battlefield
-    
-    s 0 --> 1st card on stack (from top)
-
-    h -1 --> last card in hand
-
-    og 3 --> 3rd(4th) card on opponent's graveyard
-    """
-    
-    if string[0] == 'o':  # opponent
-        string = string[1:]
-        player = player.game.opponent(player)
-
-    if string[0] == 'p':
-        return player
-
-    if string[0] == 'b':
-        zone = player.battlefield
-    elif string[0] == 's':
-        zone = player.game.stack
-    elif string[0] == 'h':
-        zone = player.hand
-    elif string[0] == 'g':
-        zone = player.graveyard
-
-
-
-    try:
-        i = int(string[2:])
-        if i < len(zone):
-            return zone[i]
-        else:
-            return None
-    except:
-        return zone.get_card_by_name(string[2:])
 
 
 class Attributes():
@@ -50,10 +12,11 @@ class Attributes():
         self.num_creatures_can_block = 1
 
 
-
 class Card(gameobject.GameObject):
     target_criterias = None
     target_prompts = None
+
+    trigger_listeners = {}
 
     def __init__(self, characteristics=gameobject.Characteristics(),
              controller=None, owner=None, zone=None, previousState=None):
@@ -93,7 +56,49 @@ class Card(gameobject.GameObject):
 
     def play_func(self):  # defaults to permanent
         permanent.make_permanent(self)
-        pass
+
+
+
+def get_card_from_user_input(player, string):
+    """Convert a user input (naming a card in a zone) to an actual game object
+
+    b 2 --> 2nd(3rd) card on battlefield
+    b Grizzly Bear --> Grizzly Bear on battlefield
+
+    s 0 --> 1st card on stack (from top)
+
+    h -1 --> last card in hand
+
+    og 3 --> 3rd(4th) card on opponent's graveyard
+    """
+
+    if string[0] == 'o':  # opponent
+        string = string[1:]
+        player = player.game.opponent(player)
+
+    if string[0] == 'p':
+        return player
+
+    if string[0] == 'b':
+        zone = player.battlefield
+    elif string[0] == 's':
+        zone = player.game.stack
+    elif string[0] == 'h':
+        zone = player.hand
+    elif string[0] == 'g':
+        zone = player.graveyard
+
+
+
+    try:
+        i = int(string[2:])
+        if i < len(zone):
+            return zone[i]
+        else:
+            return None
+    except:
+        return zone.get_card_by_name(string[2:])
+
 
 
 from MTG import permanent  # need to move this later to avoid circular import stuff

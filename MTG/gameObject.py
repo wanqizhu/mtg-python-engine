@@ -54,6 +54,8 @@ class GameObject():
         self.owner = owner
         self.zone = zone
         self.previousState = previousState
+        if self.controller:
+            self.game = self.controller.game
 
     def __repr__(self):
         # pdb.set_trace()
@@ -67,20 +69,39 @@ class GameObject():
     def manacost(self):
         return self.characteristics.mana_cost
 
+    @property
     def is_land(self):
         return cardtype.CardType.LAND in self.characteristics.types
 
+    @property
     def is_creature(self):
         return cardtype.CardType.CREATURE in self.characteristics.types
 
+    @property
     def is_instant(self):
         return cardtype.CardType.INSTANT in self.characteristics.types
 
+    @property
     def is_artifact(self):
         return cardtype.CardType.ARTIFACT in self.characteristics.types
+
+    @property
+    def power(self):
+        return self.characteristics.power if self.is_creature else None
+
+    @property
+    def toughness(self):
+        return self.characteristics.toughness if self.is_creature else None
+
 
     def has_ability(self, ability):
         return abilities.StaticAbilities[ability] in self.characteristics.abilities
 
     def share_color(self, other):
         return bool(set(self.characteristics.color) & set(other.characteristics.color))
+
+    def has_color(self, color):
+        return color in self.characteristics.color
+
+    def is_color(self, color):
+        return color == self.characteristics.color

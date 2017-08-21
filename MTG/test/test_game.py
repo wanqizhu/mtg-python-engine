@@ -269,7 +269,7 @@ class TestPlayer(unittest.TestCase):
 
             self.assertTrue(self.player.tmp)
             self.assertTrue(self.player.battlefield.get_card_by_name("Devouring Deep").status.tapped)
-            self.assertFalse(self.player.battlefield.get_card_by_name("Devouring Deep").in_combat())
+            self.assertFalse(self.player.battlefield.get_card_by_name("Devouring Deep").in_combat)
             self.assertEqual(self.opponent.life, 19, "incorrect combat damage")
 
     @mock.patch.object(permanent.Permanent, 'take_damage')

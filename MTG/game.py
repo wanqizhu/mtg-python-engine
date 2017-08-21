@@ -14,6 +14,7 @@ from MTG import cards
 from MTG import gamesteps
 from MTG import combat
 from MTG import permanent
+from MTG import triggers
 from MTG.exceptions import *
 
 global GAME
@@ -40,6 +41,7 @@ class Game(object):
         self.step = None
         self.pending_turns = []
         self.pending_steps = []
+        self.pending_triggers = []
         self.test = test
         # self.previous_state = GAME_PREVIOUS_STATE
 
@@ -64,8 +66,10 @@ class Game(object):
     # TODO
     def apply_state_based_actions(self):
         print("Applying state based actions")
-        self.apply_to_battlefield(lambda p: p.dies(),
-                                  lambda p: p.is_creature() and p.status.damage_taken >= p.characteristics.toughness)
+        self.apply_to_battlefield(
+            lambda p: p.dies(),
+            lambda p: p.is_creature and
+                      p.status.damage_taken >= p.toughness)
 
         # check for player death
         for _player in self.players_list:
@@ -82,7 +86,7 @@ class Game(object):
     # TODO
     def apply_stack_item(self, stack_item):
         """ resolving a spell/effect from stack"""
-        print(stack_item.name)
+        print(stack_item)
         stack_item.apply()
         pass
 
@@ -108,6 +112,15 @@ class Game(object):
         while self.passed_priority < self.num_players or self.stack:
             self.apply_state_based_actions()
 
+            if self.pending_triggers:
+                # TODO: ask player for ordering
+                self.stack.elements.extend(self.pending_triggers)
+                self.pending_triggers = []
+                self.passed_priority = 0
+
+            if self.stack:
+                print(self.stack)
+
             # auto pass priority
             if self.players_list[priority].passPriorityUntil not in [None, step]:
                 _play = None
@@ -120,7 +133,8 @@ class Game(object):
                 self.passed_priority += 1
                 # who's next to get priority
                 priority = (priority + 1) % self.num_players
-                if self.passed_priority == self.num_players and self.stack:  # resolve top stack item
+                if self.passed_priority == self.num_players and self.stack:
+                    # resolve top stack item
                     self.apply_stack_item(self.stack.pop())
                     self.passed_priority = 0
             else:
@@ -128,7 +142,8 @@ class Game(object):
                 print(_play)
                 self.passed_priority = 0
 
-                if _play.is_mana_ability or _play.is_special_action:  # applies instantly
+                if _play.is_mana_ability or _play.is_special_action:
+                    # applies instantly
                     _play.apply()
                 else:
                     self.stack.add(_play)  # add to stack
@@ -142,9 +157,9 @@ class Game(object):
                 _player.landPlayed = 0
 
         elif step is gamesteps.Step.UPKEEP:
-            self.handle_priority(step)
             self.apply_to_battlefield(lambda p: p.trigger(
-                permanent.triggerConditions.onUpkeep))
+                triggers.triggerConditions.onUpkeep))
+            self.handle_priority(step)
 
         elif step is gamesteps.Step.DRAW:
             if self.first_player_does_not_draw:
@@ -160,22 +175,21 @@ class Game(object):
 
     # TODO
     def handle_combat_phase(self, step):
-
         if step is gamesteps.Step.BEGINNING_OF_COMBAT:
             self.apply_to_battlefield(
-                lambda p: p.trigger(permanent.triggerConditions.onEnterCombat))
+                lambda p: p.trigger(triggers.triggerConditions.onEnterCombat))
 
         elif step is gamesteps.Step.DECLARE_ATTACKERS:
             self.apply_to_battlefield(
-                lambda p: p.trigger(permanent.triggerConditions.onDeclareAttackers))
+                lambda p: p.trigger(triggers.triggerConditions.onDeclareAttackers))
 
         elif step is gamesteps.Step.DECLARE_BLOCKERS:
             self.apply_to_battlefield(
-                lambda p: p.trigger(permanent.triggerConditions.onDeclareBlockers))
+                lambda p: p.trigger(triggers.triggerConditions.onDeclareBlockers))
 
         elif step is gamesteps.Step.END_OF_COMBAT:
             self.apply_to_battlefield(
-                lambda p: p.trigger(permanent.triggerConditions.onEndofCombat))
+                lambda p: p.trigger(triggers.triggerConditions.onEndofCombat))
 
         if step is gamesteps.Step.DECLARE_ATTACKERS:
 
@@ -317,7 +331,7 @@ class Game(object):
             # TODO: first strike
             self.apply_to_battlefield(
                 lambda p: p.deals_damage(
-                    p.status.is_attacking, p.characteristics.power),
+                    p.status.is_attacking, p.power),
                 lambda p: p.status.is_attacking and (p.has_ability("First_Strike")
                                                      or p.has_ability("Double_Strike")))
             pass
@@ -326,14 +340,14 @@ class Game(object):
             # attackers do damage
             self.apply_to_battlefield(
                 lambda p: p.deals_damage(p.status.is_attacking,
-                                         p.characteristics.power),
+                                         p.power),
                 lambda p: p.status.is_attacking and (not p.has_ability("First_Strike")
                                                      or p.has_ability("Double_Strike")))
 
             # blockers do damage
             self.apply_to_battlefield(
                 lambda p: p.deals_damage(p.status.is_blocking,
-                                         p.characteristics.power),
+                                         p.power),
                 lambda p: p.status.is_blocking and (not p.has_ability("First_Strike")
                                                     or p.has_ability("Double_Strike")))
 
@@ -347,15 +361,16 @@ class Game(object):
         self.handle_priority(step)
 
     def handle_end_phase(self, step):
-
         if step is gamesteps.Step.END:
+            self.apply_to_battlefield(
+                lambda p: p.trigger(triggers.triggerConditions.onEndstep))
             self.handle_priority(step)
 
         elif step is gamesteps.Step.CLEANUP:
             self.current_player.discard(
                 down_to=self.current_player.maxHandSize)
             self.apply_to_battlefield(
-                lambda p: p.trigger(permanent.triggerConditions.onCleanup))
+                lambda p: p.trigger(triggers.triggerConditions.onCleanup))
 
     def handle_turn(self):
         self.pending_steps = []

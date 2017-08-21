@@ -1,13 +1,16 @@
-import re, sys, pdb, traceback, random
+import re
+import sys
+import pdb
+import traceback
+import random
 
 from MTG import mana
 from MTG import zone
 from MTG import play
 from MTG import gamesteps
 from MTG import cards
+from MTG import triggers
 from MTG.exceptions import *
-
-
 
 
 class Player():
@@ -38,7 +41,6 @@ class Player():
     def __repr__(self):
         return 'player.Player(name=%r)' % self.name
 
-
     def get_action(self):
         """ asks the player to do something
 
@@ -48,19 +50,20 @@ class Player():
         _play = None
 
         while answer and _play is None:
-            answer = self.make_choice("What would you like to do? {}, {}\n".format(self.name, self.game.step))
-            
+            answer = self.make_choice(
+                "What would you like to do? {}{}, {}\n".format(self.name, 
+                    '*' if self == self.game.current_player else '', self.game.step))
+
             if self.game.test:
-                print("\t" + self.name + ", " + str(self.game.step) + ": " + answer + "\n")
+                print("\t" + self.name + ", " +
+                      str(self.game.step) + ": " + answer + "\n")
 
             if answer == '':
                 break
 
-            
-
             try:
                 if answer == 'print':
-                    self.game.print_game_state() 
+                    self.game.print_game_state()
 
                 elif answer == 'hand':
                     print(self.hand)
@@ -74,13 +77,16 @@ class Player():
                 elif answer == 'exile':
                     print(self.exile)
 
+                elif answer == 'stack':
+                    print(self.game.stack)
+
                 elif answer == 'debug':
                     pdb.set_trace()
 
-
                 elif answer[0] == 'p':  # playing card from hand
                     try:
-                        num = int(answer[2:])   # 'p 3' == plays third card in hand
+                        # 'p 3' == plays third card in hand
+                        num = int(answer[2:])
                         assert num < len(self.hand)
                         card = self.hand.pop(num)
                     except:
@@ -88,27 +94,25 @@ class Player():
                         card = self.hand.get_card_by_name(name)
                         self.hand.remove(card)
                         assert card
-                        
 
-
-                    ## pay mana costs
-                    can_pay = self.mana.canPay(card.manacost())  # False, or a dict of mana costs
-                    
+                    # pay mana costs
+                    # False, or a dict of mana costs
+                    can_pay = self.mana.canPay(card.manacost())
 
                     # timing & restrictions
                     can_play = True
-                    if card.is_land() and self.landPlayed >= self.landPerTurn:
-                        can_play = False
-                        
-                    if not (card.is_instant() or card.has_ability('Flash')) and (
-                                self.game.stack 
-                                or self.game.step.phase not in [
-                                    gamesteps.Phase.PRECOMBAT_MAIN, 
-                                    gamesteps.Phase.POSTCOMBAT_MAIN]
-                                or self.game.current_player != self):
+                    if card.is_land and self.landPlayed >= self.landPerTurn:
                         can_play = False
 
-                    ## choose targets
+                    if not (card.is_instant or card.has_ability('Flash')) and (
+                            self.game.stack
+                            or self.game.step.phase not in [
+                                gamesteps.Phase.PRECOMBAT_MAIN,
+                                gamesteps.Phase.POSTCOMBAT_MAIN]
+                            or self.game.current_player != self):
+                        can_play = False
+
+                    # choose targets
                     can_target = card.targets()
 
                     if can_pay and can_target and can_play:
@@ -117,7 +121,7 @@ class Player():
 
                         _play = play.Play(card.play_func, card)
                         # special actions
-                        if card.is_land():
+                        if card.is_land:
                             _play.is_special_action = True
                             self.landPlayed += 1
                     else:
@@ -128,8 +132,6 @@ class Player():
                             print("Cannot target\n")
                         if not can_play:
                             print("Cannot play this right now\n")
-
-
 
                 # activate ability from battlefield -- 'a 3_1' plays 2nd (index starts at 0) ability from 3rd permanent
                 # 'a 3' playrs 1st (default) ability of the 3rd permanent
@@ -145,17 +147,18 @@ class Player():
                     card = self.battlefield[nums[0]]
 
                     assert nums[1] <= len(card.activated_abilities)
-                    
+
                     # ability activation
                     if card._activated_abilities_costs_validation[nums[1]](card):
-                        _play = play.Play(lambda: card.activate_ability(nums[1]))
+                        _play = play.Play(
+                            lambda: card.activate_ability(nums[1]))
                         if card.activated_abilities[nums[1]][2]:  # special action
                             _play.is_mana_ability = True
 
                 # skip priority until something happens / certain step
                 elif answer[:2] == 's ':
                     if answer[2:] == 'main':
-                        answer = 's precombat_main'   
+                        answer = 's precombat_main'
                     assert answer[2:].upper() in gamesteps.Step._member_names_
                     self.passPriorityUntil = gamesteps.Step[answer[2:].upper()]
                     break
@@ -173,13 +176,12 @@ class Player():
 
         return _play
 
-
     def opponent(self):
         return self.game.opponent(self)
 
     # separate func for unit testing
     def make_choice(self, prompt_string):
-        print(prompt_string)
+        print(prompt_string[:-1]) # remove ending \n
         # if not TEST:
         ans = input("")
         if ans == 'debug':
@@ -198,7 +200,6 @@ class Player():
             _play.apply()
         else:
             self.game.stack.add(play)  # add to stack
-
 
     def draw(self, num=1):
         for i in range(num):
@@ -222,23 +223,28 @@ class Player():
         If down_to is specified, number is ignored and set to len(self.hand) - down_to
         """
 
-        ## TODO: triggers
-        if num == -1: num = len(self.hand)  # -1 to discard whole hand
-        if down_to: num = len(self.hand) - down_to  # discard down_to e.g. 3 cards left in hand
-        if num > len(self.hand): return False
-        if num <= 0: return True
-
+        # TODO: triggers
+        if num == -1:
+            num = len(self.hand)  # -1 to discard whole hand
+        if down_to:
+            # discard down_to e.g. 3 cards left in hand
+            num = len(self.hand) - down_to
+        if num > len(self.hand):
+            return False
+        if num <= 0:
+            return True
 
         if num == len(self.hand):
             cards_to_discard = self.hand[:]
-        
+
         elif rand:
             print("randomly discarding %i...\n" % num)
             cards_to_discard = random.sample(self.hand.elements, num)
-            
+
         else:
             # prompt player pick which cards
-            answer = self.make_choice("%r\nWhich cards would you like to discard? (discarding %i) \n" % (self.hand, num))
+            answer = self.make_choice(
+                "%r\nWhich cards would you like to discard? (discarding %i) \n" % (self.hand, num))
             cards_to_discard = []
 
             if not answer:  # '' to auto discard
@@ -264,7 +270,6 @@ class Player():
         self.hand.remove(cards_to_discard)
         return self.graveyard.add(cards_to_discard)
 
-
     def pay(self, mana, life=0):
         """
         mana: a dict of Mana(Enum)
@@ -289,15 +294,20 @@ class Player():
 
     def gain_life(self, amount):
         # trigger
+        self.game.apply_to_battlefield(
+            lambda p: p.trigger(triggers.triggerConditions.onLifeGain))
+        self.game.apply_to_battlefield(
+            lambda p: p.trigger(
+                triggers.triggerConditions.onControllerLifeGain),
+            lambda p: p.controller == self)
+
         print("%r: gaining %i life\n" % (self, amount))
         self.life += amount
-
 
     def lose(self):
         print("{} has lost the game\n".format(self))
         self.lost = True
         pass
-
 
     def print_player_state(self):
         print("\nPLAYER {}\nlife: {}\n".format(self.name, self.life))

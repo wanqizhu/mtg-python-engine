@@ -72,16 +72,25 @@ class Zone():
         except ValueError:
             return False
 
-    def filter(self, characteristics=None):
+    def filter(self, characteristics=None, filter_func=None):
         found = []
-        assert (characteristics is None 
-                or type(characteristics) is gameobject.Characteristics)
-        
-        for ele in self:
-            if ele.characteristics.satisfy(characteristics):
-                found.append(ele)
+        if filter_func:
+            for ele in self:
+                if filter_func(ele):
+                    found.append(ele)
+
+        else:
+            assert (characteristics is None
+                    or type(characteristics) is gameobject.Characteristics)
+
+            for ele in self:
+                if ele.characteristics.satisfy(characteristics):
+                    found.append(ele)
 
         return found
+
+    def count(self, characteristics=None, filter_func=None):
+        return len(self.filter(characteristics, filter_func))
 
     def get_card_by_name(self, name):
         cards = self.filter(gameobject.Characteristics(name=name))
@@ -114,21 +123,26 @@ class Battlefield(Zone):
             obj.status = permanent.Status()  # reset status upon entering battlefield
     pass
 
+
 class Stack(Zone):
     zone_type = ZoneType.STACK
     pass
+
 
 class Hand(Zone):
     zone_type = ZoneType.HAND
     pass
 
+
 class Graveyard(Zone):
     zone_type = ZoneType.GRAVEYARD
     pass
 
+
 class Exile(Zone):
     zone_type = ZoneType.EXILE
     pass
+
 
 class Library(Zone):
     zone_type = ZoneType.LIBRARY
