@@ -2,6 +2,7 @@ from collections import defaultdict
 from enum import Enum
 import re
 
+
 class Mana(Enum):
     WHITE = 0
     BLUE = 1
@@ -10,17 +11,17 @@ class Mana(Enum):
     GREEN = 4
     COLORLESS = 5
 
+
 class ManaPool():
     manachr = ['W', 'U', 'B', 'R', 'G', 'C']
 
     def __init__(self, controller=None):
         self.pool = defaultdict(lambda: 0)
         self.controller = controller
-        
+
     def add(self, mana, amount):
         self.pool[mana] += amount
 
-    
     def pay(self, manacost):
         for manatype in manacost:
             assert self.pool[manatype] >= manacost[manatype]
@@ -32,7 +33,6 @@ class ManaPool():
             if self.pool[self.chr_to_mana(c)] != 0:
                 return False
         return True
-
 
     def chr_to_mana(self, c):
         assert c in self.manachr
@@ -49,7 +49,6 @@ class ManaPool():
         if c == 'C':
             return Mana.COLORLESS
 
-
     def canPay(self, manacost):
         "manacost here is a string, e.g. 2U"
         cost = defaultdict(lambda: 0)
@@ -64,7 +63,6 @@ class ManaPool():
         if numbers:
             anyTypeMana += int(numbers.group(0))
 
-
         # hybrid mana costs
         # note the mana symbols will have already been scanned above, so we need to subtract the cost we're not paying
         hybrid = re.findall('\([WUBRGC2]/[WUBRGC]\)', manacost)
@@ -72,8 +70,9 @@ class ManaPool():
             if self.controller.autoPayMana:
                 choice = '0'
             else:
-                choice = self.controller.make_choice('How would you like to pay? 0 (default): {}\t 1: {}\n'.format(h[1], h[3]))
-       
+                choice = self.controller.make_choice(
+                    'How would you like to pay? 0 (default): {}\t 1: {}\n'.format(h[1], h[3]))
+
             if choice == '1':
                 if h[1] != '2':
                     cost[self.chr_to_mana(h[1])] -= 1  # already scanned above
@@ -82,14 +81,13 @@ class ManaPool():
                 if h[1] == '2':
                     anyTypeMana += 2
 
-        
-
         if anyTypeMana > 0:
             if self.controller.autoPayMana:
                 choice = ''
             else:
-                choice = self.controller.make_choice('How would you like to pay {}? Enter blank for automatic payment, or enter a string of colored mana\n'.format(anyTypeMana))
-            
+                choice = self.controller.make_choice(
+                    'How would you like to pay {}? Enter blank for automatic payment, or enter a string of colored mana\n'.format(anyTypeMana))
+
             if re.match('[WUBRGC]+', choice) and len(choice) == anyTypeMana:
                 for c in choice:
                     cost[self.chr_to_mana(c)] += 1
@@ -112,9 +110,6 @@ class ManaPool():
                 return False
 
         return cost
-
-
-
 
     def clear(self):
         self.pool.clear()

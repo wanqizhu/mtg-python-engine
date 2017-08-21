@@ -7,6 +7,7 @@ from MTG import cards
 from MTG import permanent
 from MTG.exceptions import *
 
+
 class TestPlayer(unittest.TestCase):
     def setUp(self):
         decks = [cards.read_deck('data/decks/deck1.txt'),
@@ -48,7 +49,7 @@ class TestPlayer(unittest.TestCase):
 
     #     self.GAME = previous_state
     #     self.player = self.GAME.players_list[0]
-        
+
     #     self.assertEqual(self.player.life, 20)
     #     self.assertEqual(len(self.player.hand), 7)
     #     self.assertTrue(self.player.mana.is_empty())
@@ -66,8 +67,8 @@ class TestPlayer(unittest.TestCase):
                 '__self.mana.add(mana.Mana.RED, 3)', '',  # player 0
                 '__self.mana.add(mana.Mana.BLUE, 2)', '',  # player 1
                 '__self.tmp = self.mana.pool[mana.Mana.WHITE] '
-                            '+ self.mana.pool[mana.Mana.RED] == 0', '', # p 0
-                '__self.tmp = self.mana.pool[mana.Mana.BLUE] == 0', '', # p 1 
+            '+ self.mana.pool[mana.Mana.RED] == 0', '',  # p 0
+                '__self.tmp = self.mana.pool[mana.Mana.BLUE] == 0', '',  # p 1
                 's draw',
                 's draw']):
 
@@ -145,7 +146,8 @@ class TestPlayer(unittest.TestCase):
                 '', '', '', '',
                 'p Island',
                 'a 0',
-                '__self.tmp = self.mana.pool[mana.Mana.BLUE] == 1',  # use player.tmp as a placeholder
+                # use player.tmp as a placeholder
+                '__self.tmp = self.mana.pool[mana.Mana.BLUE] == 1',
                 's draw',
                 's draw',
                 '']):
@@ -186,7 +188,8 @@ class TestPlayer(unittest.TestCase):
                 '']):
 
             self.assertTrue(self.GAME.handle_turn())
-            self.assertTrue(self.player.battlefield.get_card_by_name("Devouring Deep"))
+            self.assertTrue(
+                self.player.battlefield.get_card_by_name("Devouring Deep"))
 
     def test_play_creature_over_three_turns(self):
         """ Fetch three lands, play them over three turns, tap for mana, play Devouring Deep
@@ -224,8 +227,9 @@ class TestPlayer(unittest.TestCase):
 
             self.assertTrue(self.player.tmp)
             self.assertEqual(len(self.player.battlefield), 4)
-            self.assertTrue(self.player.battlefield.get_card_by_name("Devouring Deep"))
-        
+            self.assertTrue(
+                self.player.battlefield.get_card_by_name("Devouring Deep"))
+
     def test_summoning_sickness(self):
         with mock.patch('builtins.input', side_effect=[
                 '__self.draw_card("Devouring Deep")',
@@ -266,19 +270,22 @@ class TestPlayer(unittest.TestCase):
             self.GAME.current_player = self.player
             self.GAME.handle_turn()
 
-
             self.assertTrue(self.player.tmp)
-            self.assertTrue(self.player.battlefield.get_card_by_name("Devouring Deep").status.tapped)
-            self.assertFalse(self.player.battlefield.get_card_by_name("Devouring Deep").in_combat)
+            self.assertTrue(self.player.battlefield.get_card_by_name(
+                "Devouring Deep").status.tapped)
+            self.assertFalse(self.player.battlefield.get_card_by_name(
+                "Devouring Deep").in_combat)
             self.assertEqual(self.opponent.life, 19, "incorrect combat damage")
 
     @mock.patch.object(permanent.Permanent, 'take_damage')
     def test_blocking(self, mock_take_damage):
         """ single creature blocking single attacker; each do nonlethal damage"""
-  
+
         with mock.patch('builtins.input', side_effect=[
-                '__self.discard(-1)', '__self.draw_card("Devouring Deep")','',  # p0
-                '__self.discard(-1)', '__self.draw_card("Devouring Deep")','',  # p1
+                # p0
+                '__self.discard(-1)', '__self.draw_card("Devouring Deep")', '',
+                # p1
+                '__self.discard(-1)', '__self.draw_card("Devouring Deep")', '',
                 '', '',
                 '__self.mana.add(mana.Mana.BLUE, 3)',  # player 0
                 'p Devouring Deep', '', '', '',
@@ -305,14 +312,15 @@ class TestPlayer(unittest.TestCase):
 
             # unfortunately each instance of the patched method share the same call history
             # so we can't assert that, for example, c1.take_damage was called with source=c2 and vice versa
-            mock_take_damage.assert_has_calls([mock.call(c1, 2), mock.call(c2, 1)])
+            mock_take_damage.assert_has_calls(
+                [mock.call(c1, 2), mock.call(c2, 1)])
 
     @mock.patch.object(permanent.Permanent, 'dies')
     def test_lethal_damage_in_combat(self, mock_dies):
         """ single creature blocking single attacker; both die"""
         with mock.patch('builtins.input', side_effect=[
-                '__self.battlefield.add("Sewn-Eye Drake")','',  # p0
-                '__self.battlefield.add("Sewn-Eye Drake")','',  # p1
+                '__self.battlefield.add("Sewn-Eye Drake")', '',  # p0
+                '__self.battlefield.add("Sewn-Eye Drake")', '',  # p1
                 '', '',
                 '', '', '', '',  # skipping to declare_attackers
                 '0', '', '',  # attacking w/ Drake
@@ -349,7 +357,8 @@ class TestPlayer(unittest.TestCase):
 
     def test_multiple_attacker_multiple_blocker(self):
         with mock.patch('builtins.input', side_effect=[
-                '__self.discard(-1)', '__self.draw_card("Devouring Deep")',  # p0
+                # p0
+                '__self.discard(-1)', '__self.draw_card("Devouring Deep")',
                 '__self.draw_card("Devouring Deep")',
                 '__self.draw_card("Sewn-Eye Drake")',
                 '', '', '', '',
@@ -357,27 +366,30 @@ class TestPlayer(unittest.TestCase):
                 '__self.mana.add(mana.Mana.BLACK, 1)',
                 'p Devouring Deep', '', '', '',  # pay mana, letting it resolve
                 'p Devouring Deep', '', '', '',
-                'p Sewn-Eye Drake', '', '', '', '',  # pay mana (choose hybrid & unrestricted), letting it resolve
+                # pay mana (choose hybrid & unrestricted), letting it resolve
+                'p Sewn-Eye Drake', '', '', '', '',
                 's precombat_main',
                 's precombat_main',
                 '0',  # attacking for 3 w/ haste
 
                 '__self.discard(-1)', '__self.draw_card("Devouring Deep")',
-                '__self.draw_card("Devouring Deep")',  # player 1's turn, main step
+                # player 1's turn, main step
+                '__self.draw_card("Devouring Deep")',
                 '__self.draw_card("Sewn-Eye Drake")',
-                '__self.mana.add(mana.Mana.BLUE, 9)',  
+                '__self.mana.add(mana.Mana.BLUE, 9)',
                 '__self.mana.add(mana.Mana.BLACK, 1)',
                 'p Devouring Deep', '', '', '',  # pay mana, letting it resolve
                 'p Devouring Deep', '', '', '',
                 'p Sewn-Eye Drake', '', '', '', '',
                 's precombat_main',
                 's precombat_main',
-                '0', '0', '', # attacking w/ flyer, tries to block with Devouring Deep (but should fail due to flying), no blocks
+                # attacking w/ flyer, tries to block with Devouring Deep (but should fail due to flying), no blocks
+                '0', '0', '',
 
                 's precombat_main',  # go to next turn
                 's precombat_main',
                 '',  # no attacks
-                
+
                 's end_of_combat',  # go to next turn: player 1's attack
                 's end_of_combat',
                 '0 1 2',  # player 1 attacking with everything
@@ -397,7 +409,7 @@ class TestPlayer(unittest.TestCase):
                         ' and self.graveyard.get_card_by_name("Devouring Deep")',
                 's draw',
                 # player 0
-                 '__self.tmp = self.game.players_list[0].battlefield[0]'
+            '__self.tmp = self.game.players_list[0].battlefield[0]'
                         '.status.damage_taken == 1'
                         ' and self.game.players_list[0].battlefield[1]'
                         '.status.damage_taken == 0'
@@ -429,9 +441,9 @@ class TestPlayer(unittest.TestCase):
                 '__self.battlefield.add("Sewn-Eye Drake")',
                 '__self.battlefield.add("Devouring Deep")',
                 '__self.tmp = self.battlefield[0].has_ability("Haste")'
-                            ' and not self.battlefield[1].has_ability("Haste")'
-                            ' and self.battlefield[0].can_attack()'
-                            ' and not self.battlefield[1].can_attack()',
+            ' and not self.battlefield[1].has_ability("Haste")'
+            ' and self.battlefield[0].can_attack()'
+            ' and not self.battlefield[1].can_attack()',
                 's upkeep',
                 's upkeep',
                 '']):  # no attack
@@ -444,7 +456,7 @@ class TestPlayer(unittest.TestCase):
         with mock.patch('builtins.input', side_effect=[
                 '__self.autoPayMana = True',
                 '__self.battlefield.add("Sewn-Eye Drake")', '',
-                '__self.battlefield.add("Devouring Deep")', '', # player 1
+                '__self.battlefield.add("Devouring Deep")', '',  # player 1
                 '__self.draw_card("Lightning Strike")',
                 '__self.draw_card("Lightning Strike")',
                 '__self.draw_card("Lightning Strike")',
@@ -457,16 +469,17 @@ class TestPlayer(unittest.TestCase):
                 'op',
                 '', '',  # resolve last one
                 '__self.tmp = self.opponent().life == 17'
-                            ' and len(self.battlefield) == 1'
-                            ' and len(self.opponent().battlefield) == 1',
+            ' and len(self.battlefield) == 1'
+            ' and len(self.opponent().battlefield) == 1',
                 '', '',
                 '__self.tmp = self.tmp'
-                            ' and len(self.battlefield) == 1'
-                            ' and len(self.opponent().battlefield) == 0',
+            ' and len(self.battlefield) == 1'
+            ' and len(self.opponent().battlefield) == 0',
                 '', '',
                 '__self.tmp = self.tmp'
-                            ' and len(self.battlefield) == 0'
-                            ' and len(self.graveyard) == 4',  # 3 lightning Strike & dead creature
+            ' and len(self.battlefield) == 0'
+            # 3 lightning Strike & dead creature
+            ' and len(self.graveyard) == 4',
                 's upkeep',
                 's upkeep']):  # no attack
 

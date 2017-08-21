@@ -1,4 +1,6 @@
-import sys, json, pickle
+import sys
+import json
+import pickle
 
 
 from MTG import card
@@ -15,17 +17,17 @@ def star_or_int(c):
     else:
         return int(c)
 
+
 def run():
     with open('parser/data/%s.json' % SET) as f:
         card_list = json.load(f)['cards']
 
-    
-    fout = open("cards/%s_cards.py" % SET, "w")
+    fout = open("data/%s_cards.py" % SET, "w")
     fout.write("from MTG import card\n"
-        "from MTG import gameobject\n"
-        "from MTG import cardtype\n"
-        "from MTG import abilities\n"
-        "from MTG import mana\n\n")
+               "from MTG import gameobject\n"
+               "from MTG import cardtype\n"
+               "from MTG import abilities\n"
+               "from MTG import mana\n\n")
 
     id_to_name = {}
     name_to_id = {}
@@ -37,7 +39,6 @@ def run():
             subtype = []
             _abilities = []
 
-
             ID = 'c' + str(card["multiverseid"])
             name = card["name"]
             characteristics = {'name': name}
@@ -48,20 +49,21 @@ def run():
             # types
             if "supertypes" in card:
                 supertype = ('['
-                          + ', '.join(['cardtype.SuperType.' + i.upper() for i in card["supertypes"]])
-                          + ']')
+                             + ', '.join(['cardtype.SuperType.' + i.upper()
+                                          for i in card["supertypes"]])
+                             + ']')
 
-            types = '[' + ', '.join(['cardtype.CardType.'+i.upper() for i in card["types"]]) + ']'
-        
+            types = '[' + ', '.join(['cardtype.CardType.' + i.upper()
+                                     for i in card["types"]]) + ']'
+
             if 'Creature' in card["types"]:
-                characteristics['power'], characteristics['toughness'] = star_or_int(card["power"]), star_or_int(card["toughness"])
+                characteristics['power'], characteristics['toughness'] = star_or_int(
+                    card["power"]), star_or_int(card["toughness"])
 
             if "subtypes" in card:
                 characteristics["subtype"] = card["subtypes"]
 
-
             # static abilities
-            
 
             texts = characteristics['text'].replace(' ', '_')
             for ability in abilities.StaticAbilities._member_names_:
@@ -69,7 +71,8 @@ def run():
                     _abilities.append(ability)
 
             if len(_abilities):
-                _abilities = '[abilities.StaticAbilities.' + ', abilities.StaticAbilities.'.join(_abilities) + ']'
+                _abilities = '[abilities.StaticAbilities.' + \
+                    ', abilities.StaticAbilities.'.join(_abilities) + ']'
 
         except:
             print("\n\n")
@@ -77,10 +80,8 @@ def run():
             print(sys.exc_info())
             pass
 
-
-
         fout.write(
-"""class {}(card.Card):
+            """class {}(card.Card):
     "{}"
     activated_abilities = []
     _activated_abilities_costs = []
@@ -93,7 +94,6 @@ def run():
 
         id_to_name[ID] = name
         name_to_id[name] = ID
-        
 
 
 #     fout.write(
@@ -104,17 +104,16 @@ def run():
 
 # """.format(id_to_name, name_to_id))
 
-    with open("cards/%s_id_to_name_dict.pkl" % SET, "wb") as f:
+    with open("data/%s_id_to_name_dict.pkl" % SET, "wb") as f:
         pickle.dump(id_to_name, f)
 
-    with open("cards/%s_name_to_id_dict.pkl" % SET, "wb") as f:
+    with open("data/%s_name_to_id_dict.pkl" % SET, "wb") as f:
         pickle.dump(name_to_id, f)
 
     fout.close()
 
-
-        # try:
-        #     card.find('text').text.replace(card.find('name').text, '<self>'))
+    # try:
+    #     card.find('text').text.replace(card.find('name').text, '<self>'))
 
 
 if __name__ == '__main__':

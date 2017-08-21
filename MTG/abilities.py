@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class StaticAbilities(Enum):
     Deathtouch = 0
     Defender = 1

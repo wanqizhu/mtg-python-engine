@@ -48,7 +48,7 @@ class Characteristics():
 
 class GameObject():
     def __init__(self, characteristics=Characteristics(),
-             controller=None, owner=None, zone=None, previousState=None):
+                 controller=None, owner=None, zone=None, previousState=None):
         self.characteristics = characteristics
         self.controller = controller
         self.owner = owner
@@ -60,12 +60,11 @@ class GameObject():
     def __repr__(self):
         # pdb.set_trace()
         return 'gameobject.GameObject %r in %r' % (self.name(),
-                                    self.zone if self.zone else 'None')
-
+                                                   self.zone if self.zone else 'None')
 
     def name(self):
         return self.characteristics.name
-        
+
     def manacost(self):
         return self.characteristics.mana_cost
 
@@ -92,7 +91,6 @@ class GameObject():
     @property
     def toughness(self):
         return self.characteristics.toughness if self.is_creature else None
-
 
     def has_ability(self, ability):
         return abilities.StaticAbilities[ability] in self.characteristics.abilities

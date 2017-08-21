@@ -6,6 +6,7 @@ from MTG import cards
 from MTG import card
 from MTG import permanent
 
+
 class ZoneType(Enum):
     LIBRARY = 0
     HAND = 1
@@ -15,8 +16,9 @@ class ZoneType(Enum):
     EXILE = 5
     # COMMAND = 6
 
+
 class Zone():
-    def __init__(self, controller=None, elements:list=None):
+    def __init__(self, controller=None, elements: list=None):
         if elements is None:
             self.elements = []
         else:
@@ -25,10 +27,10 @@ class Zone():
                 ele.controller = controller
         self.controller = controller
 
-
     def __repr__(self):
         return 'zone.Zone %r controlled by %r len=%s\n%r' % (self.__class__.__name__,
-                                            self.controller, len(self), self.elements)
+                                                             self.controller, len(self), self.elements)
+
     def __len__(self):
         return len(self.elements)
 
@@ -37,7 +39,7 @@ class Zone():
 
     def __getitem__(self, pos):
         return self.elements[pos]
-        
+
     def add(self, obj):
         if type(obj) is str:  # convert string (card's name) to a Card object
             obj = cards.card_from_name(obj)
@@ -51,7 +53,6 @@ class Zone():
             self.elements.extend(obj)
             return
 
-
         if not isinstance(self, Stack):
             assert isinstance(obj, gameobject.GameObject)
             obj.controller = self.controller
@@ -59,8 +60,6 @@ class Zone():
         obj.zone = self.zone_type
         self.elements.append(obj)
         return obj
-        
-
 
     def remove(self, obj):
         if type(obj) is list:
@@ -99,12 +98,8 @@ class Zone():
         else:
             return None
 
-
     def pop(self, pos=-1):
         return self.elements.pop(pos)
-
-
-
 
 
 class Battlefield(Zone):
@@ -150,7 +145,7 @@ class Library(Zone):
     def shuffle(self):
         random.shuffle(self.elements)
 
-    def __init__(self, controller=None, elements:list=None):
+    def __init__(self, controller=None, elements: list=None):
         super(Library, self).__init__(controller, elements)
         for ele in self.elements:
             ele.zone = ZoneType.LIBRARY

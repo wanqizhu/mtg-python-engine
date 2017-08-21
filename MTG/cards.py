@@ -67,7 +67,7 @@ def read_deck(filename):
                 i = line.index(" ")
                 num = int(line[:i])
                 for j in range(num):  # add NUM copies of CARDNAME
-                    card = card_from_name(line[i+1:])
+                    card = card_from_name(line[i + 1:])
                     if card:
                         deck.append(card)
                         # print(deck[-1].name())
@@ -151,7 +151,6 @@ def make_trigger(cardname, condition, effect):
     if card.trigger_listeners == {}:
         card.trigger_listeners = {}
 
-
     if condition not in card.trigger_listeners:
         card.trigger_listeners[condition] = []
 
@@ -172,13 +171,13 @@ def set_up_cards():
         "Mountain", 'T', 'self.controller.mana.add(mana.Mana.RED, 1)', True)
     add_activated_ability(
         "Forest", 'T', 'self.controller.mana.add(mana.Mana.GREEN, 1)', True)
-    # add_activated_ability("Wastes", 'T', 'self.controller.mana.add(mana.Mana.COLORLESS, 1)', True)
+    # add_activated_ability(
+    #    "Wastes", 'T', 'self.controller.mana.add(mana.Mana.COLORLESS, 1)', True)
 
     add_targets("Lightning Bolt", [lambda p: p.__class__.__name__ == 'Player'
-                                     or p.is_creature and p.zone == zone.ZoneType.BATTLEFIELD])
+                                   or p.is_creature and p.zone == zone.ZoneType.BATTLEFIELD])
     make_play_func_single_target("Lightning Bolt",
                                  lambda self, t: t.take_damage(self, 3))
-
 
     add_targets("Lightning Strike", [lambda p: p.__class__.__name__ == 'Player'
                                      or p.is_creature and p.zone == zone.ZoneType.BATTLEFIELD])
@@ -186,22 +185,19 @@ def set_up_cards():
                                  lambda self, t: t.take_damage(self, 3))
 
     add_targets("Congregate", [lambda p: p.__class__.__name__ == 'Player'])
-    make_play_func_single_target("Congregate", 
-            lambda self, t: t.gain_life(2 * 
-                len([p for plyr in self.controller.game.players_list
-                       for p in plyr.battlefield
-                       if p.is_creature])))
+    make_play_func_single_target("Congregate",
+                                 lambda self, t: t.gain_life(
+                                    2 * len([p for plyr in self.controller.game.players_list
+                                               for p in plyr.battlefield
+                                               if p.is_creature])))
 
-
-    make_play_func_no_target("Mass Calcify", lambda self: 
-                self.controller.game.apply_to_battlefield(
-                    lambda p: p.dies(),
-                    lambda p: p.is_creature and not p.has_color('W')))
-
+    make_play_func_no_target("Mass Calcify", lambda self:
+                             self.controller.game.apply_to_battlefield(
+                                 lambda p: p.dies(),
+                                 lambda p: p.is_creature and not p.has_color('W')))
 
     make_trigger("Ajani's Pridemate", triggers.triggerConditions.onControllerLifeGain,
-            lambda self: self.add_counter("+1/+1")
-                         if self.controller.make_choice(
-                         "Would you like to put a +1/+1 counter on %r?" % self)
-                         else None)
-
+                 lambda self: self.add_counter("+1/+1")
+                 if self.controller.make_choice(
+                     "Would you like to put a +1/+1 counter on %r?" % self)
+                 else None)

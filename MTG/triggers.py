@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class triggerConditions(Enum):
     # zone changes
     onPlay = 0
@@ -23,7 +24,7 @@ class triggerConditions(Enum):
     # events
     onUntap = 8
     onTap = 9
-    
+
     onDealDamageToPlayers = 19
     onDealDamageToCreatures = 20
     onDealDamage = 21
@@ -31,7 +32,7 @@ class triggerConditions(Enum):
     onAttack = 23
     onBlock = 24
     # global events
-    onRevolt = 30 # permanent leaving battlefield
+    onRevolt = 30  # permanent leaving battlefield
     onControllerLifeLoss = 31
     onLifeLoss = 32
     onControllerLifeGain = 33

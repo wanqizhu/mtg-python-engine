@@ -1,11 +1,13 @@
 from enum import Enum
 
+
 class SuperType(Enum):
     """Represents supertypes of cards in the game"""
     BASIC = 0
     LEGENDARY = 1
     SNOW = 2
     WORLD = 3
+
 
 class CardType(Enum):
     """Represents types of cards in the game"""
@@ -17,6 +19,7 @@ class CardType(Enum):
     PLANESWALKER = 5
     SORCERY = 6
     TRIBAL = 7
+
 
 class LandType(Enum):
     """Represents types of lands"""

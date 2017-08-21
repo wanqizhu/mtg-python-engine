@@ -1,5 +1,3 @@
-import re
-import sys
 import pdb
 import traceback
 import random
@@ -14,7 +12,8 @@ from MTG.exceptions import *
 
 
 class Player():
-    def __init__(self, deck, name='player', startingLife=20, maxHandSize=7, game=None):
+    def __init__(self, deck, name='player',
+                 startingLife=20, maxHandSize=7, game=None):
         self.name = name
         # self.ID = None
         self.life = startingLife
@@ -51,8 +50,10 @@ class Player():
 
         while answer and _play is None:
             answer = self.make_choice(
-                "What would you like to do? {}{}, {}\n".format(self.name, 
-                    '*' if self == self.game.current_player else '', self.game.step))
+                "What would you like to do? {}{}, {}\n".format(
+                    self.name,
+                    '*' if self == self.game.current_player else '',
+                    self.game.step))
 
             if self.game.test:
                 print("\t" + self.name + ", " +
@@ -181,7 +182,7 @@ class Player():
 
     # separate func for unit testing
     def make_choice(self, prompt_string):
-        print(prompt_string[:-1]) # remove ending \n
+        print(prompt_string[:-1])  # remove ending \n
         # if not TEST:
         ans = input("")
         if ans == 'debug':

@@ -4,8 +4,6 @@ from MTG import gameobject
 
 
 
-
-
 class Attributes():
     def __init__(self):
         # attributes goes here
@@ -19,12 +17,12 @@ class Card(gameobject.GameObject):
     trigger_listeners = {}
 
     def __init__(self, characteristics=gameobject.Characteristics(),
-             controller=None, owner=None, zone=None, previousState=None):
+                 controller=None, owner=None, zone=None, previousState=None):
 
-        super(Card, self).__init__(characteristics, controller, owner, zone, previousState)
-        
+        super(Card, self).__init__(characteristics,
+                                   controller, owner, zone, previousState)
+
         self.attributes = Attributes()
-
 
     def targets(self):
         if not self.target_criterias:
@@ -33,7 +31,7 @@ class Card(gameobject.GameObject):
         print("choosing targets...\n")
         targets_chosen = []
         for criteria, prompt in zip(self.target_criterias, self.target_prompts):
-            
+
             answer = self.controller.make_choice(prompt)
             card = get_card_from_user_input(self.controller, answer)
             print(card)
@@ -50,13 +48,11 @@ class Card(gameobject.GameObject):
         self.targets_chosen = targets_chosen
         return targets_chosen
 
-
     def ID(self):
         pass
 
     def play_func(self):  # defaults to permanent
         permanent.make_permanent(self)
-
 
 
 def get_card_from_user_input(player, string):
@@ -88,8 +84,6 @@ def get_card_from_user_input(player, string):
     elif string[0] == 'g':
         zone = player.graveyard
 
-
-
     try:
         i = int(string[2:])
         if i < len(zone):
@@ -99,7 +93,5 @@ def get_card_from_user_input(player, string):
     except:
         return zone.get_card_by_name(string[2:])
 
-
-
-from MTG import permanent  # need to move this later to avoid circular import stuff
-
+# need it here to avoid circular imports
+from MTG import permanent
