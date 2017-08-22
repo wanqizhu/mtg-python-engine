@@ -2,7 +2,6 @@ import sys
 import os
 import traceback
 
-from itertools import cycle
 from copy import deepcopy
 
 sys.path.append('/Users/wanqi/Desktop/Python-MTG')
@@ -13,7 +12,6 @@ from MTG import zone
 from MTG import cards
 from MTG import gamesteps
 from MTG import combat
-from MTG import permanent
 from MTG import triggers
 from MTG.exceptions import *
 
@@ -41,7 +39,6 @@ class Game(object):
         self.step = None
         self.pending_turns = []
         self.pending_steps = []
-        self.pending_triggers = []
         self.test = test
         # self.previous_state = GAME_PREVIOUS_STATE
 
@@ -51,6 +48,11 @@ class Game(object):
         for p in self.players_list:
             if p != player:
                 return p
+
+    @property
+    def APNAP(self):
+        i = self.players_list.index(self.current_player)
+        return self.players_list[i:] + self.players_list[:i]
 
     def get_zone(self, zone_type, player=None):
         return {
@@ -88,21 +90,22 @@ class Game(object):
         """ resolving a spell/effect from stack"""
         print(stack_item)
         stack_item.apply()
-        pass
+
 
     def apply_to_battlefield(self, apply_func, condition=lambda p: True):
-        """Apply some function to permanents on the battlefield 
+        """Apply some function to permanents on the battlefield
 
         - filter out by a condition function if necessary
         - defaults to all permanents
         """
         for _player in self.players_list:
             # use [:] to iterate over a copy of the list in case items get changed
-            for permanent in _player.battlefield[:]:
-                if condition(permanent):
-                    apply_func(permanent)
+            for perm in _player.battlefield[:]:
+                if condition(perm):
+                    apply_func(perm)
 
     def handle_priority(self, step, priority=None):
+        # priority tracks the index of the player that currently have priority
         if priority is None:
             priority = self.players_list.index(self.current_player)
 
@@ -110,16 +113,36 @@ class Game(object):
 
         # while not everyone has passed priority
         while self.passed_priority < self.num_players or self.stack:
+            # TODO: repeat state-based-actions & checking for triggers UNTIL none avaliable
             self.apply_state_based_actions()
 
-            if self.pending_triggers:
-                # TODO: ask player for ordering
-                self.stack.elements.extend(self.pending_triggers)
-                self.pending_triggers = []
-                self.passed_priority = 0
+            for p in self.APNAP:
+                if p.pending_triggers:
+                    # ask player for order
+                    triggers = []
+                    if not p.autoOrderTriggers:
+                        ans = p.make_choice("Current triggers: %r\n"
+                                            "Would you like to order them, %r?\n"
+                                            % (p.pending_triggers, p))
+
+                        try:
+                            ans = ans.split(" ")
+                            for ind in ans:
+                                ind = int(ind)
+                                triggers.append(p.pending_triggers[ind])
+                        except (IndexError, ValueError):
+                            pass
+
+                    for trig in p.pending_triggers:
+                        if trig not in triggers:
+                            triggers.append(trig)
+
+                    self.stack.elements.extend(triggers)
+                    p.pending_triggers = []
+                    self.passed_priority = 0
 
             if self.stack:
-                print(self.stack)
+                print("\nstack: ", self.stack[::-1])
 
             # auto pass priority
             if self.players_list[priority].passPriorityUntil not in [None, step]:
@@ -129,17 +152,16 @@ class Game(object):
                 # ask current player for an action
                 _play = self.players_list[priority].get_action()
 
-            if _play is None:  # passes priority
+            if _play is None:  # a player passes priority
                 self.passed_priority += 1
-                # who's next to get priority
                 priority = (priority + 1) % self.num_players
                 if self.passed_priority == self.num_players and self.stack:
-                    # resolve top stack item
+                    # resolve top stack item; active player gets priority
                     self.apply_stack_item(self.stack.pop())
                     self.passed_priority = 0
+                    priority = self.players_list.index(self.current_player)
             else:
                 # responds with something; must have everyone re-pass priority
-                print(_play)
                 self.passed_priority = 0
 
                 if _play.is_mana_ability or _play.is_special_action:
@@ -149,7 +171,6 @@ class Game(object):
                     self.stack.add(_play)  # add to stack
 
     def handle_beginning_phase(self, step):
-
         if step is gamesteps.Step.UNTAP:
             self.apply_to_battlefield(lambda p: p.untap(),
                                       lambda p: p.controller is self.current_player)
@@ -171,7 +192,7 @@ class Game(object):
     # TODO
     def handle_main_phase(self, step):
         self.handle_priority(step)
-        pass
+
 
     # TODO
     def handle_combat_phase(self, step):
@@ -246,7 +267,7 @@ class Game(object):
 
             for creature in avaliable_attackers:
                 print("{} is attacking {}\n".format(
-                    creature.name(), creature.status.is_attacking))
+                    creature.name, creature.status.is_attacking))
 
             # check remove-from-combat abilities/events
 
@@ -325,7 +346,7 @@ class Game(object):
 
             for creature in currently_attacking:
                 print("{} is attacking {}\n".format(
-                    creature.name(), creature.status.is_attacking))
+                    creature.name, creature.status.is_attacking))
 
         if step is gamesteps.Step.FIRST_STRIKE_COMBAT_DAMAGE:
             # TODO: first strike

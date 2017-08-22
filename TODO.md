@@ -1,29 +1,26 @@
-(Flameborn Viron - vanilla 6/4 for 4RR)
-
 - TEST CASES!!! (break them down into SMALLER units)
 
 - add ID to each card/gameobject
 
 - distinguish same-named objects in same zone
 
+- make Stack / play.Play object more readable
 
-- make a few more spells w/ targets: giant growth, etc.
-- make Ponder (spells w/ no targets)
+- helper function for zone changes
 
-
-- maybe use "event.py" template for zone changes??
+- skip unnecessary combat phases
 
 - Triggered Abilities
-	- each permanent have a list of (trigger, effects), similar to activated abilities
-	- all triggers are sent to a queue in GAME
-	- all triggers get put on stack (in controller's choice of order) on priority
-	- implement Ajani's Pridemate
-	- etb
+	- verify stacking/ordering triggers work and they are being resolved at next priority
 
 - Activated Abilities
- - make player pay cost as ability goes on stack rather than during resolution
+ - ability have a target
+ - make a separate class for abilities/spells that share targeting system, etc.
 
 - Static Abilities
+
+
+- check target legality upon spell/ability RESOLUTION
 
 
 rules: http://media.wizards.com/2017/downloads/MagicCompRules_20170707.pdf
@@ -32,7 +29,7 @@ rules: http://media.wizards.com/2017/downloads/MagicCompRules_20170707.pdf
 
 
 KNOWN BUGS
-	- non-active player would get priority first if they cast a spell during active player's turn
+	- non-active player would get priority first if they cast a spell during active player's turn (fixed??)
 	- if target selection fails, the card disappears instead of returning to hand
 
 
@@ -42,6 +39,8 @@ KNOWN BUGS
 **M15 progress
 
 --- Done (*: need to write test)
+
+Ajani's Pridemate
 
 Congregate
 
@@ -53,13 +52,20 @@ Mass Calcify *
 
 Oreskos Swiftclaw
 
+Razorfoot Griffin
+
+Sungrace Pegasus
+
+
+
+
 
 ---
 
 
 Ajani Steadfast - pwalker
 
-Ajani's Pridemate - lifegain trig
+
 
 Avacyn, Guardian Angel - activated ability; dmg prevention
 
@@ -93,57 +99,57 @@ Marked by Honor - aura
 
 
 
-Meditation Puzzle
+Meditation Puzzle - convoke
 
-Midnight Guard
+Midnight Guard - any creature etb
 
-Oppressive Rays
+Oppressive Rays - aura; extra payment costs
 
 
 
-Paragon of New Dawns
+Paragon of New Dawns - static ability; activated ability
 
-Pillar of Light
+Pillar of Light - target check on resolution
 
-Preeminent Captain
+Preeminent Captain - on attack trigger
 
-Raise the Alarm
+Raise the Alarm - tokens
 
-Razorfoot Griffin
 
-Resolute Archangel
 
-Return to the Ranks
+Resolute Archangel - etb
 
-Sanctified Charge
+Return to the Ranks - convoke; X
 
-Selfless Cathar
+Sanctified Charge - "until eot" effects
 
-Seraph of the Masses
+Selfless Cathar - "until eot" effects
 
-Solemn Offering
+Seraph of the Masses - convoke; variable power/toughness
 
-Soul of Theros
+Solemn Offering *
 
-Soulmender
+Soul of Theros - ability from graveyard
 
-Spectra Ward
+Soulmender *
 
-Spirit Bonds
+Spectra Ward - protection; aura
 
-Sungrace Pegasus
+Spirit Bonds - eot
 
-Tireless Missionaries
 
-Triplicate Spirits
 
-Wall of Essence
+Tireless Missionaries - etb
 
-Warden of the Beyond
+Triplicate Spirits - convoke; token
 
-Aeronaut Tinkerer
+Wall of Essence - dealt-combat-dmg trigger
 
-Aetherspouts
+Warden of the Beyond - static ability
+
+Aeronaut Tinkerer - static
+
+Aetherspouts *
 
 Amphin Pathmage
 

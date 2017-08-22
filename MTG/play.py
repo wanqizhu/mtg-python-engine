@@ -15,7 +15,7 @@ class Play(object):
         self.original_card = card
         self.name = name
         if not name and card:
-            self.name = card.name()
+            self.name = card.name
 
     def __repr__(self):
         return inspect.getsource(self.apply)

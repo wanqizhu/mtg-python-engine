@@ -26,3 +26,6 @@ class StaticAbilities(Enum):
     Forestwalk = 21
 
     # protection
+
+
+    Convoke = 30

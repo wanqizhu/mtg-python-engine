@@ -22,6 +22,7 @@ class Player():
         self.landPlayed = 0
         self.passPriorityUntil = None
         self.autoPayMana = False
+        self.autoOrderTriggers = True
 
         self.library = zone.Library(self, deck)
         for card in self.library:
@@ -37,8 +38,19 @@ class Player():
         self.lost = False
         self.won = False
 
+        self.pending_triggers = []
+
     def __repr__(self):
         return 'player.Player(name=%r)' % self.name
+
+    def __str__(self):
+        return self.name
+
+
+    @property
+    def is_active(self):
+        return self == self.game.current_player
+
 
     def get_action(self):
         """ asks the player to do something
@@ -52,7 +64,7 @@ class Player():
             answer = self.make_choice(
                 "What would you like to do? {}{}, {}\n".format(
                     self.name,
-                    '*' if self == self.game.current_player else '',
+                    '*' if self.is_active else '',
                     self.game.step))
 
             if self.game.test:
@@ -80,6 +92,9 @@ class Player():
 
                 elif answer == 'stack':
                     print(self.game.stack)
+
+                elif answer == 'mana':
+                    print(self.mana)
 
                 elif answer == 'debug':
                     pdb.set_trace()
@@ -110,7 +125,7 @@ class Player():
                             or self.game.step.phase not in [
                                 gamesteps.Phase.PRECOMBAT_MAIN,
                                 gamesteps.Phase.POSTCOMBAT_MAIN]
-                            or self.game.current_player != self):
+                            or not self.is_active):
                         can_play = False
 
                     # choose targets
@@ -151,6 +166,9 @@ class Player():
 
                     # ability activation
                     if card._activated_abilities_costs_validation[nums[1]](card):
+                        # TODO: target validation
+
+                        card._activated_abilities_costs[nums[1]](card)
                         _play = play.Play(
                             lambda: card.activate_ability(nums[1]))
                         if card.activated_abilities[nums[1]][2]:  # special action
@@ -182,11 +200,14 @@ class Player():
 
     # separate func for unit testing
     def make_choice(self, prompt_string):
-        print(prompt_string[:-1])  # remove ending \n
         # if not TEST:
-        ans = input("")
+        ans = input(prompt_string)
         if ans == 'debug':
             pdb.set_trace()
+
+        if not self.game or self.game.test:  # for debug
+            print(prompt_string[:-1])  # remove ending \n
+            print(ans)
         return ans
         # else:
         #     ## TODO: unit tests
@@ -308,7 +329,7 @@ class Player():
     def lose(self):
         print("{} has lost the game\n".format(self))
         self.lost = True
-        pass
+
 
     def print_player_state(self):
         print("\nPLAYER {}\nlife: {}\n".format(self.name, self.life))

@@ -70,7 +70,7 @@ def read_deck(filename):
                     card = card_from_name(line[i + 1:])
                     if card:
                         deck.append(card)
-                        # print(deck[-1].name())
+                        # print(deck[-1].name)
                     else:
                         pass
                         # print("card {} does not exist\n".format(line[i+1:]))
@@ -93,6 +93,12 @@ def add_activated_ability(cardname, cost, effect, is_mana_ability=False):
         costs_validation += " and not self.status.tapped"
     # elif MANA
 
+    if not card.activated_abilities:  # hasn't been initiated yet
+        card.activated_abilities = []
+        card._activated_abilities_costs = []
+        card._activated_abilities_effects = []
+        card._activated_abilities_costs_validation = []
+
     card.activated_abilities.append((costs, effect, is_mana_ability))
 
     card._activated_abilities_costs.append(lambda self: exec(costs))
@@ -110,7 +116,7 @@ def add_targets(cardname, criterias=[lambda p: True], prompts=["Choose a target\
     card.target_prompts = prompts
 
 
-def make_play_func_single_target(cardname, outcome=lambda self, t: True):
+def add_play_func_single_target(cardname, outcome=lambda self, t: True):
     if not name_to_id(cardname):
         return
     card = card_from_name(cardname, get_instance=False)
@@ -123,7 +129,7 @@ def make_play_func_single_target(cardname, outcome=lambda self, t: True):
     card.play_func = play_func
 
 
-def make_play_func_no_target(cardname, outcome=lambda self: True):
+def add_play_func_no_target(cardname, outcome=lambda self: True):
     if not name_to_id(cardname):
         return
     card = card_from_name(cardname, get_instance=False)
@@ -131,7 +137,7 @@ def make_play_func_no_target(cardname, outcome=lambda self: True):
     card.play_func = outcome
 
 
-def make_trigger(cardname, condition, effect):
+def add_trigger(cardname, condition, effect):
     """
     Each effect is a function of the form
         lambda self: do_something
@@ -176,28 +182,35 @@ def set_up_cards():
 
     add_targets("Lightning Bolt", [lambda p: p.__class__.__name__ == 'Player'
                                    or p.is_creature and p.zone == zone.ZoneType.BATTLEFIELD])
-    make_play_func_single_target("Lightning Bolt",
-                                 lambda self, t: t.take_damage(self, 3))
+    add_play_func_single_target("Lightning Bolt",
+                                lambda self, t: t.take_damage(self, 3))
 
     add_targets("Lightning Strike", [lambda p: p.__class__.__name__ == 'Player'
                                      or p.is_creature and p.zone == zone.ZoneType.BATTLEFIELD])
-    make_play_func_single_target("Lightning Strike",
-                                 lambda self, t: t.take_damage(self, 3))
+    add_play_func_single_target("Lightning Strike",
+                                lambda self, t: t.take_damage(self, 3))
 
     add_targets("Congregate", [lambda p: p.__class__.__name__ == 'Player'])
-    make_play_func_single_target("Congregate",
-                                 lambda self, t: t.gain_life(
+    add_play_func_single_target("Congregate",
+                                lambda self, t: t.gain_life(
                                     2 * len([p for plyr in self.controller.game.players_list
-                                               for p in plyr.battlefield
-                                               if p.is_creature])))
+                                             for p in plyr.battlefield
+                                             if p.is_creature])))
 
-    make_play_func_no_target("Mass Calcify", lambda self:
-                             self.controller.game.apply_to_battlefield(
-                                 lambda p: p.dies(),
-                                 lambda p: p.is_creature and not p.has_color('W')))
+    add_play_func_no_target("Mass Calcify", lambda self:
+                            self.controller.game.apply_to_battlefield(
+                                lambda p: p.dies(),
+                                lambda p: p.is_creature and not p.has_color('W')))
 
-    make_trigger("Ajani's Pridemate", triggers.triggerConditions.onControllerLifeGain,
-                 lambda self: self.add_counter("+1/+1")
-                 if self.controller.make_choice(
-                     "Would you like to put a +1/+1 counter on %r?" % self)
-                 else None)
+    add_trigger("Ajani's Pridemate", triggers.triggerConditions.onControllerLifeGain,
+                lambda self: self.add_counter("+1/+1")
+                if self.controller.make_choice(
+                    "Would you like to put a +1/+1 counter on %r?" % self)
+                else None)
+
+
+    add_trigger("Tireless Missionaries", triggers.triggerConditions.onEtB,
+                lambda self: self.controller.gain_life(3))
+
+    add_activated_ability(
+        "Soulmender", 'T', 'self.controller.gain_life(1)')

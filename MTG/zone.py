@@ -5,6 +5,7 @@ from MTG import gameobject
 from MTG import cards
 from MTG import card
 from MTG import permanent
+from MTG import triggers
 
 
 class ZoneType(Enum):
@@ -30,6 +31,13 @@ class Zone():
     def __repr__(self):
         return 'zone.Zone %r controlled by %r len=%s\n%r' % (self.__class__.__name__,
                                                              self.controller, len(self), self.elements)
+
+    def __str__(self):
+        return '%s\'s %s (%s cards)\n%s' % (self.controller, 
+                                            self.__class__.__name__,
+                                            len(self), 
+                                            [ele.name for ele in self.elements])
+
 
     def __len__(self):
         return len(self.elements)
@@ -116,7 +124,8 @@ class Battlefield(Zone):
             obj.zone = self.zone_type
             self.elements.append(obj)
             obj.status = permanent.Status()  # reset status upon entering battlefield
-    pass
+        
+        obj.trigger(triggers.triggerConditions.onEtB)
 
 
 class Stack(Zone):

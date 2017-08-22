@@ -61,12 +61,11 @@ class Permanent(gameobject.GameObject):
 
 
     def activate_ability(self, num=0):
-        if self._activated_abilities_costs_validation[num](self):
-            print("activating...")
-            self._activated_abilities_costs[num](self)
-            self._activated_abilities_effects[num](self)
-            return True
-        return False
+        # if self._activated_abilities_costs_validation[num](self):
+        print("activating...")
+        self._activated_abilities_effects[num](self)
+        return True
+        # return False
 
 
     def tap(self):
@@ -204,7 +203,7 @@ class Permanent(gameobject.GameObject):
 
         if condition in self.trigger_listeners:
             print("Trigger to be process at next priority...\n")
-            self.game.pending_triggers.extend(
+            self.controller.pending_triggers.extend(
                 [play.Play(lambda: effect(self))
                  for effect in self.trigger_listeners[condition]])
 

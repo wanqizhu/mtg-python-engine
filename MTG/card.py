@@ -16,6 +16,11 @@ class Card(gameobject.GameObject):
 
     trigger_listeners = {}
 
+    activated_abilities = []
+    _activated_abilities_costs = []
+    _activated_abilities_effects = []
+    _activated_abilities_costs_validation = []
+
     def __init__(self, characteristics=gameobject.Characteristics(),
                  controller=None, owner=None, zone=None, previousState=None):
 

@@ -1,6 +1,6 @@
 import mock
 import unittest
-from copy import deepcopy
+# from copy import deepcopy
 
 from MTG import game
 from MTG import cards
@@ -486,6 +486,52 @@ class TestPlayer(unittest.TestCase):
             self.GAME.handle_turn()
             self.assertTrue(self.player.tmp)
 
+
+    def test_ajanis_pridemate(self):
+        """ Test optional trigger on controller life gain"""
+        with mock.patch('builtins.input', side_effect=[
+                '__self.battlefield.add("Ajani\'s Pridemate")',
+                '__self.gain_life(3)', '',
+                '', '', 'yes',  # resolving trigger
+                '__self.tmp = self.battlefield[0].power == 3',
+                '__self.gain_life(2)', '',
+                '', '', '',  # resolving trigger, saying 'no'
+                '__self.tmp = self.tmp and self.battlefield[0].power == 3',
+                '__self.gain_life(1)', '',
+                '', '', 'yes',  # resolving trigger
+                '__self.tmp = self.tmp and self.battlefield[0].toughness == 4',
+                '', '',
+                '', '__self.gain_life(1)', '',  # opponent gains life
+                '__self.tmp = self.tmp and not self.stack',  # no trigger
+                's upkeep',
+                's upkeep']):  # no attack
+
+            self.GAME.handle_turn()
+            self.assertTrue(self.player.tmp)
+
+
+    # def test_trigger_ordering(self):
+        """ Test trigger ordering"""
+        # with mock.patch('builtins.input', side_effect=[
+        #         '__self.battlefield.add("Ajani\'s Pridemate")',
+        #         '__self.gain_life(3)', '',
+        #         '', '', 'yes',  # resolving trigger
+        #         '__self.tmp = self.battlefield[0].power == 3',
+        #         '__self.gain_life(2)', '',
+        #         '', '', '',  # resolving trigger, saying 'no'
+        #         '__self.tmp = self.tmp and self.battlefield[0].power == 3',
+        #         '__self.gain_life(1)', '',
+        #         '', '', 'yes',  # resolving trigger
+        #         '__self.tmp = self.tmp and self.battlefield[0].toughness == 4',
+        #         '', '',
+        #         '', '__self.gain_life(1)', '',  # opponent gains life
+        #         '__self.tmp = self.tmp and not self.stack',  # no trigger
+        #         's upkeep',
+        #         's upkeep']):  # no attack
+        
+        #     self.player.autoOrderTriggers = False
+        #     self.GAME.handle_turn()
+        #     self.assertTrue(self.player.tmp)
 
 if __name__ == '__main__':
     unittest.main()
