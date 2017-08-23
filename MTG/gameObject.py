@@ -89,6 +89,10 @@ class GameObject():
         return cardtype.CardType.ARTIFACT in self.characteristics.types
 
     @property
+    def is_enchantment(self):
+        return cardtype.CardType.ENCHANTMENT in self.characteristics.types
+
+    @property
     def power(self):
         return self.characteristics.power if self.is_creature else None
 

@@ -208,9 +208,25 @@ def set_up_cards():
                     "Would you like to put a +1/+1 counter on %r?" % self)
                 else None)
 
-
     add_trigger("Tireless Missionaries", triggers.triggerConditions.onEtB,
                 lambda self: self.controller.gain_life(3))
 
     add_activated_ability(
         "Soulmender", 'T', 'self.controller.gain_life(1)')
+
+    add_targets("Solemn Offerings", [lambda p: p.zone == zone.ZoneType.BATTLEFIELD
+                                     and (p.is_artifact or p.is_enchantment)])
+    add_play_func_single_target("Solemn Offerings",
+                                lambda self, t: t.destroy()
+                                and self.controller.gain_life(4))
+
+    add_play_func_no_target("Divination", lambda self: self.controller.draw(2))
+
+    add_play_func_no_target("Jace's Ingenuity", lambda self: self.controller.draw(3))
+
+    add_targets("Titanic Growth", [lambda p: p.zone == zone.ZoneType.BATTLEFIELD
+                                     and (p.is_creature)])
+    add_play_func_single_target("Titanic Growth",
+                                lambda self, t: t.modifier.add([
+                                    ('characteristics.power', 4, True),
+                                    ('characteristics.toughness', 4, True)]))

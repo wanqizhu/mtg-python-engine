@@ -392,6 +392,8 @@ class Game(object):
                 down_to=self.current_player.maxHandSize)
             self.apply_to_battlefield(
                 lambda p: p.trigger(triggers.triggerConditions.onCleanup))
+            self.apply_to_battlefield(
+                lambda p: p.clear_modifier())
 
     def handle_turn(self):
         self.pending_steps = []

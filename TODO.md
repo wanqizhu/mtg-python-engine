@@ -19,6 +19,8 @@
 
 - Static Abilities
 
+- eot / conditional / aura modifiers on permanents
+	- auras
 
 - check target legality upon spell/ability RESOLUTION
 
@@ -55,6 +57,49 @@ Oreskos Swiftclaw
 Razorfoot Griffin
 
 Sungrace Pegasus
+
+Soulmender
+
+Solemn Offering *
+
+Divination
+
+Fugitive Wizard
+
+Jace's Ingenuity
+
+Nimbus of the Isles
+
+Accursed Spirit
+
+Child of Night
+
+Typhoid Rats
+
+Witch's Familiar
+
+Goblin Roughrider
+
+Krenko's Enforcer
+
+Lightning Strike
+
+Thundering Giant
+
+Runeclaw Bear
+
+Bronze Sable
+
+Ornithopter
+
+Serra Angel
+
+Mahamoti Djinn
+
+Walking Corpse
+
+Centaur Courser
+
 
 
 
@@ -127,11 +172,11 @@ Selfless Cathar - "until eot" effects
 
 Seraph of the Masses - convoke; variable power/toughness
 
-Solemn Offering *
+
 
 Soul of Theros - ability from graveyard
 
-Soulmender *
+
 
 Spectra Ward - protection; aura
 
@@ -151,482 +196,452 @@ Aeronaut Tinkerer - static
 
 Aetherspouts *
 
-Amphin Pathmage
+Amphin Pathmage - can't be blocked eot
 
-Chasm Skulker
+Chasm Skulker - tokens
 
-Chief Engineer
+Chief Engineer - convoke to other spells
 
-Chronostutter
+Chronostutter - *
 
-Coral Barrier
+Coral Barrier - tokens
 
-Diffusion Sliver
+Diffusion Sliver - becomes target; counter; optional payment
 
-Dissipate
+Dissipate - counter
 
-Divination
 
-Encrust
 
-Ensoul Artifact
+Encrust - aura; don't untap; can't activate
 
-Frost Lynx
+Ensoul Artifact - becomes creature; aura
 
-Fugitive Wizard
+Frost Lynx - doesn't untap
 
-Glacial Crasher
 
-Hydrosurge
 
-Illusory Angel
+Glacial Crasher - conditional attack (static)
 
-Into the Void
+Hydrosurge - eot modifiers
 
-Invisibility
+Illusory Angel - storm counter
 
-Jace, the Living Guildpact
+Into the Void - *
 
-Jace's Ingenuity
+Invisibility - aura; block modifier
 
-Jalira, Master Polymorphist
+Jace, the Living Guildpact - p-walker
 
-Jorubai Murk Lurker
 
-Kapsho Kitefins
 
-Master of Predicaments
+Jalira, Master Polymorphist - reveal cards
 
-Mercurial Pretender
+Jorubai Murk Lurker - static; eot modifier
 
-Military Intelligence
+Kapsho Kitefins - other creature etb
 
-Mind Sculpt
+Master of Predicaments - *
 
-Negate
+Mercurial Pretender - copy
 
-Nimbus of the Isles
+Military Intelligence - *
 
-Paragon of Gathering Mists
+Mind Sculpt - *
 
-Peel from Reality
+Negate - counter
 
-Polymorphist's Jest
 
-Quickling
 
-Research Assistant
+Paragon of Gathering Mists - static apply-to-battlefield
 
-Soul of Ravnica
+Peel from Reality - *
 
-Statute of Denial
+Polymorphist's Jest - eot; lose abilities; frogify
 
-Stormtide Leviathan
+Quickling - *
 
-Turn to Frog
+Research Assistant - *
 
-Void Snare
+Soul of Ravnica - activate ability from grave
 
-Wall of Frost
+Statute of Denial - counter
 
-Welkin Tern
+Stormtide Leviathan - apply-to-battlefield modifier
 
-Accursed Spirit
+Turn to Frog - frogify
 
-Black Cat
+Void Snare - *
 
-Blood Host
+Wall of Frost - doesn't untap
 
-Carrion Crow
+Welkin Tern - conditional blocking
 
-Caustic Tar
 
-Child of Night
 
-Covenant of Blood
+Black Cat - *
 
-Crippling Blight
+Blood Host - *
 
-Cruel Sadist
+Carrion Crow - *
 
-Endless Obedience
+Caustic Tar - aura
 
-Eternal Thirst
 
-Feast on the Fallen
 
-Festergloom
+Covenant of Blood - convoke
 
-Flesh to Dust
+Crippling Blight - aura
 
-Gravedigger
+Cruel Sadist - *
 
-In Garruk's Wake
+Endless Obedience - convoke
 
-Indulgent Tormentor
+Eternal Thirst - aura
 
-Leeching Sliver
+Feast on the Fallen - lost life last turn
 
-Liliana Vess
+Festergloom - eot
 
-Mind Rot
+Flesh to Dust - can't be regenerated
 
-Necrobite
+Gravedigger - *
 
-Necrogen Scudder
+In Garruk's Wake - *
 
-Necromancer's Assistant
+Indulgent Tormentor - player choice
 
-Necromancer's Stockpile
+Leeching Sliver - other creature trigger
 
-Nightfire Giant
+Liliana Vess - pwalker
 
-Ob Nixilis, Unshackled
+Mind Rot - *
 
-Paragon of Open Graves
+Necrobite - eot modifier; regenerate
 
-Rotfeaster Maggot
+Necrogen Scudder - *
 
-Shadowcloak Vampire
+Necromancer's Assistant - *
 
-Sign in Blood
+Necromancer's Stockpile - *
 
-Soul of Innistrad
+Nightfire Giant - static
 
-Stab Wound
+Ob Nixilis, Unshackled - search library trigger
 
-Stain the Mind
+Paragon of Open Graves - apply-to-battlefield
 
-Typhoid Rats
+Rotfeaster Maggot - *
 
-Ulcerate
+Shadowcloak Vampire - eot modifiers
 
-Unmake the Graves
+Sign in Blood - *
 
-Wall of Limbs
+Soul of Innistrad - ability from graveyard
 
-Waste Not
+Stab Wound - aura
 
-Witch's Familiar
+Stain the Mind - convoke
 
-Xathrid Slyblade
 
-Zof Shade
 
-Act on Impulse
+Ulcerate - eot modifier
 
-Aggressive Mining
+Unmake the Graves - convoke
 
-Altac Bloodseeker
+Wall of Limbs - *
 
-Belligerent Sliver
+Waste Not - *
 
-Blastfire Bolt
 
-Borderland Marauder
 
-Brood Keeper
+Xathrid Slyblade - eot
 
-Burning Anger
+Zof Shade - eot
 
-Chandra, Pyromaster
+Act on Impulse - eot
 
-Circle of Flame
+Aggressive Mining - *
 
-Clear a Path
+Altac Bloodseeker - other trigger
 
-Cone of Flame
+Belligerent Sliver - apply-to-battlefield static
 
-Crowd's Favor
+Blastfire Bolt - equipments
 
-Crucible of Fire
+Borderland Marauder - eot
 
-Forge Devil
+Brood Keeper - aura
 
-Foundry Street Denizen
+Burning Anger - aura
 
-Frenzied Goblin
+Chandra, Pyromaster - pwalker
 
-Generator Servant
+Circle of Flame - other trigger
 
-Goblin Kaboomist
+Clear a Path - *
 
-Goblin Rabblemaster
+Cone of Flame - *
 
-Goblin Roughrider
+Crowd's Favor - convoke; eot
 
-Hammerhand
+Crucible of Fire - static
 
-Heat Ray
+Forge Devil - *
 
-Hoarding Dragon
+Foundry Street Denizen - other trigger
 
-Inferno Fist
+Frenzied Goblin - *
 
-Kird Chieftain
+Generator Servant - mana spent on smthing
 
-Krenko's Enforcer
+Goblin Kaboomist - artifact token
 
-Kurkesh, Onakke Ancient
+Goblin Rabblemaster - other creatuers must attack
 
-Lava Axe
 
-Lightning Strike
 
-Might Makes Right
+Hammerhand - *
 
-Miner's Bane
+Heat Ray - X
 
-Paragon of Fierce Defiance
+Hoarding Dragon - *
 
-Rummaging Goblin
+Inferno Fist - aura
 
-Scrapyard Mongrel
+Kird Chieftain - static
 
-Shrapnel Blast
 
-Siege Dragon
 
-Soul of Shandalar
+Kurkesh, Onakke Ancient - other trigger
 
-Stoke the Flames
+Lava Axe - *
 
-Thundering Giant
 
-Torch Fiend
 
-Wall of Fire
+Might Makes Right - *
 
-Ancient Silverback
+Miner's Bane - eot
 
-Back to Nature
+Paragon of Fierce Defiance - apply-to-other static effect
 
-Carnivorous Moss-Beast
+Rummaging Goblin - *
 
-Charging Rhino
+Scrapyard Mongrel - static
 
-Chord of Calling
+Shrapnel Blast - *
 
-Elvish Mystic
+Siege Dragon - *
 
-Feral Incarnation
+Soul of Shandalar - activate from grave
 
-Gather Courage
+Stoke the Flames - convoke
 
-Genesis Hydra
 
-Hornet Nest
 
-Hornet Queen
+Torch Fiend - *
 
-Hunt the Weak
+Wall of Fire - eot
 
-Hunter's Ambush
+Ancient Silverback - regenerate
 
-Invasive Species
+Back to Nature - *
 
-Kalonian Twingrove
+Carnivorous Moss-Beast - *
 
-Life's Legacy
+Charging Rhino - blocking modifier
 
-Living Totem
+Chord of Calling - convoke; X
 
-Naturalize
+Elvish Mystic - *
 
-Netcaster Spider
+Feral Incarnation - convoke
 
-Nissa, Worldwaker
+Gather Courage - convoke; eot
 
-Nissa's Expedition
+Genesis Hydra - X
 
-Overwhelm
+Hornet Nest - tokens
 
-Paragon of Eternal Wilds
+Hornet Queen - tokens
 
-Phytotitan
+Hunt the Weak - *
 
-Plummet
+Hunter's Ambush - prevent combat dmg
 
-Ranger's Guile
+Invasive Species - *
 
-Reclamation Sage
+Kalonian Twingrove - static
 
-Restock
+Life's Legacy - additional costs
 
-Roaring Primadox
+Living Totem - convoke
 
-Runeclaw Bear
+Naturalize - *
 
-Satyr Wayfinder
+Netcaster Spider - *
 
-Shaman of Spring
+Nissa, Worldwaker - pwalker
 
-Siege Wurm
+Nissa's Expedition - convoke
 
-Soul of Zendikar
+Overwhelm - convoke
 
-Sunblade Elf
+Paragon of Eternal Wilds - apply-to-battlefield static
 
-Titanic Growth
+Phytotitan - delayed effect
 
-Undergrowth Scavenger
+Plummet - *
 
-Venom Sliver
+Ranger's Guile - hexproof
 
-Verdant Haven
+Reclamation Sage - *
 
-Vineweft
+Restock - *
 
-Wall of Mulch
+Roaring Primadox - *
 
-Yisan, the Wanderer Bard
 
-Garruk, Apex Predator
 
-Sliver Hivelord
+Satyr Wayfinder - *
 
-Avarice Amulet
+Shaman of Spring - *
 
-Brawler's Plate
+Siege Wurm - convoke
 
-Bronze Sable
+Soul of Zendikar - graveyard ability
 
-The Chain Veil
+Sunblade Elf - static; eot
 
-Gargoyle Sentinel
+Titanic Growth - eot
 
-Grindclock
+Undergrowth Scavenger - *
 
-Haunted Plate Mail
+Venom Sliver - apply-to-battlefield static
 
-Hot Soup
+Verdant Haven - aura
 
-Juggernaut
+Vineweft - aura
 
-Meteorite
+Wall of Mulch - *
 
-Obelisk of Urd
+Yisan, the Wanderer Bard - *
 
-Ornithopter
+Garruk, Apex Predator - *
 
-Perilous Vault
+Sliver Hivelord - indestructible; apply-to-battlefield static
 
-Phyrexian Revoker
+Avarice Amulet - equipment
 
-Profane Memento
+Brawler's Plate - equip
 
-Rogue's Gloves
 
-Sacred Armory
 
-Scuttling Doom Engine
+The Chain Veil - pwalkers
 
-Shield of the Avatar
+Gargoyle Sentinel - eot
 
-Soul of New Phyrexia
+Grindclock - *
 
-Staff of the Death Magus
+Haunted Plate Mail - equip
 
-Staff of the Flame Magus
+Hot Soup - equip
 
-Staff of the Mind Magus
+Juggernaut - must attack
 
-Staff of the Sun Magus
+Meteorite - *
 
-Staff of the Wild Magus
+Obelisk of Urd - convoke; static
 
-Tormod's Crypt
 
-Tyrant's Machine
 
-Will-Forged Golem
+Perilous Vault - *
 
-Battlefield Forge
+Phyrexian Revoker - *
 
-Caves of Koilos
+Profane Memento - *
 
-Darksteel Citadel
+Rogue's Gloves - equip
 
-Evolving Wilds
+Sacred Armory - *
 
-Llanowar Wastes
+Scuttling Doom Engine - *
 
-Radiant Fountain
+Shield of the Avatar - equip
 
-Shivan Reef
+Soul of New Phyrexia - ability from grave
 
-Sliver Hive
+Staff of the Death Magus - *
 
-Urborg, Tomb of Yawgmoth
+Staff of the Flame Magus - *
 
-Yavimaya Coast
+Staff of the Mind Magus - *
 
-Plains
+Staff of the Sun Magus - *
 
-Plains
+Staff of the Wild Magus - *
 
-Plains
+Tormod's Crypt - *
+
+Tyrant's Machine - *
+
+Will-Forged Golem - convoke
+
+Battlefield Forge - *
+
+Caves of Koilos - *
+
+Darksteel Citadel - indestructible
+
+Evolving Wilds - *
+
+Llanowar Wastes - *
+
+Radiant Fountain - *
+
+Shivan Reef - *
+
+Sliver Hive - conditinal mana spending
+
+Urborg, Tomb of Yawgmoth - static
+
+Yavimaya Coast - *
 
 Plains
 
 Island
 
-Island
-
-Island
-
-Island
-
 Swamp
-
-Swamp
-
-Swamp
-
-Swamp
-
-Mountain
-
-Mountain
-
-Mountain
 
 Mountain
 
 Forest
 
-Forest
+Aegis Angel - indestructible; static
 
-Forest
+Divine Verdict - *
 
-Forest
+Inspired Charge - eot
 
-Aegis Angel
 
-Divine Verdict
 
-Inspired Charge
+Cancel - counter
 
-Serra Angel
 
-Cancel
 
-Mahamoti Djinn
+Nightmare - *
 
-Nightmare
+Sengir Vampire - other trigger
 
-Sengir Vampire
 
-Walking Corpse
 
-Furnace Whelp
+Furnace Whelp - *
 
-Seismic Strike
+Seismic Strike - *
 
-Shivan Dragon
+Shivan Dragon - *
 
-Centaur Courser
 
-Garruk's Packleader
 
-Terra Stomper"
+Garruk's Packleader - other trigger
+
+Terra Stomper - can't be countered

@@ -1,5 +1,7 @@
-import sys, pdb
+import sys
+import pdb
 from collections import defaultdict
+from functools import reduce
 
 
 from MTG import gameobject
@@ -8,9 +10,6 @@ from MTG import cardtype
 from MTG import mana
 from MTG import triggers
 from MTG import play
-
-
-
 
 
 class Status():
@@ -29,9 +28,109 @@ class Status():
         return str(self.__dict__)
 
 
+class Modifier():
+    def __init__(self, target, modifications=[], to_apply=True):
+        """
+        Modifications is a list of tuples
+            (name-of-method-to-modify, modified-value-or-function,
+                (optional) add_on=False)
+
+        If add_on is True and we're modifying a value, then the modification
+         will be added on to the original value
+
+        So (characteristics.power, 4, True) buffs creature by +4/+0, whereas
+           (characteristics.power, 4) sets base power to 4
+
+        """
+        self.target = target
+        self.original_methods = {}
+        self.modified_methods = {}
+        self.applied = True
+
+        self.add(modifications, to_apply)
+
+    @property
+    def method_names(self):
+        return self.original_methods.keys()
+
+    def apply(self):
+        """Essentially, what setattr() is doing is:
+
+            reduce(...) gets to the object
+             which actually contains the attribute/method we want to change
+
+            so if name is 'tap' or any 1st level method of Permanent, it just return self.target
+
+            but if name is 'characteristics.power', then it returns self.target[characteristics]
+
+            Then, it performes 'target.name = modification' through setattr(...)
+
+             where target is the target returned by reduce(getattr(...)) above
+             and name is only the last part of name -- the actual name of the method
+
+        This is akin to finding the path-to-file, then changing the file from that directory
+
+        e.g. we're given a full path, and then we call
+         setattr(path-to-directory, filename, value-to-assign)
+
+        In the case where name is just a 1st level method, this call is equivalent to
+         setattr(self.target, name, modification)
+
+        Or: eval('self.target.' + name + ' = ' + modification)
+
+        """
+        for name, modification in self.modified_methods.items():
+            setattr(
+                reduce(getattr, name.split('.')[:-1], self.target),
+                name.split('.')[-1],
+                modification)
+
+        self.applied = True
+
+    def reset(self):
+        for name, original in self.original_methods.items():
+            setattr(
+                reduce(getattr, name.split('.')[:-1], self.target),
+                name.split('.')[-1],
+                original)
+        self.applied = False
+
+    def add(self, modifications, to_apply=True):
+        for name, modification, *is_add_on in modifications:
+            """The reason why we use reduce is so we can parse names like
+
+            characteristics.power
+
+            Essentially, if name refers to a method of Permanent (e.g. 'tap'),
+            then a simple getattr/setattr call will suffice (e.g. getattr(self.target, 'tap'))
+
+            But that doesn't work with 'characteristics.power'
+
+            So we need to chain getattr/setattr using reduce
+            """
+
+
+            self.original_methods[name] = reduce(getattr, name.split('.'),
+                                                 self.target)
+
+            if is_add_on and is_add_on[0] is True:
+                modification += self.original_methods[name]
+
+            self.modified_methods[name] = modification
+            
+            if to_apply:
+                setattr(
+                    reduce(getattr, name.split('.')[:-1], self.target),
+                    name.split('.')[-1],
+                    modification)
+
+        if to_apply and self.applied:
+            self.applied = True
+        else:
+            self.applied = False
 
 class Permanent(gameobject.GameObject):
-    def __init__(self, characteristics, controller, owner=None, original_card=None, status=None):
+    def __init__(self, characteristics, controller, owner=None, original_card=None, status=None, modifications=[]):
         self.characteristics = characteristics
         self.controller = controller
         self.game = controller.game
@@ -39,6 +138,8 @@ class Permanent(gameobject.GameObject):
         self.zone = zone.ZoneType.BATTLEFIELD
         self.original_card = original_card
         self.attributes = original_card.attributes
+        self.modifier = Modifier(self, modifications)
+       
         if status is None:
             self.status = Status()
         else:
@@ -57,8 +158,8 @@ class Permanent(gameobject.GameObject):
         print("making permanent... {}\n".format(self))
 
     def __repr__(self):
-        return super(Permanent, self).__repr__() + ' controlled by ' + str(self.controller if self.controller else 'None')
-
+        return (super(Permanent, self).__repr__() + ' controlled by '
+                + str(self.controller if self.controller else 'None'))
 
     def activate_ability(self, num=0):
         # if self._activated_abilities_costs_validation[num](self):
@@ -67,21 +168,23 @@ class Permanent(gameobject.GameObject):
         return True
         # return False
 
+    def clear_modifier(self):
+        """Clears end-of-turn effects"""
+        self.modifier.reset()
 
     def tap(self):
         self.status.tapped = True
 
-        
     def untap(self):
         if (self.status.tapped):
             self.status.tapped = False
-            #self.untapTrigger()
+            # self.untapTrigger()
 
     @property
     def power(self):
         if self.is_creature:
             return (self.characteristics.power + self.status.counters["+1/+1"]
-                                              - self.status.counters["-1/-1"])
+                    - self.status.counters["-1/-1"])
         else:
             return None
 
@@ -89,36 +192,35 @@ class Permanent(gameobject.GameObject):
     def toughness(self):
         if self.is_creature:
             return (self.characteristics.toughness + self.status.counters["+1/+1"]
-                                              - self.status.counters["-1/-1"])
+                    - self.status.counters["-1/-1"])
         else:
             return None
 
-
     def can_attack(self):
-        return (self.is_creature and not self.status.tapped and 
-                    (not self.status.summoning_sick or self.has_ability("Haste")))
+        return (self.is_creature and not self.status.tapped and
+                (not self.status.summoning_sick or self.has_ability("Haste")))
 
     def can_block(self, attackers=None):
         if attackers:
-            if type(attackers) is not list: attackers = [attackers]
+            if type(attackers) is not list:
+                attackers = [attackers]
 
             if self.attributes.num_creatures_can_block < len(attackers):
                 return False
 
             for attacker in attackers:
-                if (attacker.has_ability('Flying') 
-                            and not (self.has_ability('Flying')
-                                or self.has_ability('Reach'))):
+                if (attacker.has_ability('Flying')
+                    and not (self.has_ability('Flying')
+                             or self.has_ability('Reach'))):
                     return False
 
                 if (attacker.has_ability('Intimidate')
                         and not (self.is_artifact or self.share_color(attacker))):
                     return False
-                pass  ## TODO: other blocking restrictions (e.g. can't block alone)
-        
+                # TODO: other blocking restrictions (e.g. can't block alone)
+                pass
+
         return self.is_creature and not self.status.tapped
-
-
 
     def attacks(self, player):
         # trigger
@@ -132,7 +234,7 @@ class Permanent(gameobject.GameObject):
             self.status.is_blocking.append(creature)
             if type(creature.status.is_attacking) == type(self.controller):
                 creature.status.is_attacking = []
-            
+
             creature.status.is_attacking.append(self)
 
             return True
@@ -148,13 +250,12 @@ class Permanent(gameobject.GameObject):
         self.status.is_blocking = []
 
     def take_damage(self, source, dmg):
-        ## trigger based on source
+        # trigger based on source
         self.status.damage_taken += dmg
         print("{} takes {} damage from {}\n".format(self, dmg, source))
         if source.has_ability("Deathtouch"):
             self.dies()
         # pdb.set_trace()
-
 
     def deals_damage(self, target, dmg):
         """ target could be Player, Creature, or array of creatures"""
@@ -170,7 +271,8 @@ class Permanent(gameobject.GameObject):
                     lethal_dmg = blocker.toughness
 
                 if blocker == target[-1]:
-                    if not self.has_ability("Trample"):  # all remaining dmg goes to last creature
+                    # all remaining dmg goes to last creature
+                    if not self.has_ability("Trample"):
                         lethal_dmg = dmg_to_assign
 
                 if dmg_to_assign < lethal_dmg:
@@ -182,19 +284,18 @@ class Permanent(gameobject.GameObject):
 
             if self.has_ability("Trample"):  # remaining dmg from trample
                 self.deals_damage(target[0].controller, dmg_to_assign)
-        
+
         else:
             # a single creature or a player
             target.take_damage(self, dmg)
 
-        ## TODO: check damage actually went through
+        # TODO: check damage actually went through
         if self.has_ability("Lifelink"):
             self.controller.gain_life(dmg)
-        ## TODO: triggers
-
+        # TODO: triggers
 
     def trigger(self, condition):
-        ## TODO: more triggers
+        # TODO: more triggers
         if condition == triggers.triggerConditions.onUpkeep:
             self.status.summoning_sick = False
         elif condition == triggers.triggerConditions.onCleanup:
@@ -208,7 +309,7 @@ class Permanent(gameobject.GameObject):
                  for effect in self.trigger_listeners[condition]])
 
     def dies(self):
-        ## trigger
+        # trigger
         print("{} has died\n".format(self))
         self.zone = zone.ZoneType.GRAVEYARD
         self.controller.battlefield.remove(self)
@@ -216,10 +317,11 @@ class Permanent(gameobject.GameObject):
         c.previousState = self
         self.controller.graveyard.add(c)
 
+    def destroy(self):
+        self.dies()
 
     def add_counter(self, counter, num=1):
         self.status.counters[counter] += num
-
 
 
 def make_permanent(card):
