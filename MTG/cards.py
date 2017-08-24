@@ -1,5 +1,6 @@
 import sys
 import pickle
+import math
 
 from MTG.parsedcards import *
 from MTG import abilities
@@ -226,7 +227,22 @@ def set_up_cards():
 
     add_targets("Titanic Growth", [lambda p: p.zone == zone.ZoneType.BATTLEFIELD
                                      and (p.is_creature)])
+    # add_play_func_single_target("Titanic Growth",
+    #                             lambda self, t: t.modifier.add([
+    #                                 ('characteristics.power', 4, True),
+    #                                 ('characteristics.toughness', 4, True)]))
     add_play_func_single_target("Titanic Growth",
-                                lambda self, t: t.modifier.add([
-                                    ('characteristics.power', 4, True),
-                                    ('characteristics.toughness', 4, True)]))
+                                lambda self, t: t.add_effect('modifyPT',
+                                    (4, 4), self, self.controller.game.eot_time))
+
+    add_targets("Ulcerate", [lambda p: p.zone == zone.ZoneType.BATTLEFIELD
+                                     and (p.is_creature)])
+    add_play_func_single_target("Ulcerate",
+                                lambda self, t:
+                                    t.add_effect('modifyPT', (-3, -3),
+                                                self, self.controller.game.eot_time)
+                                and self.controller.lose_life(3))
+
+    add_activated_ability(
+        "Zof Shade", '2B', 
+        "self.add_effect('modifyPT',(2, 2), self, self.controller.game.eot_time)")

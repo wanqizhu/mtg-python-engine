@@ -19,8 +19,12 @@ class ManaPool():
         self.pool = defaultdict(lambda: 0)
         self.controller = controller
 
-    def add(self, mana, amount):
+    def add(self, mana, amount=1):
         self.pool[mana] += amount
+
+    def add_str(self, mana_str):
+        for c in mana_str:
+            self.add(self.chr_to_mana(c))
 
     def pay(self, manacost):
         for manatype in manacost:

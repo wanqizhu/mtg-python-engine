@@ -21,6 +21,7 @@
 
 - eot / conditional / aura modifiers on permanents
 	- auras
+	- MULTIPLE MODIFIERS -- e.g. Zof Shade -- they need to stack correctly while maintaining original
 
 - check target legality upon spell/ability RESOLUTION
 
@@ -100,8 +101,11 @@ Walking Corpse
 
 Centaur Courser
 
+Titanic Growth
 
+Ulcerate
 
+Zof Shade *
 
 
 
@@ -344,7 +348,7 @@ Stain the Mind - convoke
 
 
 
-Ulcerate - eot modifier
+
 
 Unmake the Graves - convoke
 
@@ -356,7 +360,7 @@ Waste Not - *
 
 Xathrid Slyblade - eot
 
-Zof Shade - eot
+
 
 Act on Impulse - eot
 
@@ -512,7 +516,7 @@ Soul of Zendikar - graveyard ability
 
 Sunblade Elf - static; eot
 
-Titanic Growth - eot
+
 
 Undergrowth Scavenger - *
 

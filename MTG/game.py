@@ -1,6 +1,7 @@
 import sys
 import os
 import traceback
+import time
 
 from copy import deepcopy
 
@@ -40,6 +41,7 @@ class Game(object):
         self.pending_turns = []
         self.pending_steps = []
         self.test = test
+        self.turn_num = 0
         # self.previous_state = GAME_PREVIOUS_STATE
 
     def opponent(self, player):
@@ -50,40 +52,19 @@ class Game(object):
                 return p
 
     @property
+    def timestamp(self):
+        return (self.turn_num * 100
+                + self.step._value_
+                + time.time() % 10**4 / 10**4)  # this is a float less than 1
+
+    @property
+    def eot_time(self):
+        return self.turn_num * 100 + gamesteps.Step.CLEANUP._value_
+
+    @property
     def APNAP(self):
         i = self.players_list.index(self.current_player)
         return self.players_list[i:] + self.players_list[:i]
-
-    def get_zone(self, zone_type, player=None):
-        return {
-            ZoneType.LIBRARY: player.library,
-            ZoneType.HAND: player.hand,
-            ZoneType.BATTLEFIELD: player.battlefield,
-            ZoneType.GRAVEYARD: player.graveyard,
-            ZoneType.STACK: self.stack,
-            ZoneType.EXILE: player.exile,
-            # ZoneType.COMMAND: player.command
-        }[zone_type]
-
-    # TODO
-    def apply_state_based_actions(self):
-        print("Applying state based actions")
-        self.apply_to_battlefield(
-            lambda p: p.dies(),
-            lambda p: p.is_creature and
-                      p.status.damage_taken >= p.toughness)
-
-        # check for player death
-        for _player in self.players_list:
-            if _player.life <= 0:
-                _player.lose()
-            if _player.lost:  # PROBLEM with multiplayer -- maybe skip over rest of turn / destroy all cards owned by that player?
-                self.players_list.remove(_player)
-                self.num_players -= 1
-
-        if self.num_players <= 1:
-            raise GameOverException
-        pass
 
     # TODO
     def apply_stack_item(self, stack_item):
@@ -103,6 +84,42 @@ class Game(object):
             for perm in _player.battlefield[:]:
                 if condition(perm):
                     apply_func(perm)
+
+    def get_zone(self, zone_type, player=None):
+        return {
+            ZoneType.LIBRARY: player.library,
+            ZoneType.HAND: player.hand,
+            ZoneType.BATTLEFIELD: player.battlefield,
+            ZoneType.GRAVEYARD: player.graveyard,
+            ZoneType.STACK: self.stack,
+            ZoneType.EXILE: player.exile,
+            # ZoneType.COMMAND: player.command
+        }[zone_type]
+
+    # TODO
+    def apply_state_based_actions(self):
+        print("Applying state based actions")
+
+        self.apply_to_battlefield(
+            lambda p: p.check_effect_expiration())
+        
+        self.apply_to_battlefield(
+            lambda p: p.dies(),
+            lambda p: p.is_creature and
+                      p.status.damage_taken >= p.toughness)
+
+        # check for player death
+        for _player in self.players_list:
+            if _player.life <= 0:
+                _player.lose()
+            if _player.lost:  # PROBLEM with multiplayer -- maybe skip over rest of turn / destroy all cards owned by that player?
+                self.players_list.remove(_player)
+                self.num_players -= 1
+
+        if self.num_players <= 1:
+            raise GameOverException
+
+
 
     def handle_priority(self, step, priority=None):
         # priority tracks the index of the player that currently have priority
@@ -424,6 +441,7 @@ class Game(object):
         self.pending_turns.append(self.current_player)
         self.current_player = self.pending_turns.pop(
             0)  # cycles to next player's turn
+        self.turn_num += 1
         return True
 
     # debug

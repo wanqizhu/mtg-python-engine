@@ -1,6 +1,8 @@
 import sys
 import pdb
-from collections import defaultdict
+import math
+from collections import defaultdict, namedtuple
+from sortedcontainers import SortedListWithKey
 from functools import reduce
 
 
@@ -117,7 +119,7 @@ class Modifier():
                 modification += self.original_methods[name]
 
             self.modified_methods[name] = modification
-            
+
             if to_apply:
                 setattr(
                     reduce(getattr, name.split('.')[:-1], self.target),
@@ -129,6 +131,11 @@ class Modifier():
         else:
             self.applied = False
 
+
+# used in Permanent().effects
+Effect = namedtuple('Effect', ['value', 'source', 'expiration', 'timestamp'])
+
+
 class Permanent(gameobject.GameObject):
     def __init__(self, characteristics, controller, owner=None, original_card=None, status=None, modifications=[]):
         self.characteristics = characteristics
@@ -139,7 +146,12 @@ class Permanent(gameobject.GameObject):
         self.original_card = original_card
         self.attributes = original_card.attributes
         self.modifier = Modifier(self, modifications)
-       
+        # sort by timestamp
+        # each self.effects[name] is a sortedlist of Effect = namedtuple
+        # each tuple always ends with (..., EXPIRATION_TIME, TIMESTAMP)
+        self.effects = defaultdict(lambda: SortedListWithKey(
+                                           [], lambda x : x.timestamp))
+
         if status is None:
             self.status = Status()
         else:
@@ -172,6 +184,26 @@ class Permanent(gameobject.GameObject):
         """Clears end-of-turn effects"""
         self.modifier.reset()
 
+    def add_effect(self, name, value, source=None, expiration=math.inf):
+        eff = Effect(value, source, expiration, self.controller.game.timestamp)
+        self.effects[name].add(eff)
+        self.check_effect_expiration()
+
+    def check_effect_expiration(self, name=None):
+        time = self.controller.game.timestamp
+        if name is None:
+            for category in self.effects.values():
+                for eff in category[:]:
+                    if eff.expiration < time:
+                        category.remove(eff)
+                        print("%r has expired" % eff)
+        else:
+            for eff in self.effects[name]:
+                if eff.expiration < time:
+                    self.effects[name].remove(eff)
+                    print("%r has expired" % eff)
+
+
     def tap(self):
         self.status.tapped = True
 
@@ -180,21 +212,46 @@ class Permanent(gameobject.GameObject):
             self.status.tapped = False
             # self.untapTrigger()
 
+    # power/toughness layering -- see rule 613.3
     @property
     def power(self):
         if self.is_creature:
-            return (self.characteristics.power + self.status.counters["+1/+1"]
-                    - self.status.counters["-1/-1"])
+            return self._calculate_pt()[0]
         else:
             return None
 
     @property
     def toughness(self):
         if self.is_creature:
-            return (self.characteristics.toughness + self.status.counters["+1/+1"]
-                    - self.status.counters["-1/-1"])
+            return self._calculate_pt()[1]
         else:
             return None
+
+    def _calculate_pt(self):
+        # layer 7a
+        power = self.characteristics.power
+        toughness = self.characteristics.toughness
+
+        # layer 7b
+        for effect in self.effects['setPT']:
+            if effect.value[0] != '*':  # keep it as is
+                power = effect.value[0]
+            if effect[1] != '*':
+                toughness = effect.value[1]
+
+        # layer 7c
+        for effect in self.effects['modifyPT']:
+            power += effect.value[0]
+            toughness += effect.value[1]
+
+        # layer 7d
+        power += self.status.counters["+1/+1"] - self.status.counters["-1/-1"]
+        toughness += self.status.counters["+1/+1"] - self.status.counters["-1/-1"]
+
+        for effect in self.effects['switchPT']:  # layer 7e
+            power, toughness = toughness, power
+
+        return power, toughness
 
     def can_attack(self):
         return (self.is_creature and not self.status.tapped and

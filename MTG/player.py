@@ -326,6 +326,9 @@ class Player():
         print("%r: gaining %i life\n" % (self, amount))
         self.life += amount
 
+    def lose_life(self, amount):
+        self.life -= amount
+
     def lose(self):
         print("{} has lost the game\n".format(self))
         self.lost = True
