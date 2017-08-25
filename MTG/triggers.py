@@ -11,7 +11,7 @@ class triggerConditions(Enum):
     onEnterGrave = 5
     onDeath = 6
     onLeaveBattlefield = 7
-    # phase (CONTROLLER ONLY or ALL PLAYERS)
+    # phase (ALL PLAYERS)
     onUpkeep = 10
     onMain1 = 11
     onMain2 = 12
@@ -21,6 +21,16 @@ class triggerConditions(Enum):
     onEndofCombat = 16
     onEndstep = 17
     onCleanup = 18
+    # phase (CONTROLLER ONLY)
+    onControllerUpkeep = 110
+    onControllerMain1 = 111
+    onControllerMain2 = 112
+    onControllerEnterCombat = 113
+    onControllerDeclareAttackers = 114
+    onControllerDeclareBlockers = 115
+    onControllerEndofCombat = 116
+    onControllerEndstep = 117
+    onControllerCleanup = 118
     # events
     onUntap = 8
     onTap = 9

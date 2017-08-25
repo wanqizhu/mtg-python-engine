@@ -101,7 +101,8 @@ def add_activated_ability(cardname, cost, effect, is_mana_ability=False):
             costs.append("self.controller.pay('%s')" % itm)
 
         if re.match('[pP]ay [\dX]+ life', itm):
-            costs.append("self.controller.pay(life=%s)" % re.search('[\dX]+', itm).group(0))
+            costs.append("self.controller.pay(life=%s)" %
+                         re.search('[\dX]+', itm).group(0))
 
     # elif other costs
 
@@ -236,28 +237,29 @@ def set_up_cards():
 
     add_play_func_no_target("Divination", lambda self: self.controller.draw(2))
 
-    add_play_func_no_target("Jace's Ingenuity", lambda self: self.controller.draw(3))
+    add_play_func_no_target(
+        "Jace's Ingenuity", lambda self: self.controller.draw(3))
 
     add_targets("Titanic Growth", [lambda p: p.zone == zone.ZoneType.BATTLEFIELD
-                                     and (p.is_creature)])
+                                   and (p.is_creature)])
     # add_play_func_single_target("Titanic Growth",
     #                             lambda self, t: t.modifier.add([
     #                                 ('characteristics.power', 4, True),
     #                                 ('characteristics.toughness', 4, True)]))
     add_play_func_single_target("Titanic Growth",
                                 lambda self, t: t.add_effect('modifyPT',
-                                    (4, 4), self, self.controller.game.eot_time))
+                                                             (4, 4), self, self.controller.game.eot_time))
 
     add_targets("Ulcerate", [lambda p: p.zone == zone.ZoneType.BATTLEFIELD
-                                     and (p.is_creature)])
+                             and (p.is_creature)])
     add_play_func_single_target("Ulcerate",
                                 lambda self, t:
                                     t.add_effect('modifyPT', (-3, -3),
-                                                self, self.controller.game.eot_time)
+                                                 self, self.controller.game.eot_time)
                                 and self.controller.lose_life(3))
 
     add_activated_ability(
-        "Zof Shade", '2B', 
+        "Zof Shade", '2B',
         "self.add_effect('modifyPT', (2, 2), self, self.controller.game.eot_time)")
 
     add_targets("Mind Rot", [lambda p: p.__class__.__name__ is 'player'])
@@ -265,9 +267,11 @@ def set_up_cards():
                                 lambda self, t:
                                     t.discard(2))
 
-
     add_activated_ability(
-        "Shadowcloak Vampire", 'Pay 2 life', 
+        "Shadowcloak Vampire", 'Pay 2 life',
         "self.add_effect('gainAbility', 'Flying', self, self.controller.game.eot_time)")
 
-
+    add_trigger("First Response", triggers.triggerConditions.onUpkeep,
+                lambda self: self.controller.create_token('1/1 white Soldier')
+                if self.controller.last_turn_events['life loss']
+                else None)

@@ -120,4 +120,5 @@ class GameObject():
         return color in self.characteristics.color
 
     def is_color(self, color):
+        """ color is a list"""
         return color == self.characteristics.color

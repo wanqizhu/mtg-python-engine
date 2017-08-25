@@ -474,13 +474,13 @@ class TestPlayer(unittest.TestCase):
                 'p Lightning Strike',
                 'op',
                 '', '',  # resolve last one
-                '__self.tmp = self.opponent().life == 17'
+                '__self.tmp = self.opponent.life == 17'
             ' and len(self.battlefield) == 1'
-            ' and len(self.opponent().battlefield) == 1',
+            ' and len(self.opponent.battlefield) == 1',
                 '', '',
                 '__self.tmp = self.tmp'
             ' and len(self.battlefield) == 1'
-            ' and len(self.opponent().battlefield) == 0',
+            ' and len(self.opponent.battlefield) == 0',
                 '', '',
                 '__self.tmp = self.tmp'
             ' and len(self.battlefield) == 0'
@@ -563,6 +563,28 @@ class TestPlayer(unittest.TestCase):
             self.assertTrue(self.player.tmp)
             # buffs should off
             self.assertEqual(self.player.battlefield[0].power, 2)
+
+    def test_first_response(self):
+        """Testing trigger on each upkeep -- if lost life last turn, create token"""
+        with mock.patch('builtins.input', side_effect=[
+                '__self.battlefield.add("First Response")',
+                '__self.lose_life(3)',
+                's upkeep', 's upkeep', '', '',
+                's upkeep',  # player 1's turn
+                '__self.tmp = self.battlefield[1].power == 1'  # player 0 verifying token
+            ' and self.battlefield[1].is_color(["W"])', 's upkeep',
+                '', '', 's upkeep', 's upkeep',  # player 0's turn again
+                '0'  # attacking with token
+                ]):
+
+            self.player.autoDiscard = True
+            self.opponent.autoDiscard = True
+            self.GAME.handle_turn()
+            self.GAME.handle_turn()
+            self.GAME.handle_turn()
+            self.assertTrue(self.player.tmp)
+            # buffs should off
+            self.assertEqual(self.player.opponent.life, 19)
 
     # def test_trigger_ordering(self):
         """ Test trigger ordering"""

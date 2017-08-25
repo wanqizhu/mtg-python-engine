@@ -1,6 +1,7 @@
 import sys
 import pdb
 import math
+import re
 from collections import defaultdict, namedtuple
 from sortedcontainers import SortedListWithKey
 from functools import reduce
@@ -143,7 +144,6 @@ class Permanent(gameobject.GameObject):
         self.owner = owner if owner else controller
         self.zone = zone.ZoneType.BATTLEFIELD
         self.original_card = original_card
-        self.attributes = original_card.attributes
         self.modifier = Modifier(self, modifications)
         # sort by timestamp
         # each self.effects[name] is a sortedlist of Effect = namedtuple
@@ -157,14 +157,21 @@ class Permanent(gameobject.GameObject):
             self.status = status
 
         if original_card:
+            self.attributes = original_card.attributes
             self.activated_abilities = original_card.activated_abilities
             # self._activated_abilities_costs_validation = original_card._activated_abilities_costs_validation
             self._activated_abilities_costs = original_card._activated_abilities_costs
             self._activated_abilities_effects = original_card._activated_abilities_effects
             self.trigger_listeners = original_card.trigger_listeners
+        else:
+            self.attributes = []
+            self.activated_abilities = []
+            self._activated_abilities_costs = []
+            self._activated_abilities_effects = []
+            self.trigger_listeners = []
 
-        # add to battlefield
         self.controller.battlefield.add(self)
+        self.is_token = False
         # pdb.set_trace()
         print("making permanent... {}\n".format(self))
 
@@ -387,6 +394,7 @@ class Permanent(gameobject.GameObject):
 
     def add_counter(self, counter, num=1):
         self.status.counters[counter] += num
+
 
 
 def make_permanent(card):

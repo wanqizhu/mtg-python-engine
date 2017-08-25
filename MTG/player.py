@@ -2,6 +2,7 @@ import pdb
 import traceback
 import random
 from copy import deepcopy
+from collections import defaultdict
 
 from MTG import mana
 from MTG import zone
@@ -9,6 +10,7 @@ from MTG import play
 from MTG import gamesteps
 from MTG import cards
 from MTG import triggers
+from MTG import token
 from MTG.exceptions import *
 
 
@@ -41,6 +43,10 @@ class Player():
         self.won = False
 
         self.pending_triggers = []
+
+        # todo: also track "YOUR last turn" rather than just last turn
+        self.turn_events = defaultdict(lambda: None)
+        self.last_turn_events = defaultdict(lambda: None)
 
     def __repr__(self):
         return 'player.Player(name=%r)' % self.name
@@ -98,8 +104,8 @@ class Player():
                 elif answer == 'mana':
                     print(self.mana)
 
-                elif answer == 'debug':
-                    pdb.set_trace()
+                # elif answer == 'debug':
+                #     pdb.set_trace()
 
                 elif answer[0] == 'p':  # playing card from hand
                     try:
@@ -206,6 +212,7 @@ class Player():
 
         return _play
 
+    @property
     def opponent(self):
         return self.game.opponent(self)
 
@@ -302,6 +309,9 @@ class Player():
 
         self.hand.remove(cards_to_discard)
         return self.graveyard.add(cards_to_discard)
+    
+    def create_token(self, attributes):
+        token.create_token(attributes, self)
 
 
     # TODO: handle paying X life / X mana
@@ -319,7 +329,7 @@ class Player():
             return False
 
         self.mana.pay(payment)
-        self.life -= life
+        self.lose_life(life)
         return True
 
     def take_damage(self, source, dmg):
@@ -328,7 +338,6 @@ class Player():
         self.life -= dmg
 
     def gain_life(self, amount):
-        # trigger
         self.game.apply_to_battlefield(
             lambda p: p.trigger(triggers.triggerConditions.onLifeGain))
         self.game.apply_to_battlefield(
@@ -336,16 +345,29 @@ class Player():
                 triggers.triggerConditions.onControllerLifeGain),
             lambda p: p.controller == self)
 
+        if self.turn_events['life gain']:
+            self.turn_events['life gain'] += amount
+        else:
+            self.turn_events['life gain'] = amount
         print("%r: gaining %i life\n" % (self, amount))
         self.life += amount
 
     def lose_life(self, amount):
+        # trigger
+        if self.turn_events['life loss']:
+            self.turn_events['life loss'] += amount
+        else:
+            self.turn_events['life loss'] = amount
+
         self.life -= amount
 
     def lose(self):
         print("{} has lost the game\n".format(self))
         self.lost = True
 
+    def end_turn(self):
+        self.last_turn_events = self.turn_events
+        self.turn_events = defaultdict(lambda: None)
 
     def print_player_state(self):
         print("\nPLAYER {}\nlife: {}\n".format(self.name, self.life))

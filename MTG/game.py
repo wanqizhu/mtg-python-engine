@@ -97,7 +97,7 @@ class Game(object):
 
     # TODO
     def apply_state_based_actions(self):
-        print("Applying state based actions")
+        # print("Applying state based actions")
 
         self.apply_to_battlefield(
             lambda p: p.check_effect_expiration())
@@ -439,6 +439,8 @@ class Game(object):
             for _player in self.players_list:
                 _player.mana.clear()
 
+        for _player in self.players_list:
+            _player.end_turn()
         self.pending_turns.append(self.current_player)
         self.current_player = self.pending_turns.pop(
             0)  # cycles to next player's turn
