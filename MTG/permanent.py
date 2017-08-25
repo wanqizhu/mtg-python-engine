@@ -111,7 +111,6 @@ class Modifier():
             So we need to chain getattr/setattr using reduce
             """
 
-
             self.original_methods[name] = reduce(getattr, name.split('.'),
                                                  self.target)
 
@@ -159,7 +158,7 @@ class Permanent(gameobject.GameObject):
 
         if original_card:
             self.activated_abilities = original_card.activated_abilities
-            self._activated_abilities_costs_validation = original_card._activated_abilities_costs_validation
+            # self._activated_abilities_costs_validation = original_card._activated_abilities_costs_validation
             self._activated_abilities_costs = original_card._activated_abilities_costs
             self._activated_abilities_effects = original_card._activated_abilities_effects
             self.trigger_listeners = original_card.trigger_listeners
@@ -175,7 +174,8 @@ class Permanent(gameobject.GameObject):
 
     def activate_ability(self, num=0):
         # if self._activated_abilities_costs_validation[num](self):
-        print("activating...")
+        print("activating... {}".format(self.activated_abilities[num]))
+        # pdb.set_trace()
         self._activated_abilities_effects[num](self)
         return True
         # return False
@@ -196,16 +196,19 @@ class Permanent(gameobject.GameObject):
                 for eff in category[:]:
                     if eff.expiration < time:
                         category.remove(eff)
-                        print("%r has expired" % eff)
+                        print("{} has expired".format(eff))
         else:
             for eff in self.effects[name]:
                 if eff.expiration < time:
                     self.effects[name].remove(eff)
-                    print("%r has expired" % eff)
+                    print("{} has expired".format(eff))
 
 
     def tap(self):
-        self.status.tapped = True
+        if not self.status.tapped:
+            self.status.tapped = True
+            return True
+
 
     def untap(self):
         if (self.status.tapped):
@@ -253,9 +256,13 @@ class Permanent(gameobject.GameObject):
 
         return power, toughness
 
+    @property
+    def is_summoning_sick(self):
+        return (self.is_creature and self.status.summoning_sick
+                    and not self.has_ability("Haste"))
+
     def can_attack(self):
-        return (self.is_creature and not self.status.tapped and
-                (not self.status.summoning_sick or self.has_ability("Haste")))
+        return (self.is_creature and not self.status.tapped and not self.is_summoning_sick)
 
     def can_block(self, attackers=None):
         if attackers:
@@ -353,6 +360,7 @@ class Permanent(gameobject.GameObject):
 
     def trigger(self, condition):
         # TODO: more triggers
+        # technically, these aren't "triggers"; but putting them here suffices
         if condition == triggers.triggerConditions.onUpkeep:
             self.status.summoning_sick = False
         elif condition == triggers.triggerConditions.onCleanup:

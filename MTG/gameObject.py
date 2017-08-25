@@ -1,5 +1,7 @@
 import pdb
 import time
+from collections import defaultdict, namedtuple
+from sortedcontainers import SortedListWithKey
 
 from MTG import cardtype
 from MTG import abilities
@@ -57,6 +59,8 @@ class GameObject():
         self.previousState = previousState
         if self.controller:
             self.game = self.controller.game
+        self.effects = defaultdict(lambda: SortedListWithKey(
+                                           [], lambda x : x.timestamp))
 
     def __repr__(self):
         # pdb.set_trace()
@@ -102,7 +106,12 @@ class GameObject():
         return self.characteristics.toughness if self.is_creature else None
 
     def has_ability(self, ability):
+        for effect in self.effects['gainAbility']:
+            if ability in effect.value:
+                return True
+
         return abilities.StaticAbilities[ability] in self.characteristics.abilities
+
 
     def share_color(self, other):
         return bool(set(self.characteristics.color) & set(other.characteristics.color))

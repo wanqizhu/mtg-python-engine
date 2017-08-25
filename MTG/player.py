@@ -1,6 +1,7 @@
 import pdb
 import traceback
 import random
+from copy import deepcopy
 
 from MTG import mana
 from MTG import zone
@@ -23,6 +24,7 @@ class Player():
         self.passPriorityUntil = None
         self.autoPayMana = False
         self.autoOrderTriggers = True
+        self.autoDiscard = False
 
         self.library = zone.Library(self, deck)
         for card in self.library:
@@ -165,14 +167,19 @@ class Player():
                     assert nums[1] <= len(card.activated_abilities)
 
                     # ability activation
-                    if card._activated_abilities_costs_validation[nums[1]](card):
+                    PLAYER_PREVIOUS_STATE = deepcopy(self)
+                    # if card._activated_abilities_costs_validation[nums[1]](card):
                         # TODO: target validation
 
-                        card._activated_abilities_costs[nums[1]](card)
+                    if card._activated_abilities_costs[nums[1]](card):
                         _play = play.Play(
                             lambda: card.activate_ability(nums[1]))
                         if card.activated_abilities[nums[1]][2]:  # special action
                             _play.is_mana_ability = True
+                    else:
+                        self = PLAYER_PREVIOUS_STATE
+                        raise ResetGameException
+
 
                 # skip priority until something happens / certain step
                 elif answer[:2] == 's ':
@@ -187,6 +194,10 @@ class Player():
 
                 else:
                     raise BadFormatException()
+
+            except ResetGameException:
+                print("Illegial activation. Resetting...")
+                pass
 
             except:
                 traceback.print_exc()
@@ -259,7 +270,7 @@ class Player():
         if num == len(self.hand):
             cards_to_discard = self.hand[:]
 
-        elif rand:
+        elif rand or self.autoDiscard:
             print("randomly discarding %i...\n" % num)
             cards_to_discard = random.sample(self.hand.elements, num)
 
@@ -292,7 +303,9 @@ class Player():
         self.hand.remove(cards_to_discard)
         return self.graveyard.add(cards_to_discard)
 
-    def pay(self, mana, life=0):
+
+    # TODO: handle paying X life / X mana
+    def pay(self, mana=None, life=0):
         """
         mana: a dict of Mana(Enum)
         """
@@ -300,13 +313,13 @@ class Player():
         # verify we have enough resources
         if self.life - life <= 0:
             return False
-        # TODO: smart paying restrictionless mana costs
-        for manatype in mana:
-            if self.ManaPool[manatype] < mana[manatype]:
-                return False
 
+        payment = self.mana.canPay(mana)
+        if not payment:
+            return False
+
+        self.mana.pay(payment)
         self.life -= life
-        self.ManaPool.pay(mana)
         return True
 
     def take_damage(self, source, dmg):

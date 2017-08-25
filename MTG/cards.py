@@ -1,12 +1,15 @@
 import sys
 import pickle
 import math
+import re
 
 from MTG.parsedcards import *
+from MTG.exceptions import *
 from MTG import abilities
 from MTG import zone
 from MTG import triggers
-from MTG.exceptions import *
+from MTG import mana
+
 
 SETPREFIX = ['M15', 'test_set']
 name_to_id_dict = {}
@@ -76,7 +79,7 @@ def read_deck(filename):
                         pass
                         # print("card {} does not exist\n".format(line[i+1:]))
             except:
-                raise DecklistFormatError()
+                raise DecklistFormatException
 
     return deck
 
@@ -87,24 +90,34 @@ def add_activated_ability(cardname, cost, effect, is_mana_ability=False):
     card = card_from_name(cardname, get_instance=False)
 
     _costs = cost.split(', ')
-    costs = ""
-    costs_validation = "True"
+    costs = []
+    # costs_validation = "True"
     if 'T' in _costs:
-        costs += "self.tap();"
-        costs_validation += " and not self.status.tapped"
-    # elif MANA
+        costs.append("self.tap() and not self.is_summoning_sick")
+        # costs_validation += " and not self.status.tapped"  ## todo: make this check if costs return True
+
+    for itm in _costs:
+        if mana.mana_pattern.match(itm):
+            costs.append("self.controller.pay('%s')" % itm)
+
+        if re.match('[pP]ay [\dX]+ life', itm):
+            costs.append("self.controller.pay(life=%s)" % re.search('[\dX]+', itm).group(0))
+
+    # elif other costs
+
+    costs = " and ".join(costs)
 
     if not card.activated_abilities:  # hasn't been initiated yet
         card.activated_abilities = []
         card._activated_abilities_costs = []
         card._activated_abilities_effects = []
-        card._activated_abilities_costs_validation = []
+        # card._activated_abilities_costs_validation = []
 
     card.activated_abilities.append((costs, effect, is_mana_ability))
 
-    card._activated_abilities_costs.append(lambda self: exec(costs))
-    card._activated_abilities_costs_validation.append(
-        lambda self: eval(costs_validation))
+    card._activated_abilities_costs.append(lambda self: eval(costs))
+    # card._activated_abilities_costs_validation.append(
+    #     lambda self: eval(costs_validation))
     card._activated_abilities_effects.append(lambda self: exec(effect))
 
 
@@ -245,4 +258,16 @@ def set_up_cards():
 
     add_activated_ability(
         "Zof Shade", '2B', 
-        "self.add_effect('modifyPT',(2, 2), self, self.controller.game.eot_time)")
+        "self.add_effect('modifyPT', (2, 2), self, self.controller.game.eot_time)")
+
+    add_targets("Mind Rot", [lambda p: p.__class__.__name__ is 'player'])
+    add_play_func_single_target("Mind Rot",
+                                lambda self, t:
+                                    t.discard(2))
+
+
+    add_activated_ability(
+        "Shadowcloak Vampire", 'Pay 2 life', 
+        "self.add_effect('gainAbility', 'Flying', self, self.controller.game.eot_time)")
+
+

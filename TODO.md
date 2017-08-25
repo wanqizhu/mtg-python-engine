@@ -15,6 +15,11 @@
 
 - Activated Abilities
  - ability have a target
+ - IMPLEMENT COSTS OTHER THAN TAP
+ 	- function signatures in general (?)
+ 		- return True if action successful and did something
+ 		- raise error if illegal
+ 		- return False if did nothing
  - make a separate class for abilities/spells that share targeting system, etc.
 
 - Static Abilities
@@ -105,8 +110,11 @@ Titanic Growth
 
 Ulcerate
 
-Zof Shade *
+Zof Shade
 
+Mind Rot *
+
+Shadowcloak Vampire *
 
 
 ---
@@ -318,7 +326,7 @@ Leeching Sliver - other creature trigger
 
 Liliana Vess - pwalker
 
-Mind Rot - *
+
 
 Necrobite - eot modifier; regenerate
 
@@ -336,7 +344,7 @@ Paragon of Open Graves - apply-to-battlefield
 
 Rotfeaster Maggot - *
 
-Shadowcloak Vampire - eot modifiers
+
 
 Sign in Blood - *
 

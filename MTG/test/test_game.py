@@ -8,6 +8,9 @@ from MTG import permanent
 from MTG.exceptions import *
 
 
+cards.set_up_cards()
+
+
 class TestPlayer(unittest.TestCase):
     def setUp(self):
         decks = [cards.read_deck('data/decks/deck1.txt'),
@@ -436,6 +439,9 @@ class TestPlayer(unittest.TestCase):
     # def test_flying(self):
     #     pass
 
+    # def test_lifelink(self):
+    #     pass
+
     def test_haste(self):
         with mock.patch('builtins.input', side_effect=[
                 '__self.battlefield.add("Sewn-Eye Drake")',
@@ -486,7 +492,6 @@ class TestPlayer(unittest.TestCase):
             self.GAME.handle_turn()
             self.assertTrue(self.player.tmp)
 
-
     def test_ajanis_pridemate(self):
         """ Test optional trigger on controller life gain"""
         with mock.patch('builtins.input', side_effect=[
@@ -509,29 +514,71 @@ class TestPlayer(unittest.TestCase):
             self.GAME.handle_turn()
             self.assertTrue(self.player.tmp)
 
+    def test_pt_modifiers(self):
+        """Testing casting +4/+4 and -3/-3 until eot effects (plus +1/+1 counters)"""
+        with mock.patch('builtins.input', side_effect=[
+                '__self.battlefield.add("Ajani\'s Pridemate")',
+                '__self.gain_life(1)', '',
+                '', '', 'yes',  # resolving trigger
+                '__self.tmp = self.battlefield[0].power == 3',
+                '__self.gain_life(1)', '',
+                '', '', 'yes',
+                '__self.tmp = self.tmp and self.battlefield[0].power == 4',
+                '__self.draw_card("Ulcerate")',
+                '__self.draw_card("Titanic Growth")',
+                '__self.mana.add_str("BGG")',
+                'p Ulcerate', 'b 0',  # target
+                '', '',
+                '__self.tmp = self.tmp and self.battlefield[0].toughness == 1',
+                'p Titanic Growth', '', 'b 0',  # target
+                '', '',
+                '__self.tmp = self.tmp and self.battlefield[0].toughness == 5',
+                's upkeep',
+                's upkeep']):
+
+            self.GAME.handle_turn()
+            self.assertTrue(self.player.tmp)
+            # both ulcerate and titanic growth should have fallen off
+            self.assertEqual(self.player.battlefield[0].power, 4)
+
+    def test_zof_shade(self):
+        """Testing activated ability to self buff until eot """
+        with mock.patch('builtins.input', side_effect=[
+                '__self.battlefield.add("Zof Shade")',
+                '__self.mana.add(mana.Mana.BLACK, 9)',
+                'a 0', '', '',
+                '__self.tmp = self.battlefield[0].power == 4',
+                'a 0', 'a 0', '', '',
+                '__self.tmp = self.tmp and self.battlefield[0].power == 6',
+                '', '',
+                '__self.tmp = self.tmp and self.battlefield[0].power == 8',
+                's end', 's end',
+                # should still keep the power at beginning of end step
+                '__self.tmp = self.tmp and self.battlefield[0].power == 8',
+                's upkeep',
+                's upkeep']):
+
+            self.player.autoPayMana = True
+            self.GAME.handle_turn()
+            self.assertTrue(self.player.tmp)
+            # buffs should off
+            self.assertEqual(self.player.battlefield[0].power, 2)
 
     # def test_trigger_ordering(self):
         """ Test trigger ordering"""
         # with mock.patch('builtins.input', side_effect=[
         #         '__self.battlefield.add("Ajani\'s Pridemate")',
-        #         '__self.gain_life(3)', '',
-        #         '', '', 'yes',  # resolving trigger
-        #         '__self.tmp = self.battlefield[0].power == 3',
-        #         '__self.gain_life(2)', '',
-        #         '', '', '',  # resolving trigger, saying 'no'
-        #         '__self.tmp = self.tmp and self.battlefield[0].power == 3',
+        #         '__self.gain_life(3)', '__self.gain_life(2)',
         #         '__self.gain_life(1)', '',
         #         '', '', 'yes',  # resolving trigger
-        #         '__self.tmp = self.tmp and self.battlefield[0].toughness == 4',
-        #         '', '',
-        #         '', '__self.gain_life(1)', '',  # opponent gains life
-        #         '__self.tmp = self.tmp and not self.stack',  # no trigger
+        #
         #         's upkeep',
         #         's upkeep']):  # no attack
-        
+
         #     self.player.autoOrderTriggers = False
         #     self.GAME.handle_turn()
         #     self.assertTrue(self.player.tmp)
+
 
 if __name__ == '__main__':
     unittest.main()

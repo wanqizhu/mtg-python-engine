@@ -12,6 +12,11 @@ class Mana(Enum):
     COLORLESS = 5
 
 
+# any length > 0 of the following: { X, numbers, hybrid e.g. (U/R), WUBRGC }
+mana_pattern = re.compile(
+    '(X|' '\d|' '(\([WUBRGC2]/[WUBRGC]\))|' '[WUBRGC])+')
+
+
 class ManaPool():
     manachr = ['W', 'U', 'B', 'R', 'G', 'C']
 
@@ -27,6 +32,9 @@ class ManaPool():
             self.add(self.chr_to_mana(c))
 
     def pay(self, manacost):
+        if manacost is None:
+            return
+
         for manatype in manacost:
             assert self.pool[manatype] >= manacost[manatype]
         for manatype in manacost:
@@ -54,7 +62,16 @@ class ManaPool():
             return Mana.COLORLESS
 
     def canPay(self, manacost):
-        "manacost here is a string, e.g. 2U"
+        """manacost here is a string, e.g. 2U
+
+        This returns False if not possible, or a cost dict of Mana(Enum)s
+         that can be passed to self.pay for actual payment
+
+        Note this DOES NOT pay any mana
+        """
+        if manacost is None:
+            return True
+
         cost = defaultdict(lambda: 0)
         for c in manacost:
             if c in self.manachr:

@@ -30,7 +30,6 @@ class Game(object):
 
     # Give each player their deck.
     def __init__(self, decks, test=False):
-        cards.set_up_cards()
         self.stack = zone.Stack()
         self.num_players = len(decks)
         self.players_list = [player.Player(decks[i], 'player' + str(i), game=self)
@@ -130,7 +129,8 @@ class Game(object):
 
         # while not everyone has passed priority
         while self.passed_priority < self.num_players or self.stack:
-            # TODO: repeat state-based-actions & checking for triggers UNTIL none avaliable
+            # TODO: repeat state-based-actions & checking for triggers
+            #       UNTIL none avaliable
             self.apply_state_based_actions()
 
             for p in self.APNAP:
@@ -409,8 +409,9 @@ class Game(object):
                 down_to=self.current_player.maxHandSize)
             self.apply_to_battlefield(
                 lambda p: p.trigger(triggers.triggerConditions.onCleanup))
-            self.apply_to_battlefield(
-                lambda p: p.clear_modifier())
+            self.apply_state_based_actions()
+            # self.apply_to_battlefield(
+            #     lambda p: p.clear_modifier())
 
     def handle_turn(self):
         self.pending_steps = []
@@ -484,6 +485,7 @@ class Game(object):
 
 
 if __name__ == '__main__':
+    cards.set_up_cards()
     decks = [cards.read_deck('data/decks/deck1.txt'),
              cards.read_deck('data/decks/deck1.txt')]
     GAME = Game(decks)
