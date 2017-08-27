@@ -8,14 +8,22 @@
 
 - helper function for zone changes
 
+
+
 - skip unnecessary combat phases
+
+- convoke / other cost modifiers
 
 - Triggered Abilities
 	- verify stacking/ordering triggers work and they are being resolved at next priority
+	- 'intervening if' only trigger if condition is true
+		- need another attribute when creating trigger that performs the 'if' check
+			before putting trigger on stack
 
 - Activated Abilities
  - ability have a target
  - IMPLEMENT COSTS OTHER THAN TAP
+ 	- sacrifice ~
  	- function signatures in general (?)
  		- return True if action successful and did something
  		- raise error if illegal
@@ -60,7 +68,7 @@ Mass Calcify *
 
 Oreskos Swiftclaw
 
-Razorfoot Griffin
+Razorfoot Griffin *
 
 Sungrace Pegasus
 
@@ -116,6 +124,16 @@ Mind Rot *
 
 Shadowcloak Vampire *
 
+First Response
+
+Raise the Alarm
+
+Resolute Archangel *
+
+Sanctified Charge
+
+Selfless Cathar * - TODO
+
 
 ---
 
@@ -142,7 +160,7 @@ Divine Favor - aura
 
 Ephemeral Shields - convoke
 
-First Response - log events (e.g. life loss) last turn
+
 
 
 
@@ -170,17 +188,15 @@ Pillar of Light - target check on resolution
 
 Preeminent Captain - on attack trigger
 
-Raise the Alarm - tokens
 
 
 
-Resolute Archangel - etb
+
+
 
 Return to the Ranks - convoke; X
 
-Sanctified Charge - "until eot" effects
 
-Selfless Cathar - "until eot" effects
 
 Seraph of the Masses - convoke; variable power/toughness
 

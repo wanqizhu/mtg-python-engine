@@ -17,7 +17,7 @@ creature_token_pattern = re.compile('\d/\d '
                                     '[A-Za-z ]+')
 
 
-def create_token(attributes, controller):
+def create_token(attributes, controller, num=1):
     if type(attributes) is str:
         if creature_token_pattern.match(attributes):
             pt, color, *c_type = attributes.split(' ')
@@ -31,12 +31,13 @@ def create_token(attributes, controller):
 
             print("making token... %d %d %s %s" % (p, t, color, c_type))
 
-            characteristics = gameobject.Characteristics(name='Token: ' + ' '.join(c_type),
-                                                         types=[
-                                                             cardtype.CardType.CREATURE],
-                                                         power=p,
-                                                         toughness=t,
-                                                         subtype=c_type,
-                                                         color=[color])
+            for i in range(num):
+                characteristics = gameobject.Characteristics(name='Token: ' + ' '.join(c_type),
+                                                             types=[
+                                                                 cardtype.CardType.CREATURE],
+                                                             power=p,
+                                                             toughness=t,
+                                                             subtype=c_type,
+                                                             color=[color])
 
-            return Token(characteristics, controller)
+                Token(characteristics, controller)

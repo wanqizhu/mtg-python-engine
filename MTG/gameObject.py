@@ -65,7 +65,7 @@ class GameObject():
     def __repr__(self):
         # pdb.set_trace()
         return '%r in %r' % (self.name,
-                             self.zone if self.zone else 'None')
+                             self.zone.zone_type if self.zone else 'None')
 
     def __str__(self):
         return self.name
@@ -110,8 +110,8 @@ class GameObject():
             if ability in effect.value:
                 return True
 
+        ability = ability.replace(' ', '_')
         return abilities.StaticAbilities[ability] in self.characteristics.abilities
-
 
     def share_color(self, other):
         return bool(set(self.characteristics.color) & set(other.characteristics.color))
@@ -122,3 +122,14 @@ class GameObject():
     def is_color(self, color):
         """ color is a list"""
         return color == self.characteristics.color
+
+
+    def change_zone(self, target_zone, from_top=0, shuffle=True):
+        current_zone = self.zone
+        if current_zone.remove(self):
+            if target_zone.is_library:
+                return target_zone.add(self, from_top, shuffle)
+            else:
+                return target_zone.add(self)
+
+        return False

@@ -20,6 +20,7 @@ class Player():
         self.name = name
         # self.ID = None
         self.life = startingLife
+        self.startingLife = startingLife
         self.maxHandSize = maxHandSize
         self.landPerTurn = 1
         self.landPlayed = 0
@@ -191,6 +192,10 @@ class Player():
                 elif answer[:2] == 's ':
                     if answer[2:] == 'main':
                         answer = 's precombat_main'
+                    if answer[2:] == 'main2':
+                        answer = 's postcombat_main'
+                    if answer[2:] == 'combat':
+                        answer = 's beginning_of_combat'
                     assert answer[2:].upper() in gamesteps.Step._member_names_
                     self.passPriorityUntil = gamesteps.Step[answer[2:].upper()]
                     break
@@ -245,7 +250,6 @@ class Player():
         for i in range(num):
             try:
                 card = self.library.pop()
-                card.zone = zone.ZoneType.HAND
                 self.hand.add(card)
             except IndexError:
                 raise EmptyLibraryException()
@@ -309,9 +313,9 @@ class Player():
 
         self.hand.remove(cards_to_discard)
         return self.graveyard.add(cards_to_discard)
-    
-    def create_token(self, attributes):
-        token.create_token(attributes, self)
+
+    def create_token(self, attributes, num=1):
+        token.create_token(attributes, self, num)
 
 
     # TODO: handle paying X life / X mana
@@ -360,6 +364,12 @@ class Player():
             self.turn_events['life loss'] = amount
 
         self.life -= amount
+
+    def set_life_total(self, value):
+        if self.life < value:
+            self.gain_life(value - life)
+        elif self.life > value:
+            self.lose_life(life - value)
 
     def lose(self):
         print("{} has lost the game\n".format(self))

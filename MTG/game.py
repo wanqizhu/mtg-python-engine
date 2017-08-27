@@ -370,8 +370,8 @@ class Game(object):
             self.apply_to_battlefield(
                 lambda p: p.deals_damage(
                     p.status.is_attacking, p.power),
-                lambda p: p.status.is_attacking and (p.has_ability("First_Strike")
-                                                     or p.has_ability("Double_Strike")))
+                lambda p: p.status.is_attacking and (p.has_ability("First Strike")
+                                                     or p.has_ability("Double Strike")))
             pass
 
         if step is gamesteps.Step.COMBAT_DAMAGE:
@@ -379,15 +379,15 @@ class Game(object):
             self.apply_to_battlefield(
                 lambda p: p.deals_damage(p.status.is_attacking,
                                          p.power),
-                lambda p: p.status.is_attacking and (not p.has_ability("First_Strike")
-                                                     or p.has_ability("Double_Strike")))
+                lambda p: p.status.is_attacking and (not p.has_ability("First Strike")
+                                                     or p.has_ability("Double Strike")))
 
             # blockers do damage
             self.apply_to_battlefield(
                 lambda p: p.deals_damage(p.status.is_blocking,
                                          p.power),
-                lambda p: p.status.is_blocking and (not p.has_ability("First_Strike")
-                                                    or p.has_ability("Double_Strike")))
+                lambda p: p.status.is_blocking and (not p.has_ability("First Strike")
+                                                    or p.has_ability("Double Strike")))
 
             # damage resolve / triggers
 

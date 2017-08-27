@@ -142,7 +142,7 @@ class Permanent(gameobject.GameObject):
         self.controller = controller
         self.game = controller.game
         self.owner = owner if owner else controller
-        self.zone = zone.ZoneType.BATTLEFIELD
+        self.zone = self.controller.battlefield
         self.original_card = original_card
         self.modifier = Modifier(self, modifications)
         # sort by timestamp
@@ -378,18 +378,23 @@ class Permanent(gameobject.GameObject):
             print("Trigger to be process at next priority...\n")
             self.controller.pending_triggers.extend(
                 [play.Play(lambda: effect(self))
-                 for effect in self.trigger_listeners[condition]])
+                 for effect in self.trigger_listeners[condition]
+                 if effect is not None])
 
     def dies(self):
         # trigger
         print("{} has died\n".format(self))
-        self.zone = zone.ZoneType.GRAVEYARD
         self.controller.battlefield.remove(self)
         c = self.original_card
         c.previousState = self
         self.controller.graveyard.add(c)
 
     def destroy(self):
+        #trigger
+        self.dies()
+
+    def sacrifice(self):
+        #trigger
         self.dies()
 
     def add_counter(self, counter, num=1):

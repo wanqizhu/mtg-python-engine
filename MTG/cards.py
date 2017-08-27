@@ -196,12 +196,12 @@ def set_up_cards():
     #    "Wastes", 'T', 'self.controller.mana.add(mana.Mana.COLORLESS, 1)', True)
 
     add_targets("Lightning Bolt", [lambda p: p.__class__.__name__ == 'Player'
-                                   or p.is_creature and p.zone == zone.ZoneType.BATTLEFIELD])
+                                   or p.is_creature and p.zone.zone_type == zone.ZoneType.BATTLEFIELD])
     add_play_func_single_target("Lightning Bolt",
                                 lambda self, t: t.take_damage(self, 3))
 
     add_targets("Lightning Strike", [lambda p: p.__class__.__name__ == 'Player'
-                                     or p.is_creature and p.zone == zone.ZoneType.BATTLEFIELD])
+                                     or p.is_creature and p.zone.zone_type == zone.ZoneType.BATTLEFIELD])
     add_play_func_single_target("Lightning Strike",
                                 lambda self, t: t.take_damage(self, 3))
 
@@ -213,7 +213,7 @@ def set_up_cards():
                                              if p.is_creature])))
 
     add_play_func_no_target("Mass Calcify", lambda self:
-                            self.controller.game.apply_to_battlefield(
+                            self.game.apply_to_battlefield(
                                 lambda p: p.dies(),
                                 lambda p: p.is_creature and not p.has_color('W')))
 
@@ -229,7 +229,7 @@ def set_up_cards():
     add_activated_ability(
         "Soulmender", 'T', 'self.controller.gain_life(1)')
 
-    add_targets("Solemn Offerings", [lambda p: p.zone == zone.ZoneType.BATTLEFIELD
+    add_targets("Solemn Offerings", [lambda p: p.zone.zone_type == zone.ZoneType.BATTLEFIELD
                                      and (p.is_artifact or p.is_enchantment)])
     add_play_func_single_target("Solemn Offerings",
                                 lambda self, t: t.destroy()
@@ -240,7 +240,7 @@ def set_up_cards():
     add_play_func_no_target(
         "Jace's Ingenuity", lambda self: self.controller.draw(3))
 
-    add_targets("Titanic Growth", [lambda p: p.zone == zone.ZoneType.BATTLEFIELD
+    add_targets("Titanic Growth", [lambda p: p.zone.zone_type == zone.ZoneType.BATTLEFIELD
                                    and (p.is_creature)])
     # add_play_func_single_target("Titanic Growth",
     #                             lambda self, t: t.modifier.add([
@@ -248,19 +248,19 @@ def set_up_cards():
     #                                 ('characteristics.toughness', 4, True)]))
     add_play_func_single_target("Titanic Growth",
                                 lambda self, t: t.add_effect('modifyPT',
-                                                             (4, 4), self, self.controller.game.eot_time))
+                                                             (4, 4), self, self.game.eot_time))
 
-    add_targets("Ulcerate", [lambda p: p.zone == zone.ZoneType.BATTLEFIELD
+    add_targets("Ulcerate", [lambda p: p.zone.zone_type == zone.ZoneType.BATTLEFIELD
                              and (p.is_creature)])
     add_play_func_single_target("Ulcerate",
                                 lambda self, t:
                                     t.add_effect('modifyPT', (-3, -3),
-                                                 self, self.controller.game.eot_time)
+                                                 self, self.game.eot_time)
                                 and self.controller.lose_life(3))
 
     add_activated_ability(
         "Zof Shade", '2B',
-        "self.add_effect('modifyPT', (2, 2), self, self.controller.game.eot_time)")
+        "self.add_effect('modifyPT', (2, 2), self, self.game.eot_time)")
 
     add_targets("Mind Rot", [lambda p: p.__class__.__name__ is 'player'])
     add_play_func_single_target("Mind Rot",
@@ -269,9 +269,43 @@ def set_up_cards():
 
     add_activated_ability(
         "Shadowcloak Vampire", 'Pay 2 life',
-        "self.add_effect('gainAbility', 'Flying', self, self.controller.game.eot_time)")
+        "self.add_effect('gainAbility', 'Flying', self, self.game.eot_time)")
 
-    add_trigger("First Response", triggers.triggerConditions.onUpkeep,
-                lambda self: self.controller.create_token('1/1 white Soldier')
-                if self.controller.last_turn_events['life loss']
-                else None)
+    add_trigger(
+        "First Response", triggers.triggerConditions.onUpkeep,
+        lambda self: self.controller.create_token('1/1 white Soldier')
+        if self.controller.last_turn_events['life loss']
+        else None)
+
+    add_play_func_no_target(
+        "Raise the Alarm",
+        lambda self: self.controller.create_token('1/1 white Soldier', 2))
+
+    add_trigger(
+        "Resolute Archangel", triggers.triggerConditions.onEtB,
+        lambda self: self.controller.set_life_total(
+            self.controller.startingLife)
+        if self.controller.life < self.controller.startingLife
+        else None)
+
+    add_play_func_no_target(
+        "Sanctified Charge", lambda self:
+            ([c.add_effect('modifyPT', (2, 1), self, self.game.eot_time)
+                for c in self.controller.battlefield if c.is_creature]
+         and [c.add_effect('gainAbility', 'First Strike', self, self.game.eot_time)
+                for c in self.controller.battlefield if c.is_creature and c.has_color('W')]
+            )
+        )
+
+    # NEED ZONE SHIFT HELPER FUNC
+
+    add_play_func_no_target(
+        "Aetherspouts", lambda self:
+            self.game.apply_to_battlefield(
+                lambda p: p.change_zone(p.controller.library, 0, False)
+                            if p.owner.make_choice(
+                                "Would you like to put %r on top of your library?"
+                                " (otherwise it goes on bottom)" % p)
+                            else p.change_zone(p.controller.library, -1, False),
+                lambda p: p.status.is_attacking)
+        )

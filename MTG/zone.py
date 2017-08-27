@@ -19,6 +19,8 @@ class ZoneType(Enum):
 
 
 class Zone():
+    is_library = False
+
     def __init__(self, controller=None, elements: list=None):
         if elements is None:
             self.elements = []
@@ -54,18 +56,19 @@ class Zone():
 
         if type(obj) is list:
             for o in obj:
-                o.zone = self.zone_type
+                o.zone = self
                 if not isinstance(self, Stack):
                     assert isinstance(o, gameobject.GameObject)
                 o.controller = self.controller
             self.elements.extend(obj)
-            return
+            return True
 
         if not isinstance(self, Stack):
             assert isinstance(obj, gameobject.GameObject)
             obj.controller = self.controller
+            obj.game = self.controller.game
 
-        obj.zone = self.zone_type
+        obj.zone = self
         self.elements.append(obj)
         return obj
 
@@ -121,10 +124,10 @@ class Battlefield(Zone):
         if isinstance(obj, card.Card):  # convert card to Permanent
             obj = permanent.make_permanent(obj)
         else:
-            obj.zone = self.zone_type
+            obj.zone = self
             self.elements.append(obj)
             obj.status = permanent.Status()  # reset status upon entering battlefield
-        
+
         obj.trigger(triggers.triggerConditions.onEtB)
 
 
@@ -150,6 +153,7 @@ class Exile(Zone):
 
 class Library(Zone):
     zone_type = ZoneType.LIBRARY
+    is_library = True
 
     def shuffle(self):
         random.shuffle(self.elements)
@@ -157,5 +161,30 @@ class Library(Zone):
     def __init__(self, controller=None, elements: list=None):
         super(Library, self).__init__(controller, elements)
         for ele in self.elements:
-            ele.zone = ZoneType.LIBRARY
+            ele.zone = self
         self.shuffle()
+
+
+    def add(self, obj, from_top=0, shuffle=True):
+        """ Note: the library is reversed; i.e. self.elements[0] is the last card
+
+        When you draw, you draw from self.pop(), or self.elements[-1]
+        """
+        assert isinstance(obj, gameobject.GameObject)
+        obj.controller = self.controller
+        obj.game = self.controller.game
+        obj.zone = self
+
+        if from_top == 0:
+            self.elements.append(obj)
+        elif from_top == -1:  # put on bottom
+            self.elements = [obj] + self.elements
+        else:
+            self.elements = self.elements[:-from_top] + [obj] + self.elements[-from_top:]
+
+        if shuffle:
+            self.shuffle()
+
+        return obj
+
+
