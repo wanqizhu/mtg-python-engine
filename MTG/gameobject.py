@@ -1,5 +1,6 @@
 import pdb
 import time
+import math
 from collections import defaultdict, namedtuple
 from sortedcontainers import SortedListWithKey
 
@@ -49,6 +50,9 @@ class Characteristics():
         return True
 
 
+Effect = namedtuple('Effect', ['value', 'source', 'expiration', 'timestamp'])
+
+
 class GameObject():
     def __init__(self, characteristics=Characteristics(),
                  controller=None, owner=None, zone=None, previousState=None):
@@ -74,8 +78,25 @@ class GameObject():
     def name(self):
         return self.characteristics.name
 
-    def manacost(self):
+    @property
+    def raw_manacost(self):
         return self.characteristics.mana_cost
+
+    @property
+    def manacost(self):
+        cost = self.controller.mana.determine_costs(self.characteristics.mana_cost)
+        # reduce/add costs
+        if self.effects['additionalCost']:
+            pass
+
+        for effect in self.effects['reduceCost']:
+            pass
+            # TODO
+
+        return cost
+
+    # @property
+    # def CMC(self):
 
     @property
     def is_land(self):
@@ -122,6 +143,11 @@ class GameObject():
     def is_color(self, color):
         """ color is a list"""
         return color == self.characteristics.color
+
+    def add_effect(self, name, value, source=None, expiration=math.inf):
+        eff = Effect(value, source, expiration, self.controller.game.timestamp)
+        self.effects[name].add(eff)
+        self.check_effect_expiration()
 
 
     def change_zone(self, target_zone, from_top=0, shuffle=True):

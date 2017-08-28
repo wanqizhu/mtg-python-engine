@@ -1,18 +1,37 @@
+CURRENT COMMIT
+
+Features
+- convoke
+
+Cards
+
+QoL
+ - add timestamp to permanents
+ - made play.Play print name of original card
+ - refactored Mana.canPay() for convoke & other cost modifiers
+
+Issues/TODOs
+ - WHY did refactoring Mana.conPay make test cases slower? (0.9s --> 2.8s)
+
+
+
 - TEST CASES!!! (break them down into SMALLER units)
 
 - add ID to each card/gameobject
 
-- distinguish same-named objects in same zone
 
 - make Stack / play.Play object more readable
+	- triggers still read like:
 
-- helper function for zone changes
+		         [play.Play(lambda: effect(self), card=self)
+                 for effect in self.trigger_listeners[condition]
+                 if effect is not None])
+
+         - add more descriptors for printout
 
 
 
-- skip unnecessary combat phases
-
-- convoke / other cost modifiers
+- other cost modifiers
 
 - Triggered Abilities
 	- verify stacking/ordering triggers work and they are being resolved at next priority

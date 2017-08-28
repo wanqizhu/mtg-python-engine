@@ -11,7 +11,7 @@ from MTG import triggers
 from MTG import mana
 
 
-SETPREFIX = ['M15', 'test_set']
+SETPREFIX = ['M15', 'sm_set']
 name_to_id_dict = {}
 id_to_name_dict = {}
 

@@ -49,17 +49,25 @@ class Player():
         self.turn_events = defaultdict(lambda: None)
         self.last_turn_events = defaultdict(lambda: None)
 
+        # todo: cost modifier tracker
+
     def __repr__(self):
         return 'player.Player(name=%r)' % self.name
 
     def __str__(self):
         return self.name
 
-
     @property
     def is_active(self):
         return self == self.game.current_player
 
+    @property
+    def creatures(self):
+        return self.battlefield.filter(filter_func=lambda p: p.is_creature)
+
+    @property
+    def lands(self):
+        return self.battlefield.filter(filter_func=lambda p: p.is_land)
 
     def get_action(self):
         """ asks the player to do something
@@ -84,6 +92,8 @@ class Player():
                 break
 
             try:
+                PLAYER_PREVIOUS_STATE = deepcopy(self)
+
                 if answer == 'print':
                     self.game.print_game_state()
 
@@ -105,8 +115,9 @@ class Player():
                 elif answer == 'mana':
                     print(self.mana)
 
-                # elif answer == 'debug':
-                #     pdb.set_trace()
+                elif answer == 'debug':
+                    # pdb.set_trace()
+                    pass
 
                 elif answer[0] == 'p':  # playing card from hand
                     try:
@@ -121,8 +132,46 @@ class Player():
                         assert card
 
                     # pay mana costs
-                    # False, or a dict of mana costs
-                    can_pay = self.mana.canPay(card.manacost())
+                    cost = card.manacost
+
+                    if card.has_ability("Convoke"):
+                        untapped_creatures = [
+                            c for c in self.creatures if not c.status.tapped]
+                        print("Your creatures: {}".format(untapped_creatures))
+                        ans = self.make_choice("What creatures would you like to tap"
+                                               " to pay for %s? (Convoke) " % card)
+
+                        ans = ans.split(" ")
+                        for ind in ans:
+                            try:
+                                ind = int(ind)
+                                _creature = untapped_creatures[ind]
+                                if not _creature.status.tapped:
+                                    color = _creature.characteristics.color
+                                    if not color:
+                                        color = 'C'
+                                    elif len(color) > 1:
+                                        color = self.make_choice(
+                                            "What color would you like to add? {}".format(color))
+                                        assert color in mana.manachr
+                                    else:
+                                        color = color[0]
+
+                                    color = mana.chr_to_mana(color)
+                                    _creature.tap()
+                                    if cost[color]:
+                                        cost[color] -= 1
+                                    else:
+                                        if cost[mana.Mana.GENERIC]:
+                                            cost[mana.Mana.GENERIC] -= 1
+                                        else:
+                                            raise ValueError
+
+                            except (IndexError, ValueError):
+                                print("error processing creature for convoke")
+                                raise ResetGameException
+
+                    can_pay = self.mana.canPay(cost)
 
                     # timing & restrictions
                     can_play = True
@@ -144,19 +193,20 @@ class Player():
                         self.mana.pay(can_pay)
                         # apply targets
 
-                        _play = play.Play(card.play_func, card)
+                        _play = play.Play(card.play_func, card=card)
                         # special actions
                         if card.is_land:
                             _play.is_special_action = True
                             self.landPlayed += 1
                     else:
-                        self.hand.add(card)  # illegal casting, revert
+                        # illegal casting, revert
                         if not can_pay:
                             print("Cannot pay mana costs\n")
                         if not can_target:
                             print("Cannot target\n")
                         if not can_play:
                             print("Cannot play this right now\n")
+                        raise ResetGameException
 
                 # activate ability from battlefield -- 'a 3_1' plays 2nd (index starts at 0) ability from 3rd permanent
                 # 'a 3' playrs 1st (default) ability of the 3rd permanent
@@ -174,19 +224,20 @@ class Player():
                     assert nums[1] <= len(card.activated_abilities)
 
                     # ability activation
-                    PLAYER_PREVIOUS_STATE = deepcopy(self)
+
                     # if card._activated_abilities_costs_validation[nums[1]](card):
-                        # TODO: target validation
+                    # TODO: target validation
 
                     if card._activated_abilities_costs[nums[1]](card):
+                        # TODO: make each ability have its own description/name for printing
+                        name = card.name + \
+                            ' activated ability #' + str(nums[1])
                         _play = play.Play(
-                            lambda: card.activate_ability(nums[1]))
+                            lambda: card.activate_ability(nums[1]), name=name)
                         if card.activated_abilities[nums[1]][2]:  # special action
                             _play.is_mana_ability = True
                     else:
-                        self = PLAYER_PREVIOUS_STATE
                         raise ResetGameException
-
 
                 # skip priority until something happens / certain step
                 elif answer[:2] == 's ':
@@ -207,7 +258,8 @@ class Player():
                     raise BadFormatException()
 
             except ResetGameException:
-                print("Illegial activation. Resetting...")
+                print("Illegial action. Resetting...")
+                self = PLAYER_PREVIOUS_STATE
                 pass
 
             except:
@@ -316,7 +368,6 @@ class Player():
 
     def create_token(self, attributes, num=1):
         token.create_token(attributes, self, num)
-
 
     # TODO: handle paying X life / X mana
     def pay(self, mana=None, life=0):

@@ -77,12 +77,20 @@ class Game(object):
 
         - filter out by a condition function if necessary
         - defaults to all permanents
+
+        return True if at least one object satisfied the condition
         """
+
+        did_something = False
+
         for _player in self.players_list:
             # use [:] to iterate over a copy of the list in case items get changed
             for perm in _player.battlefield[:]:
                 if condition(perm):
                     apply_func(perm)
+                    did_something = True
+
+        return did_something
 
     def get_zone(self, zone_type, player=None):
         return {
@@ -239,41 +247,46 @@ class Game(object):
                     lambda p: avaliable_attackers.append(p),
                     lambda p: p.controller == self.current_player and p.can_attack())
 
-                if avaliable_attackers:
-                    print("Creatures that can attack:", avaliable_attackers)
+                if not avaliable_attackers:  # no attacks; skip rest of combat
+                    for p in self.players_list:
+                        if p.passPriorityUntil is None:
+                            p.passPriorityUntil = gamesteps.Step.POSTCOMBAT_MAIN
+                    break
 
-                    for defender in self.players_list:
-                        if defender == self.current_player:
+                print("Creatures that can attack:", avaliable_attackers)
+
+                for defender in self.players_list:
+                    if defender == self.current_player:
+                        continue
+
+                    # declare attackers
+                    # space-separated list of indices of creatures in avaliable_attackers, starting at 0
+                    answer = self.current_player.make_choice(
+                        "\n{}, Choose all creatures you'd like to attack {} with\n"
+                        .format(self.current_player, defender.name))
+                    if self.test:
+                        print(answer)
+
+                    if answer:
+                        # TODO: planeswalkers
+                        try:
+                            answer = answer.split(" ")
+                            for ind in answer:
+                                ind = int(ind)
+                                if ind < len(avaliable_attackers):
+                                    avaliable_attackers[ind].attacks(
+                                        defender)
+                                    avaliable_attackers[ind].tap()
+
+                                else:
+                                    print("creature #{} is out of bounds\n"
+                                          .format(str(ind)))
+                                    continue
+
+                        except:
+                            traceback.print_exc()
+                            print("wrong format: {}\n".format(ind))
                             continue
-
-                        # declare attackers
-                        # space-separated list of indices of creatures in avaliable_attackers, starting at 0
-                        answer = self.current_player.make_choice(
-                            "\n{}, Choose all creatures you'd like to attack {} with\n"
-                            .format(self.current_player, defender.name))
-                        if self.test:
-                            print(answer)
-
-                        if answer:
-                            # TODO: planeswalkers
-                            try:
-                                answer = answer.split(" ")
-                                for ind in answer:
-                                    ind = int(ind)
-                                    if ind < len(avaliable_attackers):
-                                        avaliable_attackers[ind].attacks(
-                                            defender)
-                                        avaliable_attackers[ind].tap()
-
-                                    else:
-                                        print("creature #{} is out of bounds\n"
-                                              .format(str(ind)))
-                                        continue
-
-                            except:
-                                traceback.print_exc()
-                                print("wrong format: {}\n".format(ind))
-                                continue
 
                 ok = combat.check_valid_attack(self.current_player)
 
@@ -366,13 +379,17 @@ class Game(object):
                     creature.name, creature.status.is_attacking))
 
         if step is gamesteps.Step.FIRST_STRIKE_COMBAT_DAMAGE:
-            # TODO: first strike
-            self.apply_to_battlefield(
-                lambda p: p.deals_damage(
-                    p.status.is_attacking, p.power),
-                lambda p: p.status.is_attacking and (p.has_ability("First Strike")
-                                                     or p.has_ability("Double Strike")))
-            pass
+            # if no first strikes avaliable, skip to combat damage
+            if not self.apply_to_battlefield(
+                    lambda p: p.deals_damage(
+                        p.status.is_attacking, p.power),
+                    lambda p: p.status.is_attacking and (p.has_ability("First Strike")
+                                                         or p.has_ability("Double Strike"))):
+
+                for p in self.players_list:
+                    if p.passPriorityUntil is None:
+                        p.passPriorityUntil = gamesteps.Step.COMBAT_DAMAGE
+
 
         if step is gamesteps.Step.COMBAT_DAMAGE:
             # attackers do damage

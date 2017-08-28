@@ -2,9 +2,6 @@ import sys
 import json
 import pickle
 
-
-from MTG import card
-from MTG import cardtype
 from MTG import abilities
 
 

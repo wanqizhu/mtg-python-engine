@@ -4,7 +4,6 @@ from bs4 import BeautifulSoup
 # from lexer import lexer
 import pickle
 
-from MTG import card
 from MTG import cardtype
 from MTG import abilities
 
@@ -18,7 +17,7 @@ def run():
 
     card_list = soup.cockatrice_carddatabase.cards.find_all('card')
     cnt = 0
-    fout = open("data/test_set_cards.py", "w")
+    fout = open("data/sm_set_cards.py", "w")
     fout.write("from MTG import card\n"
         "from MTG import gameobject\n"
         "from MTG import cardtype\n"
@@ -94,10 +93,10 @@ def run():
 # """.format(id_to_name, name_to_id))
 
 
-    with open("data/test_set_id_to_name_dict.pkl", "wb") as f:
+    with open("data/sm_set_id_to_name_dict.pkl", "wb") as f:
         pickle.dump(id_to_name, f)
 
-    with open("data/test_set_name_to_id_dict.pkl", "wb") as f:
+    with open("data/sm_set_name_to_id_dict.pkl", "wb") as f:
         pickle.dump(name_to_id, f)
 
     fout.close()

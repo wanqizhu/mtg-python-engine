@@ -145,6 +145,7 @@ class Permanent(gameobject.GameObject):
         self.zone = self.controller.battlefield
         self.original_card = original_card
         self.modifier = Modifier(self, modifications)
+        self.timestamp = self.game.timestamp
         # sort by timestamp
         # each self.effects[name] is a sortedlist of Effect = namedtuple
         # each tuple always ends with (..., EXPIRATION_TIME, TIMESTAMP)
@@ -176,8 +177,10 @@ class Permanent(gameobject.GameObject):
         print("making permanent... {}\n".format(self))
 
     def __repr__(self):
-        return (super(Permanent, self).__repr__() + ' controlled by '
-                + str(self.controller if self.controller else 'None'))
+        return ('%s controlled by %s (timestamp: %s)' % (
+                super(Permanent, self).__repr__(),
+                str(self.controller if self.controller else 'None'),
+                self.timestamp))
 
     def activate_ability(self, num=0):
         # if self._activated_abilities_costs_validation[num](self):
@@ -215,12 +218,15 @@ class Permanent(gameobject.GameObject):
         if not self.status.tapped:
             self.status.tapped = True
             return True
+        return False
 
 
     def untap(self):
         if (self.status.tapped):
             self.status.tapped = False
+            return True
             # self.untapTrigger()
+        return False
 
     # power/toughness layering -- see rule 613.3
     @property
@@ -377,7 +383,7 @@ class Permanent(gameobject.GameObject):
         if condition in self.trigger_listeners:
             print("Trigger to be process at next priority...\n")
             self.controller.pending_triggers.extend(
-                [play.Play(lambda: effect(self))
+                [play.Play(lambda: effect(self), card=self)
                  for effect in self.trigger_listeners[condition]
                  if effect is not None])
 

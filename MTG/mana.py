@@ -3,6 +3,8 @@ from enum import Enum
 import re
 
 
+manachr = ['W', 'U', 'B', 'R', 'G', 'C', '1']
+
 class Mana(Enum):
     WHITE = 0
     BLUE = 1
@@ -10,6 +12,7 @@ class Mana(Enum):
     RED = 3
     GREEN = 4
     COLORLESS = 5
+    GENERIC = 6
 
 
 # any length > 0 of the following: { X, numbers, hybrid e.g. (U/R), WUBRGC }
@@ -17,8 +20,37 @@ mana_pattern = re.compile(
     '(X|' '\d|' '(\([WUBRGC2]/[WUBRGC]\))|' '[WUBRGC])+')
 
 
+def str_to_mana_dict(manacost):
+    cost = defaultdict(lambda: 0)
+    for c in manacost:
+        if c in manachr:
+            cost[chr_to_mana(c)] += 1
+    num = re.match('\d+', manacost)  # find leading number
+    if num:
+        cost[Mana.GENERIC] = int(num.group(0))
+    return cost
+
+
+def chr_to_mana(c):
+    assert c in manachr
+    if c == 'W':
+        return Mana.WHITE
+    if c == 'U':
+        return Mana.BLUE
+    if c == 'B':
+        return Mana.BLACK
+    if c == 'R':
+        return Mana.RED
+    if c == 'G':
+        return Mana.GREEN
+    if c == 'C':
+        return Mana.COLORLESS
+    if c == '1':
+        return Mana.GENERIC
+
+
+
 class ManaPool():
-    manachr = ['W', 'U', 'B', 'R', 'G', 'C']
 
     def __init__(self, controller=None):
         self.pool = defaultdict(lambda: 0)
@@ -29,7 +61,9 @@ class ManaPool():
 
     def add_str(self, mana_str):
         for c in mana_str:
-            self.add(self.chr_to_mana(c))
+            self.add(chr_to_mana(c))
+
+
 
     def pay(self, manacost):
         if manacost is None:
@@ -41,48 +75,15 @@ class ManaPool():
             self.pool[manatype] -= manacost[manatype]
 
     def is_empty(self):
-        for c in self.manachr:
-            if self.pool[self.chr_to_mana(c)] != 0:
+        for c in manachr:
+            if self.pool[chr_to_mana(c)] != 0:
                 return False
         return True
 
-    def chr_to_mana(self, c):
-        assert c in self.manachr
-        if c == 'W':
-            return Mana.WHITE
-        if c == 'U':
-            return Mana.BLUE
-        if c == 'B':
-            return Mana.BLACK
-        if c == 'R':
-            return Mana.RED
-        if c == 'G':
-            return Mana.GREEN
-        if c == 'C':
-            return Mana.COLORLESS
 
-    def canPay(self, manacost):
-        """manacost here is a string, e.g. 2U
-
-        This returns False if not possible, or a cost dict of Mana(Enum)s
-         that can be passed to self.pay for actual payment
-
-        Note this DOES NOT pay any mana
-        """
-        if manacost is None:
-            return True
-
-        cost = defaultdict(lambda: 0)
-        for c in manacost:
-            if c in self.manachr:
-                cost[self.chr_to_mana(c)] += 1
-
-        # unrestricted costs (numbers in mana costs)
-        anyTypeMana = 0
-
-        numbers = re.match('\d+', manacost)  # find leading number
-        if numbers:
-            anyTypeMana += int(numbers.group(0))
+    def determine_costs(self, manacost):
+        """ Converts string mana costs to mana dict, resolving hybrid / additional costs"""
+        cost = str_to_mana_dict(manacost)
 
         # hybrid mana costs
         # note the mana symbols will have already been scanned above, so we need to subtract the cost we're not paying
@@ -96,41 +97,65 @@ class ManaPool():
 
             if choice == '1':
                 if h[1] != '2':
-                    cost[self.chr_to_mana(h[1])] -= 1  # already scanned above
+                    cost[chr_to_mana(h[1])] -= 1  # already scanned above
             else:  # default 0
-                cost[self.chr_to_mana(h[3])] -= 1
+                cost[chr_to_mana(h[3])] -= 1
                 if h[1] == '2':
-                    anyTypeMana += 2
+                    cost[Mana.GENERIC] += 2
 
-        if anyTypeMana > 0:
+
+        # TODO: define value of X
+        return cost
+
+
+    def canPay(self, manacost, convoke=False):
+        """manacost here is a string, e.g. 2U, or a dict of Manas (e.g. {Mana.BLUE, 3})
+
+        This returns False if not possible, or a cost dict of Mana(Enum)s
+         that can be passed to self.pay for actual payment
+
+        This determines generic mana and converts it to actual colored mana
+
+        Note this DOES NOT pay any mana
+        """
+        if manacost is None:
+            return True
+
+        if type(manacost) is str:
+            manacost = self.determine_costs(manacost)
+
+        genericMana = manacost[Mana.GENERIC]
+
+        if genericMana > 0:
             if self.controller.autoPayMana:
                 choice = ''
             else:
                 choice = self.controller.make_choice(
-                    'How would you like to pay {}? Enter blank for automatic payment, or enter a string of colored mana\n'.format(anyTypeMana))
+                    'How would you like to pay {}? Enter blank for automatic payment, or enter a string of colored mana\n'.format(genericMana))
 
-            if re.match('[WUBRGC]+', choice) and len(choice) == anyTypeMana:
+            if re.match('[WUBRGC]+', choice) and len(choice) == genericMana:
                 for c in choice:
-                    cost[self.chr_to_mana(c)] += 1
-                anyTypeMana = 0
+                    manacost[chr_to_mana(c)] += 1
+                genericMana = 0
             else:  # default
                 # print("automatic payment...\n")
                 for mana in Mana:
-                    if anyTypeMana == 0:
+                    if genericMana == 0:
                         break
-                    if self.pool[mana] > cost[mana]:
-                        amount = min(self.pool[mana] - cost[mana], anyTypeMana)
-                        cost[mana] += amount
-                        anyTypeMana -= amount
+                    if self.pool[mana] > manacost[mana]:
+                        amount = min(self.pool[mana] - manacost[mana], genericMana)
+                        manacost[mana] += amount
+                        genericMana -= amount
 
-        if anyTypeMana > 0:
+        manacost[Mana.GENERIC] = genericMana
+        if genericMana > 0:
             return False
 
         for mana in Mana:
-            if self.pool[mana] < cost[mana]:
+            if self.pool[mana] < manacost[mana]:
                 return False
 
-        return cost
+        return manacost
 
     def clear(self):
         self.pool.clear()
