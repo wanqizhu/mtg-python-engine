@@ -26,6 +26,7 @@ pip-log.txt
 .coverage
 .tox
 nosetests.xml
+*.log
 
 # Translations
 *.mo
@@ -41,3 +42,6 @@ nosetests.xml
 
 ## PyCharm
 .idea/*
+
+
+git-commit-msg.txt

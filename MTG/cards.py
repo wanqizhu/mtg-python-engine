@@ -309,3 +309,14 @@ def set_up_cards():
                             else p.change_zone(p.controller.library, -1, False),
                 lambda p: p.status.is_attacking)
         )
+
+
+    add_targets("Devouring Light", [lambda p: p.zone.zone_type == zone.ZoneType.BATTLEFIELD
+                             and (p.is_creature and p.in_combat)])
+    add_play_func_single_target("Devouring Light",
+                                lambda self, t:
+                                    t.exile())
+
+    add_play_func_no_target(
+        "Triplicate Spirits",
+        lambda self: self.controller.create_token('1/1 white Spirit', 3))

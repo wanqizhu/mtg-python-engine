@@ -1,5 +1,6 @@
 import mock
 import unittest
+import time
 # from copy import deepcopy
 
 from MTG import game
@@ -9,10 +10,12 @@ from MTG.exceptions import *
 
 
 cards.set_up_cards()
+f = open('test_game_time.log', 'w')
 
 
 class TestPlayer(unittest.TestCase):
     def setUp(self):
+        self.startTime = time.time()
         decks = [cards.read_deck('data/decks/deck1.txt'),
                  cards.read_deck('data/decks/deck1.txt')]
         self.GAME = game.Game(decks, test=True)
@@ -21,6 +24,10 @@ class TestPlayer(unittest.TestCase):
         self.player.tmp = False
         self.opponent = self.GAME.players_list[1]
         self.opponent.tmp = False
+
+    def tearDown(self):
+        t = time.time() - self.startTime
+        f.write("%s: %.3f\n" % (self.id(), t))
 
     def test_turn_do_nothing(self):
         with mock.patch('builtins.input', return_value=''):
@@ -571,11 +578,12 @@ class TestPlayer(unittest.TestCase):
                 '__self.lose_life(3)',
                 's upkeep', 's upkeep', '', '',
                 's upkeep',  # player 1's turn
-                '__self.tmp = self.battlefield[1].power == 1'  # player 0 verifying token
+                # player 0 verifying token
+                '__self.tmp = self.battlefield[1].power == 1'
             ' and self.battlefield[1].is_color(["W"])', 's upkeep',
                 '', '', 's upkeep', 's upkeep',  # player 0's turn again
                 '0'  # attacking with token
-                ]):
+        ]):
 
             self.player.autoDiscard = True
             self.opponent.autoDiscard = True
@@ -585,6 +593,32 @@ class TestPlayer(unittest.TestCase):
             self.assertTrue(self.player.tmp)
             # buffs should off
             self.assertEqual(self.player.opponent.life, 19)
+
+    def test_triplicate_spirits(self):
+        """Testing convoke, tokens, Spirit token has flying"""
+        with mock.patch('builtins.input', side_effect=[
+                '__self.draw_card("Triplicate Spirits")',
+                '__self.draw_card("Triplicate Spirits")',
+                '__self.draw_card("Triplicate Spirits")',
+                '__self.battlefield.add("Soulmender")',
+                '__self.battlefield.add("Child of Night")',
+                's main', 's main', '__self.mana.add(mana.Mana.WHITE, 10)',
+                'p Triplicate Spirits', '', '',  # convoke nothing
+                '', '',  # it resolves
+                '__self.tmp = self.mana.pool[mana.Mana.WHITE] == 4',
+                'p Triplicate Spirits', '0 1', '',   # convoke 2
+                '', '',  # it resolves
+                'p Triplicate Spirits', '0 1 2 3 4 5', '',  # convoke 6
+                '', '',  # it resolves
+                's upkeep', 's upkeep',  # player 0's turn again
+        ]):
+
+            self.GAME.handle_turn()
+            self.assertTrue(self.player.tmp)
+            self.assertEqual(len(self.player.battlefield), 11)
+            self.assertEqual(
+                len([c for c in self.player.creatures if c.status.tapped]), 8)
+            self.assertTrue(self.player.battlefield[-1].has_ability("Flying"))
 
     # def test_trigger_ordering(self):
         """ Test trigger ordering"""

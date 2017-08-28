@@ -403,6 +403,9 @@ class Permanent(gameobject.GameObject):
         #trigger
         self.dies()
 
+    def exile(self):
+        self.change_zone(self.controller.exile)
+
     def add_counter(self, counter, num=1):
         self.status.counters[counter] += num
 

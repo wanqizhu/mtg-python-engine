@@ -92,7 +92,7 @@ class Player():
                 break
 
             try:
-                PLAYER_PREVIOUS_STATE = deepcopy(self)
+                
 
                 if answer == 'print':
                     self.game.print_game_state()
@@ -133,6 +133,7 @@ class Player():
 
                     # pay mana costs
                     cost = card.manacost
+                    creatures_to_tap = []
 
                     if card.has_ability("Convoke"):
                         untapped_creatures = [
@@ -141,12 +142,14 @@ class Player():
                         ans = self.make_choice("What creatures would you like to tap"
                                                " to pay for %s? (Convoke) " % card)
 
+                        
+
                         ans = ans.split(" ")
                         for ind in ans:
                             try:
                                 ind = int(ind)
                                 _creature = untapped_creatures[ind]
-                                if not _creature.status.tapped:
+                                if not _creature.status.tapped and _creature not in creatures_to_tap:
                                     color = _creature.characteristics.color
                                     if not color:
                                         color = 'C'
@@ -158,7 +161,7 @@ class Player():
                                         color = color[0]
 
                                     color = mana.chr_to_mana(color)
-                                    _creature.tap()
+                                    creatures_to_tap.append(_creature)
                                     if cost[color]:
                                         cost[color] -= 1
                                     else:
@@ -169,7 +172,8 @@ class Player():
 
                             except (IndexError, ValueError):
                                 print("error processing creature for convoke")
-                                raise ResetGameException
+                                pass
+
 
                     can_pay = self.mana.canPay(cost)
 
@@ -191,6 +195,8 @@ class Player():
 
                     if can_pay and can_target and can_play:
                         self.mana.pay(can_pay)
+                        for _creature in creatures_to_tap:
+                            _creature.tap()
                         # apply targets
 
                         _play = play.Play(card.play_func, card=card)
@@ -206,7 +212,6 @@ class Player():
                             print("Cannot target\n")
                         if not can_play:
                             print("Cannot play this right now\n")
-                        raise ResetGameException
 
                 # activate ability from battlefield -- 'a 3_1' plays 2nd (index starts at 0) ability from 3rd permanent
                 # 'a 3' playrs 1st (default) ability of the 3rd permanent
@@ -227,7 +232,7 @@ class Player():
 
                     # if card._activated_abilities_costs_validation[nums[1]](card):
                     # TODO: target validation
-
+                    PLAYER_PREVIOUS_STATE = deepcopy(self)
                     if card._activated_abilities_costs[nums[1]](card):
                         # TODO: make each ability have its own description/name for printing
                         name = card.name + \

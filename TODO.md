@@ -1,20 +1,3 @@
-CURRENT COMMIT
-
-Features
-- convoke
-
-Cards
-
-QoL
- - add timestamp to permanents
- - made play.Play print name of original card
- - refactored Mana.canPay() for convoke & other cost modifiers
-
-Issues/TODOs
- - WHY did refactoring Mana.conPay make test cases slower? (0.9s --> 2.8s)
-
-
-
 - TEST CASES!!! (break them down into SMALLER units)
 
 - add ID to each card/gameobject
@@ -151,7 +134,11 @@ Resolute Archangel *
 
 Sanctified Charge
 
-Selfless Cathar * - TODO
+Triplicate Spirits
+
+Devouring Light *
+
+Aetherspouts
 
 
 ---
@@ -223,7 +210,7 @@ Seraph of the Masses - convoke; variable power/toughness
 
 Soul of Theros - ability from graveyard
 
-
+Selfless Cathar - *
 
 Spectra Ward - protection; aura
 
