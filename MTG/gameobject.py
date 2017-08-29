@@ -58,13 +58,17 @@ class GameObject():
                  controller=None, owner=None, zone=None, previousState=None):
         self.characteristics = characteristics
         self.controller = controller
-        self.owner = owner
+        self._owner = owner
         self.zone = zone
         self.previousState = previousState
         if self.controller:
             self.game = self.controller.game
         self.effects = defaultdict(lambda: SortedListWithKey(
                                            [], lambda x : x.timestamp))
+
+    @property
+    def owner(self):
+        return self._owner if self._owner else self.controller
 
     def __repr__(self):
         # pdb.set_trace()

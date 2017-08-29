@@ -57,6 +57,10 @@ class ManaPool():
         self.controller = controller
 
     def add(self, mana, amount=1):
+        if isinstance(mana, str):
+            self.add_str(mana)
+            return
+
         self.pool[mana] += amount
 
     def add_str(self, mana_str):
@@ -121,7 +125,7 @@ class ManaPool():
         if manacost is None:
             return True
 
-        if type(manacost) is str:
+        if isinstance(manacost, str):
             manacost = self.determine_costs(manacost)
 
         genericMana = manacost[Mana.GENERIC]

@@ -32,7 +32,7 @@ class Player():
         self.library = zone.Library(self, deck)
         for card in self.library:
             card.controller = self
-            card.owner = self
+            card._owner = self
 
         self.battlefield = zone.Battlefield(self)
         self.hand = zone.Hand(self)
@@ -92,7 +92,6 @@ class Player():
                 break
 
             try:
-                
 
                 if answer == 'print':
                     self.game.print_game_state()
@@ -124,11 +123,10 @@ class Player():
                         # 'p 3' == plays third card in hand
                         num = int(answer[2:])
                         assert num < len(self.hand)
-                        card = self.hand.pop(num)
+                        card = self.hand[num]
                     except:
                         name = answer[2:]  # 'p Island' == plays 'Island'
                         card = self.hand.get_card_by_name(name)
-                        self.hand.remove(card)
                         assert card
 
                     # pay mana costs
@@ -141,8 +139,6 @@ class Player():
                         print("Your creatures: {}".format(untapped_creatures))
                         ans = self.make_choice("What creatures would you like to tap"
                                                " to pay for %s? (Convoke) " % card)
-
-                        
 
                         ans = ans.split(" ")
                         for ind in ans:
@@ -174,7 +170,6 @@ class Player():
                                 print("error processing creature for convoke")
                                 pass
 
-
                     can_pay = self.mana.canPay(cost)
 
                     # timing & restrictions
@@ -194,12 +189,21 @@ class Player():
                     can_target = card.targets()
 
                     if can_pay and can_target and can_play:
+                        self.hand.remove(card)
                         self.mana.pay(can_pay)
                         for _creature in creatures_to_tap:
                             _creature.tap()
-                        # apply targets
 
-                        _play = play.Play(card.play_func, card=card)
+                        print("{} playing {} targeting {}\n".format(self, card, card.targets_chosen))
+                        _play = play.Play(card.play_func,
+                                          apply_condition=(lambda: any(
+                                              [c(card, t) for c, t in zip(
+                                                  card.target_criterias,
+                                                  card.targets_chosen)
+                                               ])
+                                              if card.targets_chosen
+                                              else True),
+                                          card=card)
                         # special actions
                         if card.is_land:
                             _play.is_special_action = True
@@ -294,7 +298,7 @@ class Player():
         #     pass
 
     def play_card(self, card):
-        if type(card) is str:  # convert card name to Card object
+        if isinstance(card, str):  # convert card name to Card object
             card = cards.card_from_name(card)
 
         _play = play.Play(card.play_func)
@@ -371,8 +375,13 @@ class Player():
         self.hand.remove(cards_to_discard)
         return self.graveyard.add(cards_to_discard)
 
-    def create_token(self, attributes, num=1):
-        token.create_token(attributes, self, num)
+    def mill(self, num=1):
+        for i in range(min(num, len(self.library))):
+            self.graveyard.add(self.library.pop())
+        return True
+
+    def create_token(self, attributes, num=1, token_abilities=[]):
+        token.create_token(attributes, self, num, token_abilities)
 
     # TODO: handle paying X life / X mana
     def pay(self, mana=None, life=0):

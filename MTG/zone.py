@@ -61,7 +61,7 @@ class Zone():
                     assert isinstance(o, gameobject.GameObject)
                 o.controller = self.controller
             self.elements.extend(obj)
-            return True
+            return obj
 
         if not isinstance(self, Stack):
             assert isinstance(obj, gameobject.GameObject)
@@ -91,7 +91,7 @@ class Zone():
 
         else:
             assert (characteristics is None
-                    or type(characteristics) is gameobject.Characteristics)
+                    or isinstance(characteristics, gameobject.Characteristics))
 
             for ele in self:
                 if ele.characteristics.satisfy(characteristics):
@@ -128,6 +128,7 @@ class Battlefield(Zone):
             self.elements.append(obj)
             obj.status = permanent.Status()  # reset status upon entering battlefield
 
+        obj.timestamp = obj.game.timestamp  # reset timestamp
         obj.trigger(triggers.triggerConditions.onEtB)
 
 

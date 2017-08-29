@@ -533,7 +533,7 @@ class TestPlayer(unittest.TestCase):
                 '__self.tmp = self.tmp and self.battlefield[0].power == 4',
                 '__self.draw_card("Ulcerate")',
                 '__self.draw_card("Titanic Growth")',
-                '__self.mana.add_str("BGG")',
+                '__self.mana.add("BGG")',
                 'p Ulcerate', 'b 0',  # target
                 '', '',
                 '__self.tmp = self.tmp and self.battlefield[0].toughness == 1',
@@ -619,6 +619,32 @@ class TestPlayer(unittest.TestCase):
             self.assertEqual(
                 len([c for c in self.player.creatures if c.status.tapped]), 8)
             self.assertTrue(self.player.battlefield[-1].has_ability("Flying"))
+
+    def test_target_fizzling(self):
+        """Testing convoke, tokens, Spirit token has flying"""
+        with mock.patch('builtins.input', side_effect=[
+                '__self.discard(7)',
+                '__self.draw_card("Peel from Reality")',
+                '__self.draw_card("Peel from Reality")',
+                '__self.draw_card("Ulcerate")',
+                '__self.battlefield.add("Soulmender")',
+                '__self.battlefield.add("Soulmender")', '',
+                '__self.battlefield.add("Soulmender")', '',
+                '__self.mana.add("UUUUB")',
+                'p Ulcerate', 'ob 0',  # should fizzle and thus not lose life
+                'p Peel from Reality', 'b 0', 'ob 0',  # should still resolve with one target illegal
+                'p Peel from Reality', 'b 1', 'ob 0',
+                's upkeep', 's upkeep'
+        ]):
+            self.player.autoPayMana = True
+            self.player.autoDiscard = True
+            self.opponent.autoDiscard = True
+            self.GAME.handle_turn()
+            self.assertEqual(len(self.player.battlefield), 0)  # everything should be bounced
+            self.assertEqual(len(self.opponent.battlefield), 0)
+            self.assertEqual(self.player.life, 20)
+            self.assertEqual(len(self.player.graveyard), 10)  # 7 discarded + 3 spells cast
+
 
     # def test_trigger_ordering(self):
         """ Test trigger ordering"""

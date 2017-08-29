@@ -122,23 +122,39 @@ def add_activated_ability(cardname, cost, effect, is_mana_ability=False):
     card._activated_abilities_effects.append(lambda self: exec(effect))
 
 
-def add_targets(cardname, criterias=[lambda p: True], prompts=["Choose a target\n"]):
+def add_targets(cardname, criterias=[lambda self, p: True], prompts=["Choose a target\n"]):
     if not name_to_id(cardname):
         return
     card = card_from_name(cardname, get_instance=False)
+
+    if criterias == 'creature':
+        criterias = [lambda self, p: p.zone.zone_type == zone.ZoneType.BATTLEFIELD
+                             and p.is_creature]
+    if criterias == 'opponent':
+        criterias = [lambda self, p: p.__class__.__name__ == 'Player' and p != self]
+
+    if criterias == 'player':
+        criterias = [lambda self, p: p.__class__.__name__ == 'Player']
+
+    if criterias == 'creature or player':
+        criterias = [lambda self, p: p.__class__.__name__ == 'Player'
+                     or (p.is_creature and p.zone.zone_type == zone.ZoneType.BATTLEFIELD)]
+
 
     card.target_criterias = criterias
     card.target_prompts = prompts
 
 
-def add_play_func_single_target(cardname, outcome=lambda self, t: True):
+def add_play_func_with_targets(cardname, outcome=lambda self, t, l: True):
     if not name_to_id(cardname):
         return
     card = card_from_name(cardname, get_instance=False)
 
     def play_func(self):
-        if self.targets_chosen and self.target_criterias[0](self.targets_chosen[0]):
-            outcome(self, self.targets_chosen[0])
+        legality = [c(self, t) for c, t in zip(self.target_criterias, self.targets_chosen)]
+        if any(legality):
+            outcome(self, self.targets_chosen, legality)
+
         self.controller.graveyard.add(self)
 
     card.play_func = play_func
@@ -152,7 +168,7 @@ def add_play_func_no_target(cardname, outcome=lambda self: True):
     card.play_func = outcome
 
 
-def add_trigger(cardname, condition, effect):
+def add_trigger(cardname, condition, effect, requirements=lambda self: True):
     """
     Each effect is a function of the form
         lambda self: do_something
@@ -178,7 +194,7 @@ def add_trigger(cardname, condition, effect):
     # each element in the dict is a list of triggers, since there could be multiple abilities
     # that trigger from the same effect, e.g. tap AND draw a card on etb
     # each of them will go into a separate play.Play object and be put onto the stack
-    card.trigger_listeners[condition].append(effect)
+    card.trigger_listeners[condition].append((effect, requirements))
 
 
 def set_up_cards():
@@ -195,19 +211,17 @@ def set_up_cards():
     # add_activated_ability(
     #    "Wastes", 'T', 'self.controller.mana.add(mana.Mana.COLORLESS, 1)', True)
 
-    add_targets("Lightning Bolt", [lambda p: p.__class__.__name__ == 'Player'
-                                   or p.is_creature and p.zone.zone_type == zone.ZoneType.BATTLEFIELD])
-    add_play_func_single_target("Lightning Bolt",
-                                lambda self, t: t.take_damage(self, 3))
+    add_targets("Lightning Bolt", 'creature or player')
+    add_play_func_with_targets("Lightning Bolt",
+                                lambda self, t, l: t[0].take_damage(self, 3))
 
-    add_targets("Lightning Strike", [lambda p: p.__class__.__name__ == 'Player'
-                                     or p.is_creature and p.zone.zone_type == zone.ZoneType.BATTLEFIELD])
-    add_play_func_single_target("Lightning Strike",
-                                lambda self, t: t.take_damage(self, 3))
+    add_targets("Lightning Strike", 'creature or player')
+    add_play_func_with_targets("Lightning Strike",
+                                lambda self, t, l: t[0].take_damage(self, 3))
 
-    add_targets("Congregate", [lambda p: p.__class__.__name__ == 'Player'])
-    add_play_func_single_target("Congregate",
-                                lambda self, t: t.gain_life(
+    add_targets("Congregate", 'player')
+    add_play_func_with_targets("Congregate",
+                                lambda self, t, l: t[0].gain_life(
                                     2 * len([p for plyr in self.controller.game.players_list
                                              for p in plyr.battlefield
                                              if p.is_creature])))
@@ -229,10 +243,10 @@ def set_up_cards():
     add_activated_ability(
         "Soulmender", 'T', 'self.controller.gain_life(1)')
 
-    add_targets("Solemn Offerings", [lambda p: p.zone.zone_type == zone.ZoneType.BATTLEFIELD
+    add_targets("Solemn Offerings", [lambda self, p: p.zone.zone_type == zone.ZoneType.BATTLEFIELD
                                      and (p.is_artifact or p.is_enchantment)])
-    add_play_func_single_target("Solemn Offerings",
-                                lambda self, t: t.destroy()
+    add_play_func_with_targets("Solemn Offerings",
+                                lambda self, t, l: t[0].destroy()
                                 and self.controller.gain_life(4))
 
     add_play_func_no_target("Divination", lambda self: self.controller.draw(2))
@@ -240,21 +254,19 @@ def set_up_cards():
     add_play_func_no_target(
         "Jace's Ingenuity", lambda self: self.controller.draw(3))
 
-    add_targets("Titanic Growth", [lambda p: p.zone.zone_type == zone.ZoneType.BATTLEFIELD
-                                   and (p.is_creature)])
-    # add_play_func_single_target("Titanic Growth",
-    #                             lambda self, t: t.modifier.add([
+    add_targets("Titanic Growth", 'creature')
+    # add_play_func_with_targets("Titanic Growth",
+    #                             lambda self, t, l: t[0].modifier.add([
     #                                 ('characteristics.power', 4, True),
     #                                 ('characteristics.toughness', 4, True)]))
-    add_play_func_single_target("Titanic Growth",
-                                lambda self, t: t.add_effect('modifyPT',
+    add_play_func_with_targets("Titanic Growth",
+                                lambda self, t, l: t[0].add_effect('modifyPT',
                                                              (4, 4), self, self.game.eot_time))
 
-    add_targets("Ulcerate", [lambda p: p.zone.zone_type == zone.ZoneType.BATTLEFIELD
-                             and (p.is_creature)])
-    add_play_func_single_target("Ulcerate",
-                                lambda self, t:
-                                    t.add_effect('modifyPT', (-3, -3),
+    add_targets("Ulcerate", 'creature')
+    add_play_func_with_targets("Ulcerate",
+                                lambda self, t, l:
+                                    t[0].add_effect('modifyPT', (-3, -3),
                                                  self, self.game.eot_time)
                                 and self.controller.lose_life(3))
 
@@ -262,10 +274,10 @@ def set_up_cards():
         "Zof Shade", '2B',
         "self.add_effect('modifyPT', (2, 2), self, self.game.eot_time)")
 
-    add_targets("Mind Rot", [lambda p: p.__class__.__name__ is 'player'])
-    add_play_func_single_target("Mind Rot",
-                                lambda self, t:
-                                    t.discard(2))
+    add_targets("Mind Rot", [lambda self, p: p.__class__.__name__ is 'player'])
+    add_play_func_with_targets("Mind Rot",
+                                lambda self, t, l:
+                                    t[0].discard(2))
 
     add_activated_ability(
         "Shadowcloak Vampire", 'Pay 2 life',
@@ -273,9 +285,8 @@ def set_up_cards():
 
     add_trigger(
         "First Response", triggers.triggerConditions.onUpkeep,
-        lambda self: self.controller.create_token('1/1 white Soldier')
-        if self.controller.last_turn_events['life loss']
-        else None)
+        lambda self: self.controller.create_token('1/1 white Soldier'),
+        lambda self: self.controller.last_turn_events['life loss'])
 
     add_play_func_no_target(
         "Raise the Alarm",
@@ -284,9 +295,8 @@ def set_up_cards():
     add_trigger(
         "Resolute Archangel", triggers.triggerConditions.onEtB,
         lambda self: self.controller.set_life_total(
-            self.controller.startingLife)
-        if self.controller.life < self.controller.startingLife
-        else None)
+                        self.controller.startingLife),
+        lambda self: self.controller.life < self.controller.startingLife)
 
     add_play_func_no_target(
         "Sanctified Charge", lambda self:
@@ -302,21 +312,58 @@ def set_up_cards():
     add_play_func_no_target(
         "Aetherspouts", lambda self:
             self.game.apply_to_battlefield(
-                lambda p: p.change_zone(p.controller.library, 0, False)
+                lambda p: p.change_zone(p.owner.library, 0, False)
                             if p.owner.make_choice(
                                 "Would you like to put %r on top of your library?"
                                 " (otherwise it goes on bottom)" % p)
-                            else p.change_zone(p.controller.library, -1, False),
+                            else p.change_zone(p.owner.library, -1, False),
                 lambda p: p.status.is_attacking)
         )
 
 
-    add_targets("Devouring Light", [lambda p: p.zone.zone_type == zone.ZoneType.BATTLEFIELD
+    add_targets("Devouring Light", [lambda self, p: p.zone.zone_type == zone.ZoneType.BATTLEFIELD
                              and (p.is_creature and p.in_combat)])
-    add_play_func_single_target("Devouring Light",
-                                lambda self, t:
-                                    t.exile())
+    add_play_func_with_targets("Devouring Light",
+                                lambda self, t, l:
+                                    t[0].exile())
 
     add_play_func_no_target(
         "Triplicate Spirits",
-        lambda self: self.controller.create_token('1/1 white Spirit', 3))
+        lambda self: self.controller.create_token('1/1 white Spirit', 3, 'Flying'))
+
+    add_play_func_no_target(
+        "Meditation Puzzle",
+        lambda self: self.controller.gain_life(8))
+
+    add_targets("Pillar of Light", [lambda self, p: p.zone.zone_type == zone.ZoneType.BATTLEFIELD
+                             and (p.is_creature and p.toughness >= 4)])
+    add_play_func_with_targets("Pillar of Light",
+                                lambda self, t, l:
+                                    t[0].exile())
+
+    add_targets("Chronostutter", 'creature')
+    add_play_func_with_targets("Chronostutter",
+                                lambda self, t, l:
+                                    t[0].change_zone(t[0].owner.library, 1, False))
+
+    add_trigger("Coral Barrier", triggers.triggerConditions.onEtB,
+            lambda self: self.controller.create_token('1/1 blue Squid', 1, 'Islandwalk'))
+
+    add_targets("Hydrosurge", 'creature')
+    add_play_func_with_targets("Hydrosurge",
+                                lambda self, t, l: t[0].add_effect('modifyPT',
+                                                             (-5, 0), self, self.game.eot_time))
+
+    add_targets("Mind Sculpt", 'opponent')
+    add_play_func_with_targets("Mind Sculpt",
+                                lambda self, t, l: t[0].mill(7))
+
+
+    add_targets("Peel from Reality", [lambda self, p: p.zone.zone_type == zone.ZoneType.BATTLEFIELD
+                             and p.is_creature and p.controller is self.controller,
+                                      lambda self, p: p.zone.zone_type == zone.ZoneType.BATTLEFIELD
+                             and p.is_creature and p.controller is not self.controller],
+                                     ['Choose target creature you control\n',
+                                      "Choose target creature you don't control\n"])
+    add_play_func_with_targets("Peel from Reality",
+                                lambda self, t, l: [t[i].bounce() for i in range(2) if l[i]])

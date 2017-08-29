@@ -19,14 +19,14 @@ creature_token_pattern = re.compile('\d/\d '
                                     '[A-Za-z ]+')
 
 
-token_ability_dict = defaultdict(lambda: [])
-token_ability_dict['Spirit'] = [abilities.StaticAbilities.Flying]
-token_ability_dict['Thopter'] = [abilities.StaticAbilities.Flying]
+# token_ability_dict = defaultdict(lambda: [])
+# token_ability_dict['Spirit'] = [abilities.StaticAbilities.Flying]
+# token_ability_dict['Thopter'] = [abilities.StaticAbilities.Flying]
 
 
 
-def create_token(attributes, controller, num=1):
-    if type(attributes) is str:
+def create_token(attributes, controller, num=1, token_abilities=[]):
+    if isinstance(attributes, str):
         if creature_token_pattern.match(attributes):
             pt, color, *c_type = attributes.split(' ')
             p, t = map(int, pt.split('/'))
@@ -39,7 +39,10 @@ def create_token(attributes, controller, num=1):
 
             name = ' '.join(c_type)
             print("making token... %d %d %s %s" % (p, t, color, name))
-            
+
+            if isinstance(token_abilities, str):
+                token_abilities = [token_abilities]
+                print("with %s" % ' '.join(token_abilities))
 
             for i in range(num):
                 characteristics = gameobject.Characteristics(name='Token: %s' % name,
@@ -49,6 +52,6 @@ def create_token(attributes, controller, num=1):
                                                              toughness=t,
                                                              subtype=c_type,
                                                              color=[color],
-                                                             abilities=token_ability_dict[name])
+                                                             abilities=[abilities.StaticAbilities[a] for a in token_abilities])
 
                 Token(characteristics, controller)

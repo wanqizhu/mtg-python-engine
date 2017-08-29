@@ -115,7 +115,7 @@ class Modifier():
             self.original_methods[name] = reduce(getattr, name.split('.'),
                                                  self.target)
 
-            if is_add_on and is_add_on[0] is True:
+            if is_add_on and is_add_on[0]:
                 modification += self.original_methods[name]
 
             self.modified_methods[name] = modification
@@ -141,7 +141,7 @@ class Permanent(gameobject.GameObject):
         self.characteristics = characteristics
         self.controller = controller
         self.game = controller.game
-        self.owner = owner if owner else controller
+        self._owner = owner
         self.zone = self.controller.battlefield
         self.original_card = original_card
         self.modifier = Modifier(self, modifications)
@@ -169,7 +169,7 @@ class Permanent(gameobject.GameObject):
             self.activated_abilities = []
             self._activated_abilities_costs = []
             self._activated_abilities_effects = []
-            self.trigger_listeners = []
+            self.trigger_listeners = {}
 
         self.controller.battlefield.add(self)
         self.is_token = False
@@ -275,7 +275,8 @@ class Permanent(gameobject.GameObject):
                     and not self.has_ability("Haste"))
 
     def can_attack(self):
-        return (self.is_creature and not self.status.tapped and not self.is_summoning_sick)
+        return (self.is_creature and not self.status.tapped
+                and not self.is_summoning_sick and not self.has_ability("Defender"))
 
     def can_block(self, attackers=None):
         if attackers:
@@ -382,10 +383,13 @@ class Permanent(gameobject.GameObject):
 
         if condition in self.trigger_listeners:
             print("Trigger to be process at next priority...\n")
+
             self.controller.pending_triggers.extend(
-                [play.Play(lambda: effect(self), card=self)
-                 for effect in self.trigger_listeners[condition]
-                 if effect is not None])
+                [play.Play(lambda: effect(self),
+                           apply_condition=lambda: requirements(self),
+                           card=self)
+                 for effect, requirements in self.trigger_listeners[condition]
+                 if effect is not None and requirements(self)])
 
     def dies(self):
         # trigger
@@ -405,6 +409,12 @@ class Permanent(gameobject.GameObject):
 
     def exile(self):
         self.change_zone(self.controller.exile)
+
+    def bounce(self):
+        self.change_zone(self.owner.hand)
+
+    def flicker(self):
+        self.change_zone(self.owner.battlefield)
 
     def add_counter(self, counter, num=1):
         self.status.counters[counter] += num

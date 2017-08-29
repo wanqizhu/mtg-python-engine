@@ -16,11 +16,7 @@
 
 - other cost modifiers
 
-- Triggered Abilities
-	- verify stacking/ordering triggers work and they are being resolved at next priority
-	- 'intervening if' only trigger if condition is true
-		- need another attribute when creating trigger that performs the 'if' check
-			before putting trigger on stack
+
 
 - Activated Abilities
  - ability have a target
@@ -30,15 +26,21 @@
  		- return True if action successful and did something
  		- raise error if illegal
  		- return False if did nothing
+
  - make a separate class for abilities/spells that share targeting system, etc.
+ 	- optional targeting (up to ...)
+
+ 	- target legality issues -- what if target changes zones (e.g. flicker?) NEED TO RESOLVE
+ 		- what about multi-target spells where some of the targets are illegal?
 
 - Static Abilities
+
 
 - eot / conditional / aura modifiers on permanents
 	- auras
 	- MULTIPLE MODIFIERS -- e.g. Zof Shade -- they need to stack correctly while maintaining original
 
-- check target legality upon spell/ability RESOLUTION
+
 
 
 rules: http://media.wizards.com/2017/downloads/MagicCompRules_20170707.pdf
@@ -140,6 +142,14 @@ Devouring Light *
 
 Aetherspouts
 
+- Meditation Puzzle
+- Pillar of Light
+- Chronostutter
+- Coral Barrier
+- Mind Sculpt
+- Peel from Reality
+- Hydrosurge
+
 
 ---
 
@@ -180,8 +190,6 @@ Marked by Honor - aura
 
 
 
-Meditation Puzzle - convoke
-
 Midnight Guard - any creature etb
 
 Oppressive Rays - aura; extra payment costs
@@ -190,7 +198,7 @@ Oppressive Rays - aura; extra payment costs
 
 Paragon of New Dawns - static ability; activated ability
 
-Pillar of Light - target check on resolution
+
 
 Preeminent Captain - on attack trigger
 
@@ -218,9 +226,7 @@ Spirit Bonds - eot
 
 
 
-Tireless Missionaries - etb
 
-Triplicate Spirits - convoke; token
 
 Wall of Essence - dealt-combat-dmg trigger
 
@@ -228,7 +234,6 @@ Warden of the Beyond - static ability
 
 Aeronaut Tinkerer - static
 
-Aetherspouts *
 
 Amphin Pathmage - can't be blocked eot
 
@@ -236,9 +241,8 @@ Chasm Skulker - tokens
 
 Chief Engineer - convoke to other spells
 
-Chronostutter - *
 
-Coral Barrier - tokens
+
 
 Diffusion Sliver - becomes target; counter; optional payment
 
@@ -256,7 +260,7 @@ Frost Lynx - doesn't untap
 
 Glacial Crasher - conditional attack (static)
 
-Hydrosurge - eot modifiers
+
 
 Illusory Angel - storm counter
 
@@ -280,7 +284,6 @@ Mercurial Pretender - copy
 
 Military Intelligence - *
 
-Mind Sculpt - *
 
 Negate - counter
 
@@ -288,7 +291,6 @@ Negate - counter
 
 Paragon of Gathering Mists - static apply-to-battlefield
 
-Peel from Reality - *
 
 Polymorphist's Jest - eot; lose abilities; frogify
 
@@ -640,15 +642,7 @@ Urborg, Tomb of Yawgmoth - static
 
 Yavimaya Coast - *
 
-Plains
 
-Island
-
-Swamp
-
-Mountain
-
-Forest
 
 Aegis Angel - indestructible; static
 

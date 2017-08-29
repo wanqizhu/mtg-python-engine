@@ -13,6 +13,7 @@ class Attributes():
 class Card(gameobject.GameObject):
     target_criterias = None
     target_prompts = None
+    targets_chosen = None
 
     trigger_listeners = {}
 
@@ -39,10 +40,11 @@ class Card(gameobject.GameObject):
 
             answer = self.controller.make_choice(prompt)
             card = get_card_from_user_input(self.controller, answer)
-            print(card)
+            if not card:
+                return False
 
             try:
-                if not criteria(card):
+                if not criteria(self, card):
                     return False
             except:
                 traceback.print_exc()
@@ -88,6 +90,8 @@ def get_card_from_user_input(player, string):
         zone = player.hand
     elif string[0] == 'g':
         zone = player.graveyard
+    else:
+        return None
 
     try:
         i = int(string[2:])
