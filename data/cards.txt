@@ -1,0 +1,382 @@
+# Formating help
+
+# cards are separated by 30 '#'s
+
+# ##############################
+# Name
+
+# 	Abilities
+# 		cost: effect
+# 		cost: eff-
+# 					ect; continuing lines by indenting
+# 								at least 2 tabs more than the start the statement
+# 						so any indentation
+# 											like
+# 									this
+# 				will work
+# 		but this is a new cost: new effect
+
+
+# 	Targets
+# 		# criterias will be called using
+# 		# lambda self, p: __criteria__
+
+# 		target_criteria_1
+
+# 		# you can also use shortcuts like so -- make sure you include quotation marks
+# 		'creature'
+
+
+# 	Triggers
+# 		triggerCondition
+# 			effect
+
+# 		triggerCondition2
+# 			effect2
+
+# 			If:
+# 				intervening-if statement (optional) goes here
+
+
+# 	# called using lambda self: __effect__ if no targets
+# 	# or lambda self, targets, is_legal_target: __effect__
+
+# 	__card_effect_goes_here
+
+
+
+# ##############################
+
+##############################
+Plains
+
+	Abilities:
+		T: self.controller.mana.add(mana.Mana.WHITE, 1)
+
+
+
+##############################
+Island
+
+	Abilities:
+		T: self.controller.mana.add(mana.Mana.BLUE, 1)
+
+
+
+##############################
+Swamp
+
+	Abilities:
+		T: self.controller.mana.add(mana.Mana.BLACK, 1)
+
+
+
+##############################
+Mountain
+
+	Abilities:
+		T: self.controller.mana.add(mana.Mana.RED, 1)
+
+
+
+##############################
+Forest
+
+	Abilities:
+		T: self.controller.mana.add(mana.Mana.GREEN, 1)
+
+
+
+##############################
+Lightning Bolt
+
+	Targets:
+		'creature or player'
+
+	targets[0].take_damage(self, 3)
+
+
+
+##############################
+Lightning Strike
+
+	Targets:
+		'creature or player'
+
+	targets[0].take_damage(self, 3)
+
+
+
+##############################
+Congregate
+
+	Targets:
+		'player'
+
+	targets[0].gain_life(2 * len([p for plyr in self.controller.game.players_list
+																for p in plyr.battlefield
+																if p.is_creature]))
+
+
+
+##############################
+Mass Calcify
+
+	self.game.apply_to_battlefield(
+						lambda p: p.destroy(),
+						lambda p: p.is_creature and not p.has_color('W'))
+
+
+
+##############################
+Ajani's Pridemate
+
+	Triggers:
+		onControllerLifeGain
+			self.add_counter("+1/+1") if self.controller.make_choice(
+							"Would you like to put a +1/+1 counter on %r?" % self)
+																else None
+
+
+
+##############################
+Tireless Missionaries
+
+	Triggers:
+		onEtB
+			self.controller.gain_life(3)
+
+
+
+##############################
+Soulmender
+
+	Abilities:
+		T: self.controller.gain_life(1)
+
+
+
+##############################
+Solemn Offerings
+
+	Targets:
+		p.zone.zone_type == zone.ZoneType.BATTLEFIELD
+																 and (p.is_artifact or p.is_enchantment)
+
+	targets[0].destroy()
+	self.controller.gain_life(4)
+
+
+
+##############################
+Divination
+
+	self.controller.draw(2)
+
+
+
+##############################
+Jace's Ingenuity
+
+	self.controller.draw(3)
+
+
+
+##############################
+Titanic Growth
+
+	Targets:
+		'creature'
+
+	targets[0].add_effect('modifyPT',
+												(4, 4), self, self.game.eot_time)
+
+
+
+##############################
+Ulcerate
+
+	Targets:
+		'creature'
+
+	targets[0].add_effect('modifyPT', (-3, -3),
+												self, self.game.eot_time)
+	self.controller.lose_life(3)
+
+
+
+##############################
+Zof Shade
+
+	Abilities:
+		2B: self.add_effect('modifyPT', (2, 2), self, self.game.eot_time)
+
+
+
+##############################
+Mind Rot
+
+	Targets:
+		'player'
+
+	targets[0].discard(2)
+
+
+
+##############################
+Shadowcloak Vampire
+
+	Abilities:
+		Pay 2 life: self.add_effect('gainAbility', 'Flying', self, self.game.eot_time)
+
+
+
+##############################
+First Response
+
+	Triggers:
+		onUpkeep
+			self.controller.create_token('1/1 white Soldier')
+			If:
+				self.controller.last_turn_events['life loss']
+
+
+
+##############################
+Raise the Alarm
+
+	self.controller.create_token('1/1 white Soldier', 2)
+
+
+
+##############################
+Resolute Archangel
+
+	Triggers:
+		onEtB
+			self.controller.set_life_total(
+											self.controller.startingLife)
+			If:
+				self.controller.life < self.controller.startingLife
+
+
+
+##############################
+Sanctified Charge
+
+	[c.add_effect('modifyPT', (2, 1), self, self.game.eot_time)
+								for c in self.controller.battlefield if c.is_creature]
+	[c.add_effect('gainAbility', 'First Strike', self, self.game.eot_time)
+								for c in self.controller.battlefield if c.is_creature and c.has_color('W')]
+
+
+
+##############################
+Aetherspouts
+
+	self.game.apply_to_battlefield(
+			lambda p: p.change_zone(p.owner.library, 0, False)
+									if p.owner.make_choice(
+											"Would you like to put %r on top of your library?"
+											" (otherwise it goes on bottom)" % p)
+									else p.change_zone(p.owner.library, -1, False),
+			lambda p: p.status.is_attacking)
+
+
+
+##############################
+Devouring Light
+
+	Targets:
+		p.zone.zone_type == zone.ZoneType.BATTLEFIELD
+												 and (p.is_creature and p.in_combat)
+
+	targets[0].exile()
+
+
+
+##############################
+Triplicate Spirits
+
+	self.controller.create_token('1/1 white Spirit', 3, 'Flying')
+
+
+
+##############################
+Meditation Puzzle
+
+	self.controller.gain_life(8)
+
+
+
+##############################
+Pillar of Light
+
+	Targets:
+		p.zone.zone_type == zone.ZoneType.BATTLEFIELD
+												 and (p.is_creature and p.toughness >= 4)
+
+	targets[0].exile()
+
+
+
+##############################
+Chronostutter
+
+	Targets:
+		'creature'
+
+	targets[0].change_zone(t[0].owner.library, 1, False)
+
+
+
+##############################
+Coral Barrier
+
+	Triggers:
+		onEtB
+			self.controller.create_token('1/1 blue Squid', 1, 'Islandwalk')
+
+
+
+##############################
+Hydrosurge
+
+	Targets:
+		'creature'
+
+	targets[0].add_effect('modifyPT',
+												(-5, 0), self, self.game.eot_time)
+
+
+
+##############################
+Mind Sculpt
+
+	Targets:
+		'opponent'
+
+	targets[0].mill(7)
+
+
+
+##############################
+Peel from Reality
+
+	Targets:
+		p.zone.zone_type == zone.ZoneType.BATTLEFIELD
+										and p.is_creature and p.controller is self.controller
+			Prompt:
+				"Choose target creature you control\n"
+
+		p.zone.zone_type == zone.ZoneType.BATTLEFIELD
+												 and p.is_creature and p.controller is not self.controller
+			Prompt:
+				"Choose target creature you don't control\n"
+
+
+	[targets[i].bounce() for i in range(2) if is_legal_target[i]]
+
+
+
+##############################

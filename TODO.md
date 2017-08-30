@@ -4,13 +4,7 @@
 
 
 - make Stack / play.Play object more readable
-	- triggers still read like:
-
-		         [play.Play(lambda: effect(self), card=self)
-                 for effect in self.trigger_listeners[condition]
-                 if effect is not None])
-
-         - add more descriptors for printout
+   - add more descriptors for printout
 
 
 
