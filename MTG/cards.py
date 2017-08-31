@@ -9,6 +9,7 @@ from MTG import abilities
 from MTG import zone
 from MTG import triggers
 from MTG import mana
+from MTG import helper_funcs
 
 
 SETPREFIX = ['M15', 'sm_set']
@@ -51,7 +52,7 @@ def card_from_name(name, get_instance=True):
         else:
             return str_to_class(ID)
     else:
-        return None
+        raise CardNotImplementedException
 
 
 def read_deck(filename):
@@ -84,7 +85,7 @@ def read_deck(filename):
     return deck
 
 
-def add_activated_ability(cardname, cost, effect):
+def add_activated_ability(cardname, cost, effect, target_criterias=None, prompts=None):
     if not name_to_id(cardname):
         return
     card = card_from_name(cardname, get_instance=False)
@@ -92,10 +93,9 @@ def add_activated_ability(cardname, cost, effect):
 
     _costs = cost.split(', ')
     costs = []
-    # costs_validation = "True"
+
     if 'T' in _costs:
         costs.append("self.tap() and not self.is_summoning_sick")
-        # costs_validation += " and not self.status.tapped"  ## todo: make this check if costs return True
 
     for itm in _costs:
         if mana.mana_pattern.match(itm):
@@ -111,16 +111,11 @@ def add_activated_ability(cardname, cost, effect):
 
     if not card.activated_abilities:  # hasn't been initiated yet
         card.activated_abilities = []
-        card._activated_abilities_costs = []
-        card._activated_abilities_effects = []
-        # card._activated_abilities_costs_validation = []
 
-    card.activated_abilities.append((costs, effect, is_mana_ability))
+    if target_criterias:
+        target_criterias = helper_funcs.parse_targets(target_criterias)
 
-    card._activated_abilities_costs.append(lambda self: eval(costs))
-    # card._activated_abilities_costs_validation.append(
-    #     lambda self: eval(costs_validation))
-    card._activated_abilities_effects.append(lambda self: exec(effect))
+    card.activated_abilities.append((costs, effect, target_criterias, prompts, is_mana_ability))
 
 
 def add_targets(cardname, criterias=[lambda self, p: True], prompts=None):
@@ -130,19 +125,7 @@ def add_targets(cardname, criterias=[lambda self, p: True], prompts=None):
     if not prompts:
         prompts = ["Choose a target\n"] * len(criterias)
 
-    for i, v in enumerate(criterias):
-        if v == 'creature':
-            criterias[i] = lambda self, p: p.zone.zone_type == zone.ZoneType.BATTLEFIELD and p.is_creature
-        if v == 'opponent':
-            criterias[i] = lambda self, p: p.__class__.__name__ == 'Player' and p != self
-
-        if v == 'player':
-            criterias[i] = lambda self, p: p.__class__.__name__ == 'Player'
-
-        if v == 'creature or player':
-            criterias[i] = (lambda self, p: p.__class__.__name__ == 'Player'
-                         or (p.is_creature and p.zone.zone_type == zone.ZoneType.BATTLEFIELD))
-
+    criterias = helper_funcs.parse_targets(criterias)
 
     card.target_criterias = criterias
     card.target_prompts = prompts
@@ -200,348 +183,194 @@ def add_trigger(cardname, condition, effect, requirements=lambda self: True):
     card.trigger_listeners[condition].append((effect, requirements))
 
 
-def set_up_cards():
+
+
+def indentation_lv(s):
+    """ Must be tab indented """
+    lv = 0
+    for i in s:
+        if i == '\t':
+            lv += 1
+        else:
+            break
+    return lv
+
+
+
+def parse_card_from_lines(lines, log=None):
+    """ Lines are formatted according to 'data/cards.txt'
+    
+    Each set of lines correspond to all abilities/effects of a single card
+    """
+    stage = 'new card'
+    name = ''
+
+    effects = []
+    abilities = []
+    targets = []
+    target_prompts = []
+    _triggers = []  # _ since we import MTG.triggers
+
+    prev_ind_lv = 0
+    prev_line = ''
+    lines.append('')
+
+
+    # we actually only parse a line until we're certain there's nothing following it
+    # so everytime we read a new line,
+    #   we parse the last line and store our new line in prev_line
+    for line in lines:
+        ind_lv = indentation_lv(line)
+        line = line.lstrip()
+
+        if line and line[0] == '#':
+            continue
+
+        if not prev_line:
+            prev_line = line
+            prev_ind_lv = ind_lv
+            continue
+
+        if ind_lv > 1 + prev_ind_lv:  # line continuation
+            prev_line += ' ' + line
+            continue  # wait to parse until we've read in
+                      # the entire multi-line statement
+
+
+        # ok now we're ready to parse the previous line
+        # swap the two vars so we're processing line = prev_line
+        line, prev_line = prev_line, line
+        ind_lv, prev_ind_lv = prev_ind_lv, ind_lv
+
+        if stage == 'new card':  # read in card name
+            name = line
+            stage = 'effects'
+            continue
+
+        if ind_lv == 1:
+            if line == 'Abilities:':
+                stage = 'abilities'
+                continue
+
+            elif line == 'Targets:':
+                stage = 'targets'
+                continue
+
+            elif line == 'Triggers:':
+                stage = 'triggers'
+                continue
+
+            else:
+                stage = 'effects'
+
+
+        if stage == 'effects':  # read in card effects
+            effects.append(line)
+
+        elif stage == 'abilities':
+            # split ability by 'cost: effect'
+            index = line.index(":")
+            abilities.append((line[:index], line[index+2:]))
+
+        elif stage == 'targets':
+            if ind_lv == 2:
+                # shortcut targets, like 'creature', are surrounded in quotes and will be kept intact
+                # otherwise, we should prefix it with the correct lambda signature for add_target()
+                if line[0] != "'":
+                    line = 'lambda self, p: ' + line
+                targets.append(line)
+
+            elif ind_lv == 4:  # previous line should be 'Prompt:'
+                target_prompts.append(bytes(line, "utf-8").decode("unicode_escape"))  # remove quotes, convert to string
+
+        elif stage == 'triggers':
+            if ind_lv == 2:  # new trigger condition
+                _triggers.append([line, []])
+            elif ind_lv == 3:
+                if line == 'If:':
+                    pass
+                else:
+                    _triggers[-1][-1].append(line)  # trigger effect
+            elif ind_lv == 4:  # previous line should have been 'If:'
+                _triggers[-1].append(line)  # optional trigger requirements
+
+
+    # print(name, targets, abilities, _triggers, effects)
+    str_to_exe = ""
+
+    if abilities:
+        for cost, effect in abilities:
+            str_to_exe += "add_activated_ability(%r, %r, %r)\n" % (name, cost, effect)
+
+
+    if targets:
+        str_to_exe += "add_targets(%r, eval(%r), prompts=%r)\n" % (
+                    name, '[' + ', '.join(targets) + ']', target_prompts)
+
+
+    # we need to use awkward '[' + ', '.join(..) + ']' for two reasons:
+    #   - converting list to str for exec()
+    #   - removing the quotation marks from the inner elements of the list,
+    #     turning them from strings into statements
+
+    if _triggers:
+        for trig in _triggers:
+            if len(trig) == 2:
+                str_to_exe += "add_trigger(%r, triggers.triggerConditions[%r], eval(%r))\n" % (
+                                    name,
+                                    trig[0],
+                                    "lambda self: [" + ', '.join(trig[1]) + ']')
+
+            else:  # optional trigger requirements
+                str_to_exe += "add_trigger(%r, triggers.triggerConditions[%r], eval(%r), eval(%r))\n" % (
+                                    name,
+                                    trig[0],
+                                    "lambda self: [" + ', '.join(trig[1]) + ']',
+                                    "lambda self: " + trig[2])
+
+
+    if effects:
+        if not targets:
+            str_to_exe += "add_play_func_no_target(%r, eval(%r))\n" % (name, 'lambda self: [' + ', '.join(effects) + ']')
+
+        else:
+            str_to_exe += "add_play_func_with_targets(%r, eval(%r))\n" % (
+                                name,
+                                "lambda self, targets, is_legal_target: [" + 
+                                    ', '.join(effects) + ']')
+
+    if log:
+        log.write(str_to_exe + "\n")
+
+    exec(str_to_exe)
+
+
+def set_up_cards(FILES=['data/cards.txt']):
     """
     Read in cards information from data/cards.txt
 
     Logs in set_up_cards.log
 
     """
-    def indentation_lv(s):
-        lv = 0
-        for i in s:
-            if i == '\t':
-                lv += 1
-            else:
-                break
-        return lv
-    
-    def parse_card_from_lines(lines, log=None):
-        stage = 'new card'
-        name = ''
 
-        effects = []
-        abilities = []
-        targets = []
-        target_prompts = []
-        _triggers = []
-
-        prev_ind_lv = 0
-        prev_line = ''
-
-        lines.append('')
-        for line in lines:
-            ind_lv = indentation_lv(line)
-            line = line.lstrip()
-
-            if line and line[0] == '#':
-                continue
-
-
-            if not prev_line:
-                prev_line = line
-                prev_ind_lv = ind_lv
-                continue
-
-            if ind_lv > 1 + prev_ind_lv:  # line continuation
-                prev_line += ' ' + line
-                continue  # wait to parse until we've read in
-                          # the entire multi-line statement
-
-
-            # ok now we're ready to parse the previous line
-            line, prev_line = prev_line, line
-            prev_ind_lv, ind_lv = ind_lv, prev_ind_lv
-
-            if stage == 'new card':  # read in card name
-                name = line
-                stage = 'effects'
-                continue
-
-            if ind_lv == 1:
-                if line == 'Abilities:':
-                    stage = 'abilities'
-                    continue
-
-                elif line == 'Targets:':
-                    stage = 'targets'
-                    continue
-
-                elif line == 'Triggers:':
-                    stage = 'triggers'
-                    continue
-
-                else:
-                    stage = 'effects'
-            
-            if stage == 'effects':  # read in card effects
-                effects.append(line)
-
-            elif stage == 'abilities':
-                index = line.index(":")
-                abilities.append((line[:index], line[index+2:]))
-
-            elif stage == 'targets':
-                if ind_lv == 2:
-                    if line[0] != "'":
-                        line = 'lambda self, p: ' + line
-                    targets.append(line)
-
-                elif ind_lv == 4:  # prev line should be 'Prompt:'
-                    target_prompts.append(line)
-
-            elif stage == 'triggers':
-                if ind_lv == 2:  # new trigger condition
-                    _triggers.append([line, []])
-                elif ind_lv == 3:
-                    if line == 'If:':
-                        pass
-                    else:
-                        _triggers[-1][-1].append(line)  # trigger effect
-                elif ind_lv == 4:  # prev line should have been 'If:'
-                    _triggers[-1].append(line)  # optional trigger requirements
-
-
-        # print(name, targets, abilities, _triggers, effects)
-
-        if abilities:
-            for cost, effect in abilities:
-                if log:
-                    log.write("add_activated_ability(%r, %r, %r)\n" % (name, cost, effect))
-                add_activated_ability(name, cost, effect)
-
-        if targets:
-            str_to_exe = "add_targets(%r, eval(%r), prompts=%r)\n" % (name, '[' + ', '.join(targets) + ']', target_prompts)
-            if log:
-                log.write(str_to_exe)
-            exec(str_to_exe)
-
-        if _triggers:
-            for trig in _triggers:
-                if len(trig) == 2:
-                    str_to_exe = "add_trigger(%r, triggers.triggerConditions[%r], eval(%r))\n" % (
-                                        name,
-                                        trig[0],
-                                        "lambda self: [" + ', '.join(trig[1]) + ']')
-
-                else:
-                    str_to_exe = "add_trigger(%r, triggers.triggerConditions[%r], eval(%r), eval(%r))\n" % (
-                                        name,
-                                        trig[0],
-                                        "lambda self: [" + ', '.join(trig[1]) + ']',
-                                        "lambda self: " + trig[2])
-
-                if log:
-                    log.write(str_to_exe)
-                exec(str_to_exe)
-
-
-        if effects:
-            if not targets:
-                str_to_exe = "add_play_func_no_target(%r, eval(%r))\n" % (name, 'lambda self: [' + ', '.join(effects) + ']')
-    
-            else:
-                str_to_exe = "add_play_func_with_targets(%r, eval(%r))\n" % (
-                                    name,
-                                    "lambda self, targets, is_legal_target: [" + 
-                                        ', '.join(effects) + ']')
-
-            if log:
-                log.write(str_to_exe)
-            exec(str_to_exe)
-
-        if log:
-            log.write("\n")
-
-
-
-    f = open('data/cards.txt', 'r')
     f_log = open('set_up_cards.log', 'w')
-    lines = []
 
-    for line in f:
-        line = line.rstrip()
-        if not line:
-            continue
+    for name in FILES:
+        f = open(name, 'r')
+        lines = []  # buffer
 
-        if line[:3] == '###':
-            parse_card_from_lines(lines, f_log)
-            lines = []
-        else:
-            lines.append(line)
+        for line in f:
+            line = line.rstrip()
+            if not line:
+                continue
 
-        
-
-
-
+            if line[:3] == '###':  # end of a card
+                parse_card_from_lines(lines, f_log)
+                lines = []
+            else:  # wait to parse cards until we've read in all information about a card
+                lines.append(line)
 
 
-
-
-    # add_activated_ability(
-    #     "Plains", 'T', 'self.controller.mana.add(mana.Mana.WHITE, 1)')
-    # add_activated_ability(
-    #     "Island", 'T', 'self.controller.mana.add(mana.Mana.BLUE, 1)')
-    # add_activated_ability(
-    #     "Swamp", 'T', 'self.controller.mana.add(mana.Mana.BLACK, 1)')
-    # add_activated_ability(
-    #     "Mountain", 'T', 'self.controller.mana.add(mana.Mana.RED, 1)')
-    # add_activated_ability(
-    #     "Forest", 'T', 'self.controller.mana.add(mana.Mana.GREEN, 1)')
-    # # add_activated_ability(
-    # #    "Wastes", 'T', 'self.controller.mana.add(mana.Mana.COLORLESS, 1)')
-
-    # add_targets("Lightning Bolt", ['creature or player'])
-    # add_play_func_with_targets("Lightning Bolt",
-    #                             lambda self, t, l: t[0].take_damage(self, 3))
-
-    # add_targets("Lightning Strike", ['creature or player'])
-    # add_play_func_with_targets("Lightning Strike",
-    #                             lambda self, t, l: t[0].take_damage(self, 3))
-
-    # add_targets("Congregate", ['player'])
-    # add_play_func_with_targets("Congregate",
-    #                             lambda self, t, l: t[0].gain_life(
-    #                                 2 * len([p for plyr in self.controller.game.players_list
-    #                                          for p in plyr.battlefield
-    #                                          if p.is_creature])))
-
-    # add_play_func_no_target("Mass Calcify", lambda self:
-    #                         self.game.apply_to_battlefield(
-    #                             lambda p: p.destroy(),
-    #                             lambda p: p.is_creature and not p.has_color('W')))
-
-    # add_trigger("Ajani's Pridemate", triggers.triggerConditions.onControllerLifeGain,
-    #             lambda self: self.add_counter("+1/+1")
-    #             if self.controller.make_choice(
-    #                 "Would you like to put a +1/+1 counter on %r?" % self)
-    #             else None)
-
-    # add_trigger("Tireless Missionaries", triggers.triggerConditions.onEtB,
-    #             lambda self: self.controller.gain_life(3))
-
-    # add_activated_ability(
-    #     "Soulmender", 'T', 'self.controller.gain_life(1)')
-
-    # add_targets("Solemn Offerings", [lambda self, p: p.zone.zone_type == zone.ZoneType.BATTLEFIELD
-    #                                  and (p.is_artifact or p.is_enchantment)])
-    # add_play_func_with_targets("Solemn Offerings",
-    #                             lambda self, t, l: [t[0].destroy(),
-    #                                                 self.controller.gain_life(4)])
-
-    # add_play_func_no_target("Divination", lambda self: self.controller.draw(2))
-
-    # add_play_func_no_target(
-    #     "Jace's Ingenuity", lambda self: self.controller.draw(3))
-
-    # add_targets("Titanic Growth", ['creature'])
-    # add_play_func_with_targets("Titanic Growth",
-    #                             lambda self, t, l: t[0].add_effect('modifyPT',
-    #                                                          (4, 4), self, self.game.eot_time))
-
-    # add_targets("Ulcerate", ['creature'])
-    # add_play_func_with_targets("Ulcerate",
-    #                             lambda self, t, l:
-    #                                 [t[0].add_effect('modifyPT', (-3, -3),
-    #                                              self, self.game.eot_time),
-    #                                  self.controller.lose_life(3)]
-    #                           )
-
-    # add_activated_ability(
-    #     "Zof Shade", '2B',
-    #     "self.add_effect('modifyPT', (2, 2), self, self.game.eot_time)")
-
-    # add_targets("Mind Rot", [lambda self, p: p.__class__.__name__ is 'player'])
-    # add_play_func_with_targets("Mind Rot",
-    #                             lambda self, t, l:
-    #                                 t[0].discard(2))
-
-    # add_activated_ability(
-    #     "Shadowcloak Vampire", 'Pay 2 life',
-    #     "self.add_effect('gainAbility', 'Flying', self, self.game.eot_time)")
-
-    # add_trigger(
-    #     "First Response", triggers.triggerConditions.onUpkeep,
-    #     lambda self: self.controller.create_token('1/1 white Soldier'),
-    #     lambda self: self.controller.last_turn_events['life loss'])
-
-    # add_play_func_no_target(
-    #     "Raise the Alarm",
-    #     lambda self: self.controller.create_token('1/1 white Soldier', 2))
-
-    # add_trigger(
-    #     "Resolute Archangel", triggers.triggerConditions.onEtB,
-    #     lambda self: self.controller.set_life_total(
-    #                     self.controller.startingLife),
-    #     lambda self: self.controller.life < self.controller.startingLife)
-
-    # add_play_func_no_target(
-    #     "Sanctified Charge", lambda self:
-    #         [
-    #             [c.add_effect('modifyPT', (2, 1), self, self.game.eot_time)
-    #                 for c in self.controller.battlefield if c.is_creature],
-    #             [c.add_effect('gainAbility', 'First Strike', self, self.game.eot_time)
-    #                 for c in self.controller.battlefield if c.is_creature and c.has_color('W')]
-    #         ]
-    #     )
-
-    # # NEED ZONE SHIFT HELPER FUNC
-
-    # add_play_func_no_target(
-    #     "Aetherspouts", lambda self:
-    #         self.game.apply_to_battlefield(
-    #             lambda p: p.change_zone(p.owner.library, 0, False)
-    #                         if p.owner.make_choice(
-    #                             "Would you like to put %r on top of your library?"
-    #                             " (otherwise it goes on bottom)" % p)
-    #                         else p.change_zone(p.owner.library, -1, False),
-    #             lambda p: p.status.is_attacking)
-    #     )
-
-
-    # add_targets("Devouring Light", [lambda self, p: p.zone.zone_type == zone.ZoneType.BATTLEFIELD
-    #                          and (p.is_creature and p.in_combat)])
-    # add_play_func_with_targets("Devouring Light",
-    #                             lambda self, t, l:
-    #                                 t[0].exile())
-
-    # add_play_func_no_target(
-    #     "Triplicate Spirits",
-    #     lambda self: self.controller.create_token('1/1 white Spirit', 3, 'Flying'))
-
-    # add_play_func_no_target(
-    #     "Meditation Puzzle",
-    #     lambda self: self.controller.gain_life(8))
-
-    # add_targets("Pillar of Light", [lambda self, p: p.zone.zone_type == zone.ZoneType.BATTLEFIELD
-    #                          and (p.is_creature and p.toughness >= 4)])
-    # add_play_func_with_targets("Pillar of Light",
-    #                             lambda self, t, l:
-    #                                 t[0].exile())
-
-    # add_targets("Chronostutter", ['creature'])
-    # add_play_func_with_targets("Chronostutter",
-    #                             lambda self, t, l:
-    #                                 t[0].change_zone(t[0].owner.library, 1, False))
-
-    # add_trigger("Coral Barrier", triggers.triggerConditions.onEtB,
-    #         lambda self: self.controller.create_token('1/1 blue Squid', 1, 'Islandwalk'))
-
-    # add_targets("Hydrosurge", ['creature'])
-    # add_play_func_with_targets("Hydrosurge",
-    #                             lambda self, t, l: t[0].add_effect('modifyPT',
-    #                                                          (-5, 0), self, self.game.eot_time))
-
-    # add_targets("Mind Sculpt", ['opponent'])
-    # add_play_func_with_targets("Mind Sculpt",
-    #                             lambda self, t, l: t[0].mill(7))
-
-
-    # add_targets("Peel from Reality", [lambda self, p: p.zone.zone_type == zone.ZoneType.BATTLEFIELD
-    #                          and p.is_creature and p.controller is self.controller,
-    #                                   lambda self, p: p.zone.zone_type == zone.ZoneType.BATTLEFIELD
-    #                          and p.is_creature and p.controller is not self.controller],
-    #                                  ['Choose target creature you control\n',
-    #                                   "Choose target creature you don't control\n"])
-    # add_play_func_with_targets("Peel from Reality",
-    #                             lambda self, t, l: [t[i].bounce() for i in range(2) if l[i]])
+    add_activated_ability("Grindclock", "T",
+            "self.targets_chosen[0].mill(self.card.num_counters('Charge'))",
+            ['player'])

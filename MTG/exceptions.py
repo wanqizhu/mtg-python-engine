@@ -12,3 +12,6 @@ class DeckListFormatException(Exception):
 
 class ResetGameException(Exception):
 	pass
+
+class CardNotImplementedException(Exception):
+	pass

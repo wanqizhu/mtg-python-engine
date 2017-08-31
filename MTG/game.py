@@ -92,16 +92,16 @@ class Game(object):
 
         return did_something
 
-    def get_zone(self, zone_type, player=None):
-        return {
-            ZoneType.LIBRARY: player.library,
-            ZoneType.HAND: player.hand,
-            ZoneType.BATTLEFIELD: player.battlefield,
-            ZoneType.GRAVEYARD: player.graveyard,
-            ZoneType.STACK: self.stack,
-            ZoneType.EXILE: player.exile,
-            # ZoneType.COMMAND: player.command
-        }[zone_type]
+    # def get_zone(self, zone_type, player=None):
+    #     return {
+    #         ZoneType.LIBRARY: player.library,
+    #         ZoneType.HAND: player.hand,
+    #         ZoneType.BATTLEFIELD: player.battlefield,
+    #         ZoneType.GRAVEYARD: player.graveyard,
+    #         ZoneType.STACK: self.stack,
+    #         ZoneType.EXILE: player.exile,
+    #         # ZoneType.COMMAND: player.command
+    #     }[zone_type]
 
     # TODO
     def apply_state_based_actions(self):
@@ -239,9 +239,11 @@ class Game(object):
 
         if step is gamesteps.Step.DECLARE_ATTACKERS:
 
-            GAME_PREVIOUS_STATE = deepcopy(self)
+            # GAME_PREVIOUS_STATE = deepcopy(self)
             ok = False
             while not ok:
+                pending_attackers = {p: [] for p in self.players_list}
+
                 avaliable_attackers = []
                 self.apply_to_battlefield(
                     lambda p: avaliable_attackers.append(p),
@@ -274,9 +276,9 @@ class Game(object):
                             for ind in answer:
                                 ind = int(ind)
                                 if ind < len(avaliable_attackers):
-                                    avaliable_attackers[ind].attacks(
-                                        defender)
-                                    avaliable_attackers[ind].tap()
+                                    pending_attackers[defender].append(avaliable_attackers[ind])
+                                    # avaliable_attackers[ind].attacks(
+                                        # defender)
 
                                 else:
                                     print("creature #{} is out of bounds\n"
@@ -288,12 +290,26 @@ class Game(object):
                             print("wrong format: {}\n".format(ind))
                             continue
 
+                # simulate attacking
+                for defender, atkrs in pending_attackers.items():
+                    for atkr in atkrs:
+                        atkr.status.is_attacking = defender
+
                 ok = combat.check_valid_attack(self.current_player)
+
+                # reset simulation
+                for defender, atkrs in pending_attackers.items():
+                    for atkr in atkrs:
+                        atkr.status.is_attacking = []
 
                 if not ok:
                     print("Illegal attack; rewind\n\n")
-                    self = deepcopy(GAME_PREVIOUS_STATE)
-                    break
+                    # self = deepcopy(GAME_PREVIOUS_STATE)
+                    continue
+                else:
+                    for defender, atkrs in pending_attackers.items():
+                        for atkr in atkrs:
+                            atkr.attacks(defender)
 
             for creature in avaliable_attackers:
                 print("{} is attacking {}\n".format(
@@ -306,9 +322,10 @@ class Game(object):
 
             # MULTIPLAYER: refactor code / when-to-rewind
 
-            GAME_PREVIOUS_STATE = deepcopy(self)
+            # GAME_PREVIOUS_STATE = deepcopy(self)
             ok = False
             while not ok:
+                pending_blocks = []
 
                 for defender in self.players_list:
                     if defender == self.current_player:  # only current player's opponents need to block
@@ -333,6 +350,7 @@ class Game(object):
 
                             # declare blockers
 
+
                             for attacking_creature in currently_attacking:
                                 _ok = False
                                 while not _ok:
@@ -350,8 +368,7 @@ class Game(object):
                                         for ind in answer:
                                             ind = int(ind)
                                             if ind < len(can_block):
-                                                can_block[ind].blocks(
-                                                    attacking_creature)
+                                                pending_blocks.append((can_block[ind], attacking_creature))
                                             else:
                                                 print(
                                                     "creature #{} is out of bounds\n".format(ind))
@@ -366,13 +383,27 @@ class Game(object):
 
                     # TODO: attacker declare multi-block dmg order
                     # TODO: check for menace
+
+                    # simulate blocker.blocks(attacker) without causing any triggers
+                    for blocker, attacker in pending_blocks:
+                        blocker.status.is_blocking.append(attacker)
                     ok = combat.check_valid_block(
                         self.current_player, defender)
 
+                    # clear simulation
+                    for blocker, attacker in pending_blocks:
+                        blocker.status.is_blocking.remove(attacker)
+
+
                     if not ok:
                         print("Illegal block; rewind\n\n")
-                        self = GAME_PREVIOUS_STATE
+                        
+                        # self = GAME_PREVIOUS_STATE
                         break
+                    else:
+                        # legal block; actually execute blocking action
+                        for blocker, attacker in pending_blocks:
+                            blocker.blocks(attacker)
 
             for creature in currently_attacking:
                 print("{} is attacking {}\n".format(

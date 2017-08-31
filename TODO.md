@@ -13,7 +13,6 @@
 
 
 - Activated Abilities
- - ability have a target
  - IMPLEMENT COSTS OTHER THAN TAP
  	- sacrifice ~
  	- function signatures in general (?)
@@ -21,7 +20,7 @@
  		- raise error if illegal
  		- return False if did nothing
 
- - make a separate class for abilities/spells that share targeting system, etc.
+
  	- optional targeting (up to ...)
 
  	- target legality issues -- what if target changes zones (e.g. flicker?) NEED TO RESOLVE
@@ -43,8 +42,8 @@ rules: http://media.wizards.com/2017/downloads/MagicCompRules_20170707.pdf
 
 
 KNOWN BUGS
-	- non-active player would get priority first if they cast a spell during active player's turn (fixed??)
-	- if target selection fails, the card disappears instead of returning to hand
+
+	- invalid card names should raise NotImplementedError
 
 
 
@@ -144,6 +143,8 @@ Aetherspouts
 - Peel from Reality
 - Hydrosurge
 
+Grindclock
+
 
 ---
 
@@ -164,7 +165,7 @@ Constricting Sliver - giving ability to others; etb abilities
 
 Dauntless River Marshal - activated ability
 
-Devouring Light - convoke
+
 
 Divine Favor - aura
 

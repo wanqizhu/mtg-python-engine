@@ -5,7 +5,7 @@
 # ##############################
 # Name
 
-# 	Abilities
+# 	Abilities:
 # 		cost: effect
 # 		cost: eff-
 # 					ect; continuing lines by indenting
@@ -17,7 +17,7 @@
 # 		but this is a new cost: new effect
 
 
-# 	Targets
+# 	Targets:
 # 		# criterias will be called using
 # 		# lambda self, p: __criteria__
 
@@ -27,7 +27,7 @@
 # 		'creature'
 
 
-# 	Triggers
+# 	Triggers:
 # 		triggerCondition
 # 			effect
 
@@ -160,8 +160,8 @@ Soulmender
 Solemn Offerings
 
 	Targets:
-		p.zone.zone_type == zone.ZoneType.BATTLEFIELD
-																 and (p.is_artifact or p.is_enchantment)
+		p.is_permanent
+					and (p.is_artifact or p.is_enchantment)
 
 	targets[0].destroy()
 	self.controller.gain_life(4)
@@ -209,7 +209,7 @@ Ulcerate
 Zof Shade
 
 	Abilities:
-		2B: self.add_effect('modifyPT', (2, 2), self, self.game.eot_time)
+		2B: self.card.add_effect('modifyPT', (2, 2), self, self.game.eot_time)
 
 
 
@@ -227,7 +227,7 @@ Mind Rot
 Shadowcloak Vampire
 
 	Abilities:
-		Pay 2 life: self.add_effect('gainAbility', 'Flying', self, self.game.eot_time)
+		Pay 2 life: self.card.add_effect('gainAbility', 'Flying', self, self.game.eot_time)
 
 
 
@@ -288,8 +288,7 @@ Aetherspouts
 Devouring Light
 
 	Targets:
-		p.zone.zone_type == zone.ZoneType.BATTLEFIELD
-												 and (p.is_creature and p.in_combat)
+		p.is_permanent and (p.is_creature and p.in_combat)
 
 	targets[0].exile()
 
@@ -313,8 +312,7 @@ Meditation Puzzle
 Pillar of Light
 
 	Targets:
-		p.zone.zone_type == zone.ZoneType.BATTLEFIELD
-												 and (p.is_creature and p.toughness >= 4)
+		p.is_permanent and (p.is_creature and p.toughness >= 4)
 
 	targets[0].exile()
 
@@ -364,19 +362,25 @@ Mind Sculpt
 Peel from Reality
 
 	Targets:
-		p.zone.zone_type == zone.ZoneType.BATTLEFIELD
-										and p.is_creature and p.controller is self.controller
+		p.is_permanent and p.is_creature
+					   and p.controller is self.controller
 			Prompt:
-				"Choose target creature you control\n"
+				Choose target creature you control\n
 
-		p.zone.zone_type == zone.ZoneType.BATTLEFIELD
-												 and p.is_creature and p.controller is not self.controller
+		p.is_permanent and p.is_creature
+					   and p.controller is not self.controller
 			Prompt:
-				"Choose target creature you don't control\n"
+				Choose target creature you don't control\n
 
 
 	[targets[i].bounce() for i in range(2) if is_legal_target[i]]
 
 
+
+##############################
+Grindclock
+
+	Abilities:
+		T: self.card.add_counter("Charge")
 
 ##############################

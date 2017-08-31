@@ -129,6 +129,24 @@ class Player():
                         card = self.hand.get_card_by_name(name)
                         assert card
 
+
+                    # timing & restrictions
+                    can_play = True
+                    if card.is_land and self.landPlayed >= self.landPerTurn:
+                        can_play = False
+
+                    if not (card.is_instant or card.has_ability('Flash')) and (
+                            self.game.stack
+                            or self.game.step.phase not in [
+                                gamesteps.Phase.PRECOMBAT_MAIN,
+                                gamesteps.Phase.POSTCOMBAT_MAIN]
+                            or not self.is_active):
+                        can_play = False
+
+                    # choose targets
+                    can_target = card.targets()
+
+
                     # pay mana costs
                     cost = card.manacost
                     creatures_to_tap = []
@@ -170,23 +188,7 @@ class Player():
                                 print("error processing creature for convoke")
                                 pass
 
-                    can_pay = self.mana.canPay(cost)
-
-                    # timing & restrictions
-                    can_play = True
-                    if card.is_land and self.landPlayed >= self.landPerTurn:
-                        can_play = False
-
-                    if not (card.is_instant or card.has_ability('Flash')) and (
-                            self.game.stack
-                            or self.game.step.phase not in [
-                                gamesteps.Phase.PRECOMBAT_MAIN,
-                                gamesteps.Phase.POSTCOMBAT_MAIN]
-                            or not self.is_active):
-                        can_play = False
-
-                    # choose targets
-                    can_target = card.targets()
+                    can_pay = self.mana.canPay(cost) 
 
                     if can_pay and can_target and can_play:
                         self.hand.remove(card)
@@ -196,13 +198,6 @@ class Player():
 
                         print("{} playing {} targeting {}\n".format(self, card, card.targets_chosen))
                         _play = play.Play(card.play_func,
-                                          apply_condition=(lambda: any(
-                                              [c(card, t) for c, t in zip(
-                                                  card.target_criterias,
-                                                  card.targets_chosen)
-                                               ])
-                                              if card.targets_chosen
-                                              else True),
                                           card=card)
                         # special actions
                         if card.is_land:
@@ -237,14 +232,10 @@ class Player():
                     # if card._activated_abilities_costs_validation[nums[1]](card):
                     # TODO: target validation
                     PLAYER_PREVIOUS_STATE = deepcopy(self)
-                    if card._activated_abilities_costs[nums[1]](card):
+                    # if card._activated_abilities_costs[nums[1]](card):
+                    if card.activated_abilities[nums[1]].can_activate():
                         # TODO: make each ability have its own description/name for printing
-                        name = card.name + \
-                            ' activated ability #' + str(nums[1])
-                        _play = play.Play(
-                            lambda: card.activate_ability(nums[1]), name=name)
-                        if card.activated_abilities[nums[1]][2]:  # special action
-                            _play.is_mana_ability = True
+                        _play = card.activate_ability(nums[1])
                     else:
                         raise ResetGameException
 

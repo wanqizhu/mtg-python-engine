@@ -20,6 +20,7 @@ class ZoneType(Enum):
 
 class Zone():
     is_library = False
+    is_battlefield = False
 
     def __init__(self, controller=None, elements: list=None):
         if elements is None:
@@ -78,6 +79,7 @@ class Zone():
 
         try:
             self.elements.remove(obj)
+            obj.zone = None
             return True
         except ValueError:
             return False
@@ -114,7 +116,8 @@ class Zone():
 
 
 class Battlefield(Zone):
-    zone_type = ZoneType.BATTLEFIELD
+    zone_type = 'BATTLEFIELD'
+    is_battlefield = True
 
     def add(self, obj):
         if type(obj) is str:  # convert string (card's name) to a Card object
@@ -133,27 +136,27 @@ class Battlefield(Zone):
 
 
 class Stack(Zone):
-    zone_type = ZoneType.STACK
+    zone_type = 'STACK'
     pass
 
 
 class Hand(Zone):
-    zone_type = ZoneType.HAND
+    zone_type = 'HAND'
     pass
 
 
 class Graveyard(Zone):
-    zone_type = ZoneType.GRAVEYARD
+    zone_type = 'GRAVEYARD'
     pass
 
 
 class Exile(Zone):
-    zone_type = ZoneType.EXILE
+    zone_type = 'EXILE'
     pass
 
 
 class Library(Zone):
-    zone_type = ZoneType.LIBRARY
+    zone_type = 'LIBRARY'
     is_library = True
 
     def shuffle(self):
@@ -187,5 +190,8 @@ class Library(Zone):
             self.shuffle()
 
         return obj
+
+    def remove(self, obj):
+        super(Battlefield, self).remove(self, obj)
 
 

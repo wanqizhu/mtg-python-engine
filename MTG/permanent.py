@@ -13,6 +13,7 @@ from MTG import cardtype
 from MTG import mana
 from MTG import triggers
 from MTG import play
+from MTG import abilities
 
 
 class Status():
@@ -159,16 +160,12 @@ class Permanent(gameobject.GameObject):
 
         if original_card:
             self.attributes = original_card.attributes
-            self.activated_abilities = original_card.activated_abilities
-            # self._activated_abilities_costs_validation = original_card._activated_abilities_costs_validation
-            self._activated_abilities_costs = original_card._activated_abilities_costs
-            self._activated_abilities_effects = original_card._activated_abilities_effects
+            self.activated_abilities = [abilities.ActivatedAbility(self, *params)
+                                        for params in original_card.activated_abilities]
             self.trigger_listeners = original_card.trigger_listeners
         else:
             self.attributes = []
             self.activated_abilities = []
-            self._activated_abilities_costs = []
-            self._activated_abilities_effects = []
             self.trigger_listeners = {}
 
         self.controller.battlefield.add(self)
@@ -183,12 +180,13 @@ class Permanent(gameobject.GameObject):
                 self.timestamp))
 
     def activate_ability(self, num=0):
-        # if self._activated_abilities_costs_validation[num](self):
-        print("activating... {}".format(self.activated_abilities[num]))
+        print("activating ability... {}".format(self.activated_abilities[num]))
         # pdb.set_trace()
-        self._activated_abilities_effects[num](self)
-        return True
-        # return False
+        # self._activated_abilities_effects[num](self)
+        name = self.name + ' activated ability #' + str(num)
+        return play.Play(
+                    lambda: self.activated_abilities[num].resolve(), source=self.activated_abilities[num],
+                    name=name, is_mana_ability=self.activated_abilities[num].is_mana_ability)
 
     def clear_modifier(self):
         """Clears end-of-turn effects"""
@@ -303,6 +301,7 @@ class Permanent(gameobject.GameObject):
     def attacks(self, player):
         # trigger
         self.status.is_attacking = player
+        self.tap()
 
     def blocks(self, creature):
         if self.can_block(creature):
@@ -387,17 +386,14 @@ class Permanent(gameobject.GameObject):
             self.controller.pending_triggers.extend(
                 [play.Play(lambda: effect(self),
                            apply_condition=lambda: requirements(self),
-                           card=self)
+                           source=self)
                  for effect, requirements in self.trigger_listeners[condition]
                  if effect is not None and requirements(self)])
 
     def dies(self):
         # trigger
         print("{} has died\n".format(self))
-        self.controller.battlefield.remove(self)
-        c = self.original_card
-        c.previousState = self
-        self.controller.graveyard.add(c)
+        self.change_zone(self.controller.graveyard)
 
     def destroy(self):
         #trigger
@@ -418,6 +414,10 @@ class Permanent(gameobject.GameObject):
 
     def add_counter(self, counter, num=1):
         self.status.counters[counter] += num
+
+    def num_counters(self, counter):
+        return self.status.counters[counter]
+
 
 
 

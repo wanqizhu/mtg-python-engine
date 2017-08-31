@@ -42,30 +42,6 @@ class TestPlayer(unittest.TestCase):
                 self.assertTrue(self.player.lost)
                 self.assertTrue(self.player not in self.GAME.players_list)
 
-    # def test_rewind_to_previous_state(self):
-    #     """Make sure deepcopy resets everything"""
-    #     previous_state = deepcopy(self.GAME)
-
-    #     self.player.take_damage(None, 13)
-    #     self.player.discard(3)
-    #     self.player.mana.add(mana.Mana.RED, 13)
-    #     self.player.battlefield.add("Island")
-    #     self.GAME.stack.add("Sewn-Eye Drake")
-    #     self.assertEqual(self.player.life, 7)
-    #     self.assertEqual(len(self.player.hand), 4)
-    #     self.assertFalse(self.player.mana.is_empty())
-    #     self.assertTrue(self.GAME.stack)
-    #     self.assertTrue(self.player.battlefield)
-
-    #     self.GAME = previous_state
-    #     self.player = self.GAME.players_list[0]
-
-    #     self.assertEqual(self.player.life, 20)
-    #     self.assertEqual(len(self.player.hand), 7)
-    #     self.assertTrue(self.player.mana.is_empty())
-    #     self.assertFalse(self.GAME.stack)
-    #     self.assertFalse(self.player.battlefield)
-
     def test_skip_priority(self):
         with mock.patch('builtins.input', return_value='s upkeep'):
             self.assertTrue(self.GAME.handle_turn())
@@ -537,7 +513,7 @@ class TestPlayer(unittest.TestCase):
                 'p Ulcerate', 'b 0',  # target
                 '', '',
                 '__self.tmp = self.tmp and self.battlefield[0].toughness == 1',
-                'p Titanic Growth', '', 'b 0',  # target
+                'p Titanic Growth', 'b 0', '', # target
                 '', '',
                 '__self.tmp = self.tmp and self.battlefield[0].toughness == 5',
                 's upkeep',
@@ -644,6 +620,22 @@ class TestPlayer(unittest.TestCase):
             self.assertEqual(len(self.opponent.battlefield), 0)
             self.assertEqual(self.player.life, 20)
             self.assertEqual(len(self.player.graveyard), 10)  # 7 discarded + 3 spells cast
+
+
+    def test_activated_ability_targeting(self):
+        """Testing Grindclock: mill based on # counters"""
+        with mock.patch('builtins.input', side_effect=[
+                '', '',
+                '__self.battlefield.add("Grindclock")',
+                'a 0_1', 'p',  # mill myself; the amount should be checked on RESOLUTION
+                '__self.battlefield[0].untap()',
+                'a 0_0',
+                '__self.battlefield[0].untap()',
+                'a 0_0',  # put 2 charge counters; activated in respond, so they should resolve first
+                's upkeep', 's upkeep'
+        ]):
+            self.GAME.handle_turn()
+            self.assertEqual(len(self.player.graveyard), 2)  # mill 2 cards
 
 
     # def test_trigger_ordering(self):

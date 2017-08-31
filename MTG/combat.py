@@ -14,8 +14,8 @@ def check_valid_block(attacker, defender):
             if not creature.can_block(creature.status.is_blocking):
                 return False
     # TODO: can't block alone
-    for creature in attacker.battlefield:
-        if creature.is_creature:
-            target = creature.status.is_attacking
+    # for creature in attacker.battlefield:
+    #     if creature.is_creature:
+    #         target = creature.status.is_attacking
             # if target
     return True

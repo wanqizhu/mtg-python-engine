@@ -66,10 +66,6 @@ class GameObject():
         self.effects = defaultdict(lambda: SortedListWithKey(
                                            [], lambda x : x.timestamp))
 
-    @property
-    def owner(self):
-        return self._owner if self._owner else self.controller
-
     def __repr__(self):
         # pdb.set_trace()
         return '%r in %r' % (self.name,
@@ -77,6 +73,18 @@ class GameObject():
 
     def __str__(self):
         return self.name
+
+    @property
+    def owner(self):
+        return self._owner if self._owner else self.controller
+
+    @property
+    def is_permanent(self):
+        return self.zone.zone_type == 'BATTLEFIELD' if self.zone else False
+
+    @property
+    def is_spell(self):
+        return self.zone.zone_type == 'STACK' if self.zone else False
 
     @property
     def name(self):
@@ -157,9 +165,16 @@ class GameObject():
     def change_zone(self, target_zone, from_top=0, shuffle=True):
         current_zone = self.zone
         if current_zone.remove(self):
-            if target_zone.is_library:
-                return target_zone.add(self, from_top, shuffle)
+            if current_zone.is_battlefield:
+                # shift from permanent back to card
+                c = self.original_card
+                c.previousState = self
             else:
-                return target_zone.add(self)
+                c = self
+
+            if target_zone.is_library:
+                return target_zone.add(c, from_top, shuffle)
+            else:
+                return target_zone.add(c)
 
         return False
