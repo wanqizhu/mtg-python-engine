@@ -2,6 +2,7 @@ import sys
 import pickle
 import math
 import re
+from collections import namedtuple
 
 from MTG.parsedcards import *
 from MTG.exceptions import *
@@ -115,6 +116,7 @@ def add_activated_ability(cardname, cost, effect, target_criterias=None, prompts
     if target_criterias:
         target_criterias = helper_funcs.parse_targets(target_criterias)
 
+    # same signature as abilities.ActivatedAbilities.init
     card.activated_abilities.append((costs, effect, target_criterias, prompts, is_mana_ability))
 
 
@@ -154,7 +156,10 @@ def add_play_func_no_target(cardname, outcome=lambda self: True):
     card.play_func = outcome
 
 
-def add_trigger(cardname, condition, effect, requirements=lambda self: True):
+
+
+def add_trigger(cardname, condition, effect, requirements=lambda self: True,
+                target_criterias=None, target_prompts=None):
     """
     Each effect is a function of the form
         lambda self: do_something
@@ -168,19 +173,29 @@ def add_trigger(cardname, condition, effect, requirements=lambda self: True):
         return
     card = card_from_name(cardname, get_instance=False)
 
+    if not requirements:
+        requirements = lambda self: True
+
     # make it a variable specific to card rather than a card.Card class var
     # normally, trigger_listeners is defined in card.Card,
     # and our parsed card classes just inherit that
-    if card.trigger_listeners == {}:
-        card.trigger_listeners = {}
+    if card.triggers == {}:
+        card.triggers = {}
 
-    if condition not in card.trigger_listeners:
-        card.trigger_listeners[condition] = []
+    if condition not in card.triggers:
+        card.triggers[condition] = []
+
+
+    if target_criterias:
+        target_criterias = helper_funcs.parse_targets(target_criterias)
+        if not target_prompts:
+            target_prompts = ["Choose a target\n"] * len(target_criterias)
 
     # each element in the dict is a list of triggers, since there could be multiple abilities
     # that trigger from the same effect, e.g. tap AND draw a card on etb
     # each of them will go into a separate play.Play object and be put onto the stack
-    card.trigger_listeners[condition].append((effect, requirements))
+    card.triggers[condition].append((effect, requirements,
+                                     target_criterias, target_prompts))
 
 
 
@@ -316,16 +331,16 @@ def parse_card_from_lines(lines, log=None):
     if _triggers:
         for trig in _triggers:
             if len(trig) == 2:
-                str_to_exe += "add_trigger(%r, triggers.triggerConditions[%r], eval(%r))\n" % (
+                str_to_exe += "add_trigger(%r, triggers.triggerConditions[%r], %r)\n" % (
                                     name,
                                     trig[0],
-                                    "lambda self: [" + ', '.join(trig[1]) + ']')
+                                    '[' + ', '.join(trig[1]) + ']')
 
             else:  # optional trigger requirements
-                str_to_exe += "add_trigger(%r, triggers.triggerConditions[%r], eval(%r), eval(%r))\n" % (
+                str_to_exe += "add_trigger(%r, triggers.triggerConditions[%r], %r, eval(%r))\n" % (
                                     name,
                                     trig[0],
-                                    "lambda self: [" + ', '.join(trig[1]) + ']',
+                                    '[' + ', '.join(trig[1]) + ']',
                                     "lambda self: " + trig[2])
 
 
@@ -374,3 +389,8 @@ def set_up_cards(FILES=['data/cards.txt']):
     add_activated_ability("Grindclock", "T",
             "self.targets_chosen[0].mill(self.card.num_counters('Charge'))",
             ['player'])
+
+    add_trigger("Kinsbaile Skirmisher", triggers.triggerConditions['onEtB'],
+            '[self.targets_chosen[0].add_effect("modifyPT", (1, 1), self, self.game.eot_time)]',
+            requirements=None,
+            target_criterias=['creature'])

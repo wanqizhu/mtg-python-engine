@@ -1,11 +1,9 @@
 - TEST CASES!!! (break them down into SMALLER units)
 
-- add ID to each card/gameobject
-
-
 - make Stack / play.Play object more readable
    - add more descriptors for printout
 
+- make parser parse targeted activated/triggered abilities
 
 
 - other cost modifiers
@@ -24,7 +22,6 @@
  	- optional targeting (up to ...)
 
  	- target legality issues -- what if target changes zones (e.g. flicker?) NEED TO RESOLVE
- 		- what about multi-target spells where some of the targets are illegal?
 
 - Static Abilities
 

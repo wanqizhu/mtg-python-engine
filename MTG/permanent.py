@@ -16,20 +16,6 @@ from MTG import play
 from MTG import abilities
 
 
-class Status():
-    def __init__(self):
-        self.tapped = False
-        self.flipped = False
-        self.face_up = True
-        self.phased_in = True
-        self.summoning_sick = True
-        self.damage_taken = 0
-        self.is_attacking = []
-        self.is_blocking = []
-        self.counters = defaultdict(lambda: 0)
-
-    def __repr__(self):
-        return str(self.__dict__)
 
 
 class Modifier():
@@ -133,6 +119,41 @@ class Modifier():
             self.applied = False
 
 
+
+class Status():
+    def __init__(self):
+        self.tapped = False
+        self.flipped = False
+        self.face_up = True
+        self.phased_in = True
+        self.summoning_sick = True
+        self.damage_taken = 0
+        self.is_attacking = []
+        self.is_blocking = []
+        self.counters = defaultdict(lambda: 0)
+
+    def __repr__(self):
+        return str(self.__dict__)
+
+
+    def __str__(self):
+        s = []
+        s.append('tapped' if self.tapped else '')
+        s.append('flipped' if self.flipped else '')
+        s.append('face down' if not self.face_up else '')
+        s.append('phased out' if not self.phased_in else '')
+        s.append('is summoning sick' if self.summoning_sick else '')
+        s.append('has taken %i damage' % self.damage_taken if self.damage_taken else '')
+        s.append('is attacking %s' % str(self.is_attacking) if self.is_attacking else '')
+        s.append('is blocking %s' % str(self.is_blocking) if self.is_blocking else '')
+        s.extend(['has %i %s counters' % (num, name)
+                        for name, num in self.counters.items()
+                        if num > 0])
+
+        # remove empty ''
+        return 'Status: ' + ', '.join([i for i in s if i])
+
+
 # used in Permanent().effects
 Effect = namedtuple('Effect', ['value', 'source', 'expiration', 'timestamp'])
 
@@ -162,7 +183,9 @@ class Permanent(gameobject.GameObject):
             self.attributes = original_card.attributes
             self.activated_abilities = [abilities.ActivatedAbility(self, *params)
                                         for params in original_card.activated_abilities]
-            self.trigger_listeners = original_card.trigger_listeners
+            # params[0] is the trigger condition
+            self.trigger_listeners = {condition: [abilities.TriggeredAbility(self, *params) for params in trigs]
+                                      for condition, trigs in original_card.triggers.items()}
         else:
             self.attributes = []
             self.activated_abilities = []
@@ -174,6 +197,11 @@ class Permanent(gameobject.GameObject):
         print("making permanent... {}\n".format(self))
 
     def __repr__(self):
+        return (self.__str__() +
+                '\nowner: %s\n' % str(self.owner if self.owner else 'None') +
+                str(self.status))
+
+    def __str__(self):
         return ('%s controlled by %s (timestamp: %s)' % (
                 super(Permanent, self).__repr__(),
                 str(self.controller if self.controller else 'None'),
@@ -223,7 +251,7 @@ class Permanent(gameobject.GameObject):
         if (self.status.tapped):
             self.status.tapped = False
             return True
-            # self.untapTrigger()
+            # self.untapTrigger
         return False
 
     # power/toughness layering -- see rule 613.3
@@ -384,11 +412,8 @@ class Permanent(gameobject.GameObject):
             print("Trigger to be process at next priority...\n")
 
             self.controller.pending_triggers.extend(
-                [play.Play(lambda: effect(self),
-                           apply_condition=lambda: requirements(self),
-                           source=self)
-                 for effect, requirements in self.trigger_listeners[condition]
-                 if effect is not None and requirements(self)])
+                [trig for trig in self.trigger_listeners[condition]
+                 if trig is not None and trig.condition_satisfied()])
 
     def dies(self):
         # trigger

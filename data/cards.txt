@@ -133,8 +133,8 @@ Ajani's Pridemate
 
 	Triggers:
 		onControllerLifeGain
-			self.add_counter("+1/+1") if self.controller.make_choice(
-							"Would you like to put a +1/+1 counter on %r?" % self)
+			self.card.add_counter("+1/+1") if self.controller.make_choice(
+							"Would you like to put a +1/+1 counter on %r?" % self.card)
 																else None
 
 

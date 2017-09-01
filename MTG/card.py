@@ -17,7 +17,7 @@ class Card(gameobject.GameObject):
     target_prompts = None
     targets_chosen = None
 
-    trigger_listeners = {}
+    triggers = {}
 
     activated_abilities = []
 

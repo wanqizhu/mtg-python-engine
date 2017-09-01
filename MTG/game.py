@@ -154,15 +154,16 @@ class Game(object):
                             ans = ans.split(" ")
                             for ind in ans:
                                 ind = int(ind)
-                                triggers.append(p.pending_triggers[ind])
+                                triggers.append(p.pending_triggers[ind].put_on_stack())
                         except (IndexError, ValueError):
                             pass
 
                     for trig in p.pending_triggers:
                         if trig not in triggers:
-                            triggers.append(trig)
+                            triggers.append(trig.put_on_stack())
 
-                    self.stack.elements.extend(triggers)
+
+                    self.stack.elements.extend([t for t in triggers if t is not None])
                     p.pending_triggers = []
                     self.passed_priority = 0
 

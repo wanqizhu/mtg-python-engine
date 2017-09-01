@@ -638,6 +638,31 @@ class TestPlayer(unittest.TestCase):
             self.assertEqual(len(self.player.graveyard), 2)  # mill 2 cards
 
 
+    def test_triggered_ability_targeting(self):
+        """Testing Kinsbaile Skirmisher"""
+        with mock.patch('builtins.input', side_effect=[
+                's main', 's main',
+                '__self.battlefield.add("Soulmender")',
+                '__self.draw_card("Kinsbaile Skirmisher")',
+                '__self.draw_card("Kinsbaile Skirmisher")',
+                '__self.mana.add(mana.Mana.WHITE, 4)',
+                'p Kinsbaile Skirmisher',
+                '', '',
+                'b 0',
+                '', '',
+                '__self.tmp = [self.battlefield[0].power == 2]',  # buffed soulmender
+                'p Kinsbaile Skirmisher',
+                '', '',
+                'b 2',  # buff itself
+                '', '',
+                '__self.tmp.append(self.battlefield[2].toughness == 3)',
+                's upkeep', 's upkeep'
+        ]):
+            self.player.autoPayMana = True
+            self.GAME.handle_turn()
+            self.assertTrue(all(self.player.tmp))
+
+
     # def test_trigger_ordering(self):
         """ Test trigger ordering"""
         # with mock.patch('builtins.input', side_effect=[

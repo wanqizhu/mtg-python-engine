@@ -35,6 +35,9 @@ class Play(object):
         if not targets_chosen and card:
             self.targets_chosen = card.targets_chosen
             self.target_criterias = card.target_criterias
+        elif not targets_chosen and source:
+            self.targets_chosen = source.targets_chosen
+            self.target_criterias = source.target_criterias
 
 
     def __repr__(self):

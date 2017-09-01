@@ -68,8 +68,9 @@ class GameObject():
 
     def __repr__(self):
         # pdb.set_trace()
-        return '%r in %r' % (self.name,
-                             self.zone.zone_type if self.zone else 'None')
+        return '%r in %r (ID: %r)' % (self.name,
+                             self.zone.zone_type if self.zone else 'None',
+                             id(self))
 
     def __str__(self):
         return self.name

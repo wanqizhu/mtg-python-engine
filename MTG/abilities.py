@@ -1,6 +1,7 @@
 from enum import Enum
 from MTG import mana
 from MTG import helper_funcs
+from MTG import play
 
 class StaticAbilities(Enum):
     Deathtouch = 0
@@ -60,3 +61,39 @@ class ActivatedAbility():
             self.targets_chosen = targets_chosen
 
         return targets_chosen and (lambda self: eval(cost))(_card)
+
+
+class TriggeredAbility():
+    def __init__(self, card, effect, requirements, target_criterias=None, prompts=None):
+        self.card = card
+        self.controller = card.controller
+        self.game = self.controller.game
+        self.effect = effect
+        self.requirements = requirements
+        self.target_criterias = target_criterias
+        if target_criterias and not prompts:
+            prompts = ["Choose a target\n"] * len(target_criterias)
+        self.target_prompts = prompts
+        self.targets_chosen = []
+
+    def resolve(self):
+        return eval(self.effect)
+
+    def condition_satisfied(self):
+        return self.requirements(self.card)
+
+    def choose_targets(self):
+        targets_chosen = helper_funcs.choose_targets(self)
+        if isinstance(targets_chosen, list):
+            self.targets_chosen = targets_chosen
+        
+        return targets_chosen
+
+
+    def put_on_stack(self):
+        if self.choose_targets():
+            return play.Play(lambda: self.resolve(),
+                               apply_condition=lambda: self.condition_satisfied(),
+                               name=self.card.name + ' triggered ability ' + str(self),
+                               source=self)
+        return None
