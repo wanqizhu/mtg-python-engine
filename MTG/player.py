@@ -18,7 +18,7 @@ class Player():
     def __init__(self, deck, name='player',
                  startingLife=20, maxHandSize=7, game=None):
         self.name = name
-        # self.ID = None
+        self.timestamp = -1
         self.life = startingLife
         self.startingLife = startingLife
         self.maxHandSize = maxHandSize
@@ -114,6 +114,9 @@ class Player():
                 elif answer == 'mana':
                     print(self.mana)
 
+                elif answer == 'testsetup':
+                    self.mana.add_str('WWWWWUUUUUBBBBBRRRRRGGGGG11111')
+
                 elif answer == 'debug':
                     # pdb.set_trace()
                     pass
@@ -144,51 +147,53 @@ class Player():
                         can_play = False
 
                     # choose targets
-                    can_target = card.targets()
+                    if can_play:
+                        can_target = card.targets()
 
 
                     # pay mana costs
-                    cost = card.manacost
-                    creatures_to_tap = []
+                    if can_play and can_target:
+                        cost = card.manacost
+                        creatures_to_tap = []
 
-                    if card.has_ability("Convoke"):
-                        untapped_creatures = [
-                            c for c in self.creatures if not c.status.tapped]
-                        print("Your creatures: {}".format(untapped_creatures))
-                        ans = self.make_choice("What creatures would you like to tap"
-                                               " to pay for %s? (Convoke) " % card)
+                        if card.has_ability("Convoke"):
+                            untapped_creatures = [
+                                c for c in self.creatures if not c.status.tapped]
+                            print("Your creatures: {}".format(untapped_creatures))
+                            ans = self.make_choice("What creatures would you like to tap"
+                                                   " to pay for %s? (Convoke) " % card)
 
-                        ans = ans.split(" ")
-                        for ind in ans:
-                            try:
-                                ind = int(ind)
-                                _creature = untapped_creatures[ind]
-                                if not _creature.status.tapped and _creature not in creatures_to_tap:
-                                    color = _creature.characteristics.color
-                                    if not color:
-                                        color = 'C'
-                                    elif len(color) > 1:
-                                        color = self.make_choice(
-                                            "What color would you like to add? {}".format(color))
-                                        assert color in mana.manachr
-                                    else:
-                                        color = color[0]
-
-                                    color = mana.chr_to_mana(color)
-                                    creatures_to_tap.append(_creature)
-                                    if cost[color]:
-                                        cost[color] -= 1
-                                    else:
-                                        if cost[mana.Mana.GENERIC]:
-                                            cost[mana.Mana.GENERIC] -= 1
+                            ans = ans.split(" ")
+                            for ind in ans:
+                                try:
+                                    ind = int(ind)
+                                    _creature = untapped_creatures[ind]
+                                    if not _creature.status.tapped and _creature not in creatures_to_tap:
+                                        color = _creature.characteristics.color
+                                        if not color:
+                                            color = 'C'
+                                        elif len(color) > 1:
+                                            color = self.make_choice(
+                                                "What color would you like to add? {}".format(color))
+                                            assert color in mana.manachr
                                         else:
-                                            raise ValueError
+                                            color = color[0]
 
-                            except (IndexError, ValueError):
-                                print("error processing creature for convoke")
-                                pass
+                                        color = mana.chr_to_mana(color)
+                                        creatures_to_tap.append(_creature)
+                                        if cost[color]:
+                                            cost[color] -= 1
+                                        else:
+                                            if cost[mana.Mana.GENERIC]:
+                                                cost[mana.Mana.GENERIC] -= 1
+                                            else:
+                                                raise ValueError
 
-                    can_pay = self.mana.canPay(cost) 
+                                except (IndexError, ValueError):
+                                    print("error processing creature for convoke")
+                                    pass
+
+                        can_pay = self.mana.canPay(cost) 
 
                     if can_pay and can_target and can_play:
                         self.hand.remove(card)
@@ -207,9 +212,9 @@ class Player():
                         # illegal casting, revert
                         if not can_pay:
                             print("Cannot pay mana costs\n")
-                        if not can_target:
+                        elif not can_target:
                             print("Cannot target\n")
-                        if not can_play:
+                        elif not can_play:
                             print("Cannot play this right now\n")
 
                 # activate ability from battlefield -- 'a 3_1' plays 2nd (index starts at 0) ability from 3rd permanent

@@ -21,6 +21,8 @@ class Card(gameobject.GameObject):
 
     activated_abilities = []
 
+    continuous_effects = ''
+
     def __init__(self, characteristics=gameobject.Characteristics(),
                  controller=None, owner=None, zone=None, previousState=None):
 

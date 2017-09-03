@@ -86,7 +86,7 @@ class TriggeredAbility():
         targets_chosen = helper_funcs.choose_targets(self)
         if isinstance(targets_chosen, list):
             self.targets_chosen = targets_chosen
-        
+
         return targets_chosen
 
 

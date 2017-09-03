@@ -384,3 +384,22 @@ Grindclock
 		T: self.card.add_counter("Charge")
 
 ##############################
+Battle Mastery
+
+	Aura:
+		Targets:
+			'creature'
+
+		self.add_ability("Double Strike")
+
+##############################
+Marked by Honor
+
+	Aura:
+		Targets:
+			'creature'
+
+		self.add_PT((2, 2))
+		self.add_ability("Vigilance")
+
+##############################

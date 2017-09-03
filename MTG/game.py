@@ -31,16 +31,17 @@ class Game(object):
     # Give each player their deck.
     def __init__(self, decks, test=False):
         self.stack = zone.Stack()
-        self.num_players = len(decks)
-        self.players_list = [player.Player(decks[i], 'player' + str(i), game=self)
-                             for i in range(self.num_players)]
-        # self.players = cycle(self.players_list)
         self.passed_priority = 0
         self.step = None
         self.pending_turns = []
         self.pending_steps = []
         self.test = test
         self.turn_num = 0
+        self.num_players = len(decks)
+        self.players_list = [player.Player(decks[i], 'player' + str(i), game=self)
+                             for i in range(self.num_players)]
+        # self.players = cycle(self.players_list)
+
         # self.previous_state = GAME_PREVIOUS_STATE
 
     def opponent(self, player):
@@ -114,6 +115,11 @@ class Game(object):
             lambda p: p.dies(),
             lambda p: p.is_creature and
                       p.status.damage_taken >= p.toughness)
+
+        self.apply_to_battlefield(
+            lambda p: p.change_zone(p.owner.graveyard),
+            lambda p: p.is_aura and
+                      p.enchant_target is None)
 
         # check for player death
         for _player in self.players_list:

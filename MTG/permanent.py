@@ -158,6 +158,7 @@ class Status():
 Effect = namedtuple('Effect', ['value', 'source', 'expiration', 'timestamp'])
 
 
+
 class Permanent(gameobject.GameObject):
     def __init__(self, characteristics, controller, owner=None, original_card=None, status=None, modifications=[]):
         self.characteristics = characteristics
@@ -186,13 +187,17 @@ class Permanent(gameobject.GameObject):
             # params[0] is the trigger condition
             self.trigger_listeners = {condition: [abilities.TriggeredAbility(self, *params) for params in trigs]
                                       for condition, trigs in original_card.triggers.items()}
+            self.continuous_effects = original_card.continuous_effects
         else:
             self.attributes = []
             self.activated_abilities = []
             self.trigger_listeners = {}
+            self.continuous_effects = ''
 
         self.controller.battlefield.add(self)
         self.is_token = False
+        self.auras = []
+        self.equipments = []
         # pdb.set_trace()
         print("making permanent... {}\n".format(self))
 
@@ -206,6 +211,17 @@ class Permanent(gameobject.GameObject):
                 super(Permanent, self).__repr__(),
                 str(self.controller if self.controller else 'None'),
                 self.timestamp))
+
+    def __eq__(self, other):
+        """ Check equality based on both ID and timestamp"""
+        if isinstance(other, self.__class__):
+            return id(self) == id(other) and self.timestamp == other.timestamp
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, self.__class__):
+            return not self.__eq__(other)
+        return NotImplemented
 
     def activate_ability(self, num=0):
         print("activating ability... {}".format(self.activated_abilities[num]))
@@ -225,19 +241,18 @@ class Permanent(gameobject.GameObject):
         self.effects[name].add(eff)
         self.check_effect_expiration()
 
-    def check_effect_expiration(self, name=None):
+    def check_effect_expiration(self):
         time = self.controller.game.timestamp
-        if name is None:
-            for category in self.effects.values():
+        for category in self.effects.values():
                 for eff in category[:]:
-                    if eff.expiration < time:
-                        category.remove(eff)
-                        print("{} has expired".format(eff))
-        else:
-            for eff in self.effects[name]:
-                if eff.expiration < time:
-                    self.effects[name].remove(eff)
-                    print("{} has expired".format(eff))
+                    if isinstance(eff.expiration, (int, float)):
+                        if eff.expiration < time:
+                            category.remove(eff)
+                            print("{} has expired (time)".format(eff))
+                    elif callable(eff.expiration):
+                        if eff.expiration(eff):
+                            category.remove(eff)
+                            print("{} has expired (condition)".format(eff))
 
 
     def tap(self):
@@ -415,10 +430,16 @@ class Permanent(gameobject.GameObject):
                 [trig for trig in self.trigger_listeners[condition]
                  if trig is not None and trig.condition_satisfied()])
 
+    def change_zone(self, target_zone, from_top=0, shuffle=True):
+        for aura in self.auras[:]:
+            aura.disenchant()
+
+        super(Permanent, self).change_zone(target_zone, from_top, shuffle)
+
     def dies(self):
         # trigger
         print("{} has died\n".format(self))
-        self.change_zone(self.controller.graveyard)
+        self.change_zone(self.owner.graveyard)
 
     def destroy(self):
         #trigger
@@ -429,7 +450,7 @@ class Permanent(gameobject.GameObject):
         self.dies()
 
     def exile(self):
-        self.change_zone(self.controller.exile)
+        self.change_zone(self.owner.exile)
 
     def bounce(self):
         self.change_zone(self.owner.hand)
@@ -444,7 +465,38 @@ class Permanent(gameobject.GameObject):
         return self.status.counters[counter]
 
 
+class Aura(Permanent):
+    def __init__(self, enchant_target, characteristics, controller, owner=None, original_card=None):
+        super(Aura, self).__init__(characteristics, controller, owner, original_card)
+
+        self.enchant(enchant_target)
+
+        eval(self.continuous_effects)
+
+
+    def enchant(self, target):
+        target.auras.append(self)
+        self.enchant_target = target
+        pass
+
+    def disenchant(self):
+        target.auras.remove(self)
+        self.enchant_target = None
+
+    def add_ability(self, ability):
+        enchanted_creature = self.enchant_target
+        # not sure how to dynamically check this & make sure all associations expire/update correctly
+        enchanted_creature.add_effect("gainAbility", ability, self, lambda eff: eff.source.enchant_target != enchanted_creature)
+
+    def add_pt(self, PT):
+        enchanted_creature = self.enchant_target
+        enchanted_creature.add_effect("modifyPT", PT, self, lambda eff: eff.source.enchant_target != enchanted_creature)
+
+
 
 
 def make_permanent(card):
     return Permanent(card.characteristics, card.controller, card.owner, card)
+
+def make_aura(card, enchant_target):
+    return Aura(enchant_target, card.characteristics, card.controller, card.owner, card)

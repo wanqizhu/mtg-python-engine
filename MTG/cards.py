@@ -7,10 +7,10 @@ from collections import namedtuple
 from MTG.parsedcards import *
 from MTG.exceptions import *
 from MTG import abilities
-from MTG import zone
 from MTG import triggers
 from MTG import mana
 from MTG import helper_funcs
+from MTG import permanent
 
 
 SETPREFIX = ['M15', 'sm_set']
@@ -142,8 +142,10 @@ def add_play_func_with_targets(cardname, outcome=lambda self, t, l: True):
         legality = [c(self, t) for c, t in zip(self.target_criterias, self.targets_chosen)]
         if any(legality):
             outcome(self, self.targets_chosen, legality)
-
-        self.controller.graveyard.add(self)
+            if not self.is_aura:
+                self.controller.graveyard.add(self)
+        else:
+            self.controller.graveyard.add(self)
 
     card.play_func = play_func
 
@@ -156,7 +158,13 @@ def add_play_func_no_target(cardname, outcome=lambda self: True):
     card.play_func = outcome
 
 
+def add_aura_effect(cardname, effects, target_criterias=['creature']):
+    add_targets(cardname, target_criterias)
+    add_play_func_with_targets(cardname, lambda self, targets, l: permanent.make_aura(self, targets[0]))
 
+    # add aura enchant effects
+    card = card_from_name(cardname, get_instance=False)
+    card.continuous_effects = effects
 
 def add_trigger(cardname, condition, effect, requirements=lambda self: True,
                 target_criterias=None, target_prompts=None):
@@ -226,6 +234,9 @@ def parse_card_from_lines(lines, log=None):
     target_prompts = []
     _triggers = []  # _ since we import MTG.triggers
 
+    aura_targets = []
+    aura_effects = []
+
     prev_ind_lv = 0
     prev_line = ''
     lines.append('')
@@ -275,6 +286,10 @@ def parse_card_from_lines(lines, log=None):
                 stage = 'triggers'
                 continue
 
+            elif line == 'Aura:':
+                stage = 'aura'
+                continue
+
             else:
                 stage = 'effects'
 
@@ -309,6 +324,19 @@ def parse_card_from_lines(lines, log=None):
             elif ind_lv == 4:  # previous line should have been 'If:'
                 _triggers[-1].append(line)  # optional trigger requirements
 
+        elif stage == 'aura':
+            if ind_lv == 2:
+                if line == 'Targets:':
+                    pass
+                else:
+                    aura_effects.append(line)
+
+            if ind_lv == 3:   # prev line == 'Targets:':
+                if line[0] != "'":
+                    line = 'lambda self, p: ' + line
+                aura_targets.append(line)
+
+
 
     # print(name, targets, abilities, _triggers, effects)
     str_to_exe = ""
@@ -319,8 +347,9 @@ def parse_card_from_lines(lines, log=None):
 
 
     if targets:
-        str_to_exe += "add_targets(%r, eval(%r), prompts=%r)\n" % (
-                    name, '[' + ', '.join(targets) + ']', target_prompts)
+        targets = '[' + ', '.join(targets) + ']'
+        str_to_exe += "add_targets(%r, %s, prompts=%r)\n" % (
+                    name, targets, target_prompts)
 
 
     # we need to use awkward '[' + ', '.join(..) + ']' for two reasons:
@@ -331,28 +360,32 @@ def parse_card_from_lines(lines, log=None):
     if _triggers:
         for trig in _triggers:
             if len(trig) == 2:
+                trig[1] = '[' + ', '.join(trig[1]) + ']'
                 str_to_exe += "add_trigger(%r, triggers.triggerConditions[%r], %r)\n" % (
-                                    name,
-                                    trig[0],
-                                    '[' + ', '.join(trig[1]) + ']')
+                                    name, trig[0], trig[1])
 
             else:  # optional trigger requirements
-                str_to_exe += "add_trigger(%r, triggers.triggerConditions[%r], %r, eval(%r))\n" % (
-                                    name,
-                                    trig[0],
-                                    '[' + ', '.join(trig[1]) + ']',
-                                    "lambda self: " + trig[2])
+                trig[1] = '[' + ', '.join(trig[1]) + ']'
+                trig[2] =  "lambda self: " + trig[2]
+                str_to_exe += "add_trigger(%r, triggers.triggerConditions[%r], %r, %s)\n" % (
+                                    name, trig[0], trig[1], trig[2])
 
 
     if effects:
         if not targets:
-            str_to_exe += "add_play_func_no_target(%r, eval(%r))\n" % (name, 'lambda self: [' + ', '.join(effects) + ']')
+            effects = 'lambda self: [' + ', '.join(effects) + ']'
+            str_to_exe += "add_play_func_no_target(%r, %s)\n" % (name, effects)
 
         else:
-            str_to_exe += "add_play_func_with_targets(%r, eval(%r))\n" % (
-                                name,
-                                "lambda self, targets, is_legal_target: [" + 
-                                    ', '.join(effects) + ']')
+            effects = ("lambda self, targets, is_legal_target: ["
+                      + ', '.join(effects) + ']')
+            str_to_exe += "add_play_func_with_targets(%r, %s)\n" % (
+                                name, effects)
+
+    if aura_effects:
+        aura_effects = '[' + ', '.join(aura_effects) + ']'
+        aura_targets = '[' + ', '.join(aura_targets) + ']'
+        str_to_exe += "add_aura_effect(%r, %r, %s)\n" % (name, aura_effects, aura_targets)
 
     if log:
         log.write(str_to_exe + "\n")
@@ -394,3 +427,5 @@ def set_up_cards(FILES=['data/cards.txt']):
             '[self.targets_chosen[0].add_effect("modifyPT", (1, 1), self, self.game.eot_time)]',
             requirements=None,
             target_criterias=['creature'])
+
+    # add_aura_effect("Battle Mastery", '[self.add_ability("Double Strike")]')

@@ -21,7 +21,6 @@
 
  	- optional targeting (up to ...)
 
- 	- target legality issues -- what if target changes zones (e.g. flicker?) NEED TO RESOLVE
 
 - Static Abilities
 

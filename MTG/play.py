@@ -39,6 +39,9 @@ class Play(object):
             self.targets_chosen = source.targets_chosen
             self.target_criterias = source.target_criterias
 
+        if self.targets_chosen:
+            self.target_timestamps = [t.timestamp for t in self.targets_chosen]
+
 
     def __repr__(self):
         return str(self.name)
@@ -47,8 +50,8 @@ class Play(object):
     def apply(self):
         fizzles = False
 
-        if self.targets_chosen and not any([c(self, t) for c, t in zip(self.target_criterias,
-                                           self.targets_chosen)]):
+        if self.targets_chosen and not any([c(self, t) and t.timestamp == time for c, t, time in zip(self.target_criterias,
+                                           self.targets_chosen, self.target_timestamps)]):
             print("All targets invalid. %r fizzles." % self)
             fizzles = True
 

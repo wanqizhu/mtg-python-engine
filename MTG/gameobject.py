@@ -132,6 +132,10 @@ class GameObject():
         return cardtype.CardType.ENCHANTMENT in self.characteristics.types
 
     @property
+    def is_aura(self):
+        return self.is_enchantment and 'Aura' in self.characteristics.subtype
+
+    @property
     def power(self):
         return self.characteristics.power if self.is_creature else None
 
