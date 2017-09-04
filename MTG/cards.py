@@ -115,6 +115,8 @@ def add_activated_ability(cardname, cost, effect, target_criterias=None, prompts
 
     if target_criterias:
         target_criterias = helper_funcs.parse_targets(target_criterias)
+    else:
+        target_criterias = None
 
     # same signature as abilities.ActivatedAbilities.init
     card.activated_abilities.append((costs, effect, target_criterias, prompts, is_mana_ability))
@@ -205,6 +207,15 @@ def add_trigger(cardname, condition, effect, requirements=lambda self: True,
     card.triggers[condition].append((effect, requirements,
                                      target_criterias, target_prompts))
 
+def add_self_static_effect(cardname, name, value, toggle_func=lambda eff: False):
+    if not name_to_id(cardname):
+        return
+    card = card_from_name(cardname, get_instance=False)
+
+    if card.static_effects == []:
+        card.static_effects = []
+
+    card.static_effects.append((name, value, toggle_func))
 
 
 
@@ -236,6 +247,7 @@ def parse_card_from_lines(lines, log=None):
 
     aura_targets = []
     aura_effects = []
+
 
     prev_ind_lv = 0
     prev_line = ''
@@ -298,9 +310,15 @@ def parse_card_from_lines(lines, log=None):
             effects.append(line)
 
         elif stage == 'abilities':
-            # split ability by 'cost: effect'
-            index = line.index(":")
-            abilities.append((line[:index], line[index+2:]))
+            if ind_lv == 2:
+                # split ability by 'cost: effect'
+                index = line.index(":")
+                abilities.append((line[:index], line[index+2:], []))
+
+            elif ind_lv == 4:  # prev line is targets
+                if line[0] != "'":
+                    line = 'lambda self, p: ' + line
+                abilities[-1][-1].append(line)
 
         elif stage == 'targets':
             if ind_lv == 2:
@@ -342,8 +360,9 @@ def parse_card_from_lines(lines, log=None):
     str_to_exe = ""
 
     if abilities:
-        for cost, effect in abilities:
-            str_to_exe += "add_activated_ability(%r, %r, %r)\n" % (name, cost, effect)
+        for cost, effect, ability_targets in abilities:
+            ability_targets = '[' + ', '.join(ability_targets) + ']'
+            str_to_exe += "add_activated_ability(%r, %r, %r, %s)\n" % (name, cost, effect, ability_targets)
 
 
     if targets:
@@ -419,13 +438,10 @@ def set_up_cards(FILES=['data/cards.txt']):
                 lines.append(line)
 
 
-    add_activated_ability("Grindclock", "T",
-            "self.targets_chosen[0].mill(self.card.num_counters('Charge'))",
-            ['player'])
-
     add_trigger("Kinsbaile Skirmisher", triggers.triggerConditions['onEtB'],
             '[self.targets_chosen[0].add_effect("modifyPT", (1, 1), self, self.game.eot_time)]',
             requirements=None,
             target_criterias=['creature'])
 
-    # add_aura_effect("Battle Mastery", '[self.add_ability("Double Strike")]')
+    add_self_static_effect("Dauntless River Marshal", "modifyPT", (1,1),
+                           lambda eff: eff.source.controller.controls(subtype="Island"))

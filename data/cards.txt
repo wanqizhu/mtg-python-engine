@@ -382,6 +382,9 @@ Grindclock
 
 	Abilities:
 		T: self.card.add_counter("Charge")
+		T: self.targets_chosen[0].mill(self.card.num_counters('Charge'))
+			Targets:
+				'player'
 
 ##############################
 Battle Mastery
@@ -401,5 +404,13 @@ Marked by Honor
 
 		self.add_PT((2, 2))
 		self.add_ability("Vigilance")
+
+##############################
+Dauntless River Marshal
+
+	Abilities:
+		3U: self.targets_chosen[0].tap()
+			Targets:
+				'creature'
 
 ##############################

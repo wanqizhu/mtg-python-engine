@@ -97,3 +97,4 @@ class TriggeredAbility():
                                name=self.card.name + ' triggered ability ' + str(self),
                                source=self)
         return None
+

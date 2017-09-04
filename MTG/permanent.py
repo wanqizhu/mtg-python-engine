@@ -154,8 +154,27 @@ class Status():
         return 'Status: ' + ', '.join([i for i in s if i])
 
 
-# used in Permanent().effects
-Effect = namedtuple('Effect', ['value', 'source', 'expiration', 'timestamp'])
+
+
+class Effect():
+    """ name: name of effct (dict key to self.effects)
+
+    expiration: either a float representing timestamp (usually eot),
+                or a function (lambda eff: ...) that when evaluated to True signals expiration
+
+    toggle_func is the function that, while inactive, if evaluated to True toggles on the effct
+        while active, the toggle function is negated; thus, it is passed into Effect(...)
+        as a boolean dictionary (toggle_funcs)
+    """
+    def __init__(self, value, timestamp, source=None, expiration=math.inf, is_active=True,
+                 toggle_func=lambda eff: False):
+        self.value = value
+        self.source = source
+        self.expiration = expiration
+        self.is_active = is_active
+        self.toggle_funcs = {False: toggle_func,
+                             True: lambda eff: not toggle_func(eff)}
+        self.timestamp = timestamp
 
 
 
@@ -188,6 +207,9 @@ class Permanent(gameobject.GameObject):
             self.trigger_listeners = {condition: [abilities.TriggeredAbility(self, *params) for params in trigs]
                                       for condition, trigs in original_card.triggers.items()}
             self.continuous_effects = original_card.continuous_effects
+
+            for name, value, toggle_func in original_card.static_effects:
+                self.add_effect(name, value, source=self, is_active=False, toggle_func=toggle_func)
         else:
             self.attributes = []
             self.activated_abilities = []
@@ -236,8 +258,9 @@ class Permanent(gameobject.GameObject):
         """Clears end-of-turn effects"""
         self.modifier.reset()
 
-    def add_effect(self, name, value, source=None, expiration=math.inf):
-        eff = Effect(value, source, expiration, self.controller.game.timestamp)
+    def add_effect(self, name, value, source=None, expiration=math.inf, is_active=True, toggle_func=lambda eff: True):        
+        eff = Effect(value, self.controller.game.timestamp, source,
+                     expiration, is_active, toggle_func)
         self.effects[name].add(eff)
         self.check_effect_expiration()
 
@@ -245,6 +268,9 @@ class Permanent(gameobject.GameObject):
         time = self.controller.game.timestamp
         for category in self.effects.values():
                 for eff in category[:]:
+                    if eff.toggle_funcs[eff.is_active](eff):
+                        eff.is_active = not eff.is_active
+
                     if isinstance(eff.expiration, (int, float)):
                         if eff.expiration < time:
                             category.remove(eff)
@@ -254,6 +280,9 @@ class Permanent(gameobject.GameObject):
                             category.remove(eff)
                             print("{} has expired (condition)".format(eff))
 
+
+    def get_effect(self, name):
+        return [eff for eff in self.effects[name] if eff.is_active]
 
     def tap(self):
         if not self.status.tapped:
@@ -290,14 +319,14 @@ class Permanent(gameobject.GameObject):
         toughness = self.characteristics.toughness
 
         # layer 7b
-        for effect in self.effects['setPT']:
+        for effect in self.get_effect('setPT'):
             if effect.value[0] != '*':  # keep it as is
                 power = effect.value[0]
             if effect[1] != '*':
                 toughness = effect.value[1]
 
         # layer 7c
-        for effect in self.effects['modifyPT']:
+        for effect in self.get_effect('modifyPT'):
             power += effect.value[0]
             toughness += effect.value[1]
 
@@ -305,7 +334,7 @@ class Permanent(gameobject.GameObject):
         power += self.status.counters["+1/+1"] - self.status.counters["-1/-1"]
         toughness += self.status.counters["+1/+1"] - self.status.counters["-1/-1"]
 
-        for effect in self.effects['switchPT']:  # layer 7e
+        for effect in self.get_effect('switchPT'):  # layer 7e
             power, toughness = toughness, power
 
         return power, toughness

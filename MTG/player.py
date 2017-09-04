@@ -114,7 +114,7 @@ class Player():
                 elif answer == 'mana':
                     print(self.mana)
 
-                elif answer == 'testsetup':
+                elif answer == 'addmana':
                     self.mana.add_str('WWWWWUUUUUBBBBBRRRRRGGGGG11111')
 
                 elif answer == 'debug':
@@ -439,6 +439,14 @@ class Player():
     def end_turn(self):
         self.last_turn_events = self.turn_events
         self.turn_events = defaultdict(lambda: None)
+
+    def controls(self, subtype=None, type=None, supertype=None):
+        """ shortcut for checking whether a player controls something (e.g. Island, Goblin) """
+        if subtype:
+            return self.battlefield.filter(filter_func=lambda p: subtype in p.characteristics.subtype)
+
+        return False
+
 
     def print_player_state(self):
         print("\nPLAYER {}\nlife: {}\n".format(self.name, self.life))

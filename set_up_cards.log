@@ -1,0 +1,91 @@
+
+add_activated_ability('Plains', 'T', 'self.controller.mana.add(mana.Mana.WHITE, 1)', [])
+
+add_activated_ability('Island', 'T', 'self.controller.mana.add(mana.Mana.BLUE, 1)', [])
+
+add_activated_ability('Swamp', 'T', 'self.controller.mana.add(mana.Mana.BLACK, 1)', [])
+
+add_activated_ability('Mountain', 'T', 'self.controller.mana.add(mana.Mana.RED, 1)', [])
+
+add_activated_ability('Forest', 'T', 'self.controller.mana.add(mana.Mana.GREEN, 1)', [])
+
+add_targets('Lightning Bolt', ['creature or player'], prompts=[])
+add_play_func_with_targets('Lightning Bolt', lambda self, targets, is_legal_target: [targets[0].take_damage(self, 3)])
+
+add_targets('Lightning Strike', ['creature or player'], prompts=[])
+add_play_func_with_targets('Lightning Strike', lambda self, targets, is_legal_target: [targets[0].take_damage(self, 3)])
+
+add_targets('Congregate', ['player'], prompts=[])
+add_play_func_with_targets('Congregate', lambda self, targets, is_legal_target: [targets[0].gain_life(2 * len([p for plyr in self.controller.game.players_list for p in plyr.battlefield if p.is_creature]))])
+
+add_play_func_no_target('Mass Calcify', lambda self: [self.game.apply_to_battlefield( lambda p: p.destroy(), lambda p: p.is_creature and not p.has_color('W'))])
+
+add_trigger("Ajani's Pridemate", triggers.triggerConditions['onControllerLifeGain'], '[self.card.add_counter("+1/+1") if self.controller.make_choice( "Would you like to put a +1/+1 counter on %r?" % self.card) else None]')
+
+add_trigger('Tireless Missionaries', triggers.triggerConditions['onEtB'], '[self.controller.gain_life(3)]')
+
+add_activated_ability('Soulmender', 'T', 'self.controller.gain_life(1)', [])
+
+add_targets('Solemn Offerings', [lambda self, p: p.is_permanent and (p.is_artifact or p.is_enchantment)], prompts=[])
+add_play_func_with_targets('Solemn Offerings', lambda self, targets, is_legal_target: [targets[0].destroy(), self.controller.gain_life(4)])
+
+add_play_func_no_target('Divination', lambda self: [self.controller.draw(2)])
+
+add_play_func_no_target("Jace's Ingenuity", lambda self: [self.controller.draw(3)])
+
+add_targets('Titanic Growth', ['creature'], prompts=[])
+add_play_func_with_targets('Titanic Growth', lambda self, targets, is_legal_target: [targets[0].add_effect('modifyPT', (4, 4), self, self.game.eot_time)])
+
+add_targets('Ulcerate', ['creature'], prompts=[])
+add_play_func_with_targets('Ulcerate', lambda self, targets, is_legal_target: [targets[0].add_effect('modifyPT', (-3, -3), self, self.game.eot_time), self.controller.lose_life(3)])
+
+add_activated_ability('Zof Shade', '2B', "self.card.add_effect('modifyPT', (2, 2), self, self.game.eot_time)", [])
+
+add_targets('Mind Rot', ['player'], prompts=[])
+add_play_func_with_targets('Mind Rot', lambda self, targets, is_legal_target: [targets[0].discard(2)])
+
+add_activated_ability('Shadowcloak Vampire', 'Pay 2 life', "self.card.add_effect('gainAbility', 'Flying', self, self.game.eot_time)", [])
+
+add_trigger('First Response', triggers.triggerConditions['onUpkeep'], "[self.controller.create_token('1/1 white Soldier')]", lambda self: self.controller.last_turn_events['life loss'])
+
+add_play_func_no_target('Raise the Alarm', lambda self: [self.controller.create_token('1/1 white Soldier', 2)])
+
+add_trigger('Resolute Archangel', triggers.triggerConditions['onEtB'], '[self.controller.set_life_total( self.controller.startingLife)]', lambda self: self.controller.life < self.controller.startingLife)
+
+add_play_func_no_target('Sanctified Charge', lambda self: [[c.add_effect('modifyPT', (2, 1), self, self.game.eot_time) for c in self.controller.battlefield if c.is_creature], [c.add_effect('gainAbility', 'First Strike', self, self.game.eot_time) for c in self.controller.battlefield if c.is_creature and c.has_color('W')]])
+
+add_play_func_no_target('Aetherspouts', lambda self: [self.game.apply_to_battlefield( lambda p: p.change_zone(p.owner.library, 0, False) if p.owner.make_choice( "Would you like to put %r on top of your library?" " (otherwise it goes on bottom)" % p) else p.change_zone(p.owner.library, -1, False), lambda p: p.status.is_attacking)])
+
+add_targets('Devouring Light', [lambda self, p: p.is_permanent and (p.is_creature and p.in_combat)], prompts=[])
+add_play_func_with_targets('Devouring Light', lambda self, targets, is_legal_target: [targets[0].exile()])
+
+add_play_func_no_target('Triplicate Spirits', lambda self: [self.controller.create_token('1/1 white Spirit', 3, 'Flying')])
+
+add_play_func_no_target('Meditation Puzzle', lambda self: [self.controller.gain_life(8)])
+
+add_targets('Pillar of Light', [lambda self, p: p.is_permanent and (p.is_creature and p.toughness >= 4)], prompts=[])
+add_play_func_with_targets('Pillar of Light', lambda self, targets, is_legal_target: [targets[0].exile()])
+
+add_targets('Chronostutter', ['creature'], prompts=[])
+add_play_func_with_targets('Chronostutter', lambda self, targets, is_legal_target: [targets[0].change_zone(t[0].owner.library, 1, False)])
+
+add_trigger('Coral Barrier', triggers.triggerConditions['onEtB'], "[self.controller.create_token('1/1 blue Squid', 1, 'Islandwalk')]")
+
+add_targets('Hydrosurge', ['creature'], prompts=[])
+add_play_func_with_targets('Hydrosurge', lambda self, targets, is_legal_target: [targets[0].add_effect('modifyPT', (-5, 0), self, self.game.eot_time)])
+
+add_targets('Mind Sculpt', ['opponent'], prompts=[])
+add_play_func_with_targets('Mind Sculpt', lambda self, targets, is_legal_target: [targets[0].mill(7)])
+
+add_targets('Peel from Reality', [lambda self, p: p.is_permanent and p.is_creature and p.controller is self.controller, lambda self, p: p.is_permanent and p.is_creature and p.controller is not self.controller], prompts=['Choose target creature you control\n', "Choose target creature you don't control\n"])
+add_play_func_with_targets('Peel from Reality', lambda self, targets, is_legal_target: [[targets[i].bounce() for i in range(2) if is_legal_target[i]]])
+
+add_activated_ability('Grindclock', 'T', 'self.card.add_counter("Charge")', [])
+add_activated_ability('Grindclock', 'T', "self.targets_chosen[0].mill(self.card.num_counters('Charge'))", ['player'])
+
+add_aura_effect('Battle Mastery', '[self.add_ability("Double Strike")]', ['creature'])
+
+add_aura_effect('Marked by Honor', '[self.add_PT((2, 2)), self.add_ability("Vigilance")]', ['creature'])
+
+add_activated_ability('Dauntless River Marshal', '3U', 'self.targets_chosen[0].tap()', ['creature'])
+

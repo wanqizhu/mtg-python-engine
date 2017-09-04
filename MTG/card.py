@@ -21,7 +21,9 @@ class Card(gameobject.GameObject):
 
     activated_abilities = []
 
+    static_effects = []
     continuous_effects = ''
+
 
     def __init__(self, characteristics=gameobject.Characteristics(),
                  controller=None, owner=None, zone=None, previousState=None):
@@ -30,6 +32,7 @@ class Card(gameobject.GameObject):
                                    controller, owner, zone, previousState)
 
         self.attributes = Attributes()
+
 
     def targets(self):
         targets_chosen = helper_funcs.choose_targets(self)

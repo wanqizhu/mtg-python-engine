@@ -13,4 +13,4 @@ if __name__ == '__main__':
         'runtests()', filename='test_cprofile_results.log', sort='cumtime')
 
     p = pstats.Stats('test_cprofile_results.log')
-    p.strip_dirs().sort_stats('cumulative').print_stats(30)
+    p.strip_dirs().sort_stats('cumulative').print_stats(100)
