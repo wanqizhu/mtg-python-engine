@@ -123,6 +123,7 @@ class Modifier():
 class Status():
     def __init__(self):
         self.tapped = False
+        self.not_untap = 0  # 0: untap normally; 1: not untap next turn; math.inf: not untap
         self.flipped = False
         self.face_up = True
         self.phased_in = True
@@ -139,6 +140,7 @@ class Status():
     def __str__(self):
         s = []
         s.append('tapped' if self.tapped else '')
+        s.append('will not untap for %i turns' % self.not_untap if self.not_untap else '')
         s.append('flipped' if self.flipped else '')
         s.append('face down' if not self.face_up else '')
         s.append('phased out' if not self.phased_in else '')
@@ -208,8 +210,11 @@ class Permanent(gameobject.GameObject):
                                       for condition, trigs in original_card.triggers.items()}
             self.continuous_effects = original_card.continuous_effects
 
-            for name, value, toggle_func in original_card.static_effects:
-                self.add_effect(name, value, source=self, is_active=False, toggle_func=toggle_func)
+            for apply_to, name, value, toggle_func in original_card.static_effects:
+                if apply_to == 'self':
+                    self.add_effect(name, value, source=self, is_active=False, toggle_func=toggle_func)
+                else:
+                    self.controller.add_static_effect(apply_to, name, value, source=self, toggle_func=toggle_func)
         else:
             self.attributes = []
             self.activated_abilities = []
@@ -244,6 +249,9 @@ class Permanent(gameobject.GameObject):
         if isinstance(other, self.__class__):
             return not self.__eq__(other)
         return NotImplemented
+
+    def __hash__(self):
+        return hash((id(self), self.timestamp))
 
     def activate_ability(self, num=0):
         print("activating ability... {}".format(self.activated_abilities[num]))
@@ -292,11 +300,19 @@ class Permanent(gameobject.GameObject):
 
 
     def untap(self):
-        if (self.status.tapped):
+        if (self.status.tapped) and not self.status.not_untap:
             self.status.tapped = False
             return True
             # self.untapTrigger
+
+        if self.status.not_untap:
+            self.status.not_untap -= 1
         return False
+
+    def freeze(self):
+        """ Does not untap next turn """
+        if self.status.not_untap == 0:
+            self.status.not_untap = 1
 
     # power/toughness layering -- see rule 613.3
     @property
@@ -398,18 +414,28 @@ class Permanent(gameobject.GameObject):
         self.status.is_attacking = []
         self.status.is_blocking = []
 
-    def take_damage(self, source, dmg):
+    def take_damage(self, source, dmg, is_combat=False):
         # trigger based on source
+        self.trigger('onTakeDamage', dmg)
+        if is_combat:
+            self.trigger('onTakeCombatDamage', dmg)
+
         self.status.damage_taken += dmg
         print("{} takes {} damage from {}\n".format(self, dmg, source))
         if source.has_ability("Deathtouch"):
-            self.dies()
+            self.destroy()
         # pdb.set_trace()
 
-    def deals_damage(self, target, dmg):
+    def deals_damage(self, target, dmg, is_combat=False):
         """ target could be Player, Creature, or array of creatures"""
+
+        ## TODO: deal damage NOT trigger if dmg is prevented
         if dmg < 0:
             return
+
+        self.trigger('onDealDamage', dmg)
+        if is_combat:
+            self.trigger('onCombatDamage', dmg)
 
         if isinstance(target, list):
             dmg_to_assign = self.power
@@ -425,10 +451,10 @@ class Permanent(gameobject.GameObject):
                         lethal_dmg = dmg_to_assign
 
                 if dmg_to_assign < lethal_dmg:
-                    blocker.take_damage(self, dmg_to_assign)
+                    blocker.take_damage(self, dmg_to_assign, is_combat)
                     dmg_to_assign = 0
                 else:
-                    blocker.take_damage(self, lethal_dmg)
+                    blocker.take_damage(self, lethal_dmg, is_combat)
                     dmg_to_assign -= lethal_dmg
 
             if self.has_ability("Trample"):  # remaining dmg from trample
@@ -436,16 +462,29 @@ class Permanent(gameobject.GameObject):
 
         else:
             # a single creature or a player
-            target.take_damage(self, dmg)
+            if target.is_player:
+                self.trigger('onDealDamageToPlayers', dmg)
+                if is_combat:
+                    self.trigger('onCombatDamageToPlayers', dmg)
+            else:
+                self.trigger('onDealDamageToCreature', dmg)
+                if is_combat:
+                    self.trigger('onCombatDamageToCreatures', dmg)
+            target.take_damage(self, dmg, is_combat)
 
         # TODO: check damage actually went through
         if self.has_ability("Lifelink"):
             self.controller.gain_life(dmg)
-        # TODO: triggers
 
-    def trigger(self, condition):
+
+    def trigger(self, condition, amount=1):
+        """ amount: amount of life gained, damage dealt, etc. """
         # TODO: more triggers
         # technically, these aren't "triggers"; but putting them here suffices
+
+        if isinstance(condition, str):
+            condition = triggers.triggerConditions[condition]
+
         if condition == triggers.triggerConditions.onUpkeep:
             self.status.summoning_sick = False
         elif condition == triggers.triggerConditions.onCleanup:
@@ -453,30 +492,41 @@ class Permanent(gameobject.GameObject):
             # clear end-of-turn effects
 
         if condition in self.trigger_listeners:
-            print("Trigger to be process at next priority...\n")
+            print("Trigger %s to be process at next priority...\n" % condition)
 
-            self.controller.pending_triggers.extend(
-                [trig for trig in self.trigger_listeners[condition]
-                 if trig is not None and trig.condition_satisfied()])
+            trigs = [trig for trig in self.trigger_listeners[condition]
+                     if trig is not None and trig.condition_satisfied()]
+            for trig in trigs:
+                trig.trigger_amount = amount
+
+            self.controller.pending_triggers.extend(trigs)
 
     def change_zone(self, target_zone, from_top=0, shuffle=True):
         for aura in self.auras[:]:
             aura.disenchant()
 
-        super(Permanent, self).change_zone(target_zone, from_top, shuffle)
+        return super(Permanent, self).change_zone(target_zone, from_top, shuffle)
 
     def dies(self):
-        # trigger
+        # trigger first so we can use last-known state (while it's still a permanent)
+        self.trigger('onDeath')
         print("{} has died\n".format(self))
-        self.change_zone(self.owner.graveyard)
+        return self.change_zone(self.owner.graveyard)
 
     def destroy(self):
         #trigger
-        self.dies()
+        if self.has_ability("Indestructible") and self.toughness > 0:
+            print("Indestructible")
+            return False
+
+        if self.dies():
+            return True
 
     def sacrifice(self):
         #trigger
-        self.dies()
+        print("Sacrificing")
+        if self.dies():
+            return True
 
     def exile(self):
         self.change_zone(self.owner.exile)

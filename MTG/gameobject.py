@@ -54,6 +54,8 @@ Effect = namedtuple('Effect', ['value', 'source', 'expiration', 'timestamp'])
 
 
 class GameObject():
+    is_player = False
+
     def __init__(self, characteristics=Characteristics(),
                  controller=None, owner=None, zone=None, previousState=None):
         self.characteristics = characteristics
@@ -74,6 +76,13 @@ class GameObject():
 
     def __str__(self):
         return self.name
+
+    def __eq__(x, y):
+        return isinstance(y, x.__class__) and x.__repr__() == y.__repr__()
+
+    def __hash__(self):
+        return hash(self.__repr__())
+
 
     @property
     def owner(self):

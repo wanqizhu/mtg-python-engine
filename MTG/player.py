@@ -15,6 +15,8 @@ from MTG.exceptions import *
 
 
 class Player():
+    is_player = True
+
     def __init__(self, deck, name='player',
                  startingLife=20, maxHandSize=7, game=None):
         self.name = name
@@ -56,6 +58,12 @@ class Player():
 
     def __str__(self):
         return self.name
+
+    def __eq__(x, y):
+        return isinstance(y, x.__class__) and x.__repr__() == y.__repr__()
+
+    def __hash__(self):
+        return hash(self.__repr__())
 
     @property
     def is_active(self):
@@ -278,6 +286,7 @@ class Player():
     def opponent(self):
         return self.game.opponent(self)
 
+
     # separate func for unit testing
     def make_choice(self, prompt_string):
         # if not TEST:
@@ -397,17 +406,17 @@ class Player():
         self.lose_life(life)
         return True
 
-    def take_damage(self, source, dmg):
+    def take_damage(self, source, dmg, is_combat=False):
         # trigger
         print("{} takes {} damage from {}\n".format(self, dmg, source))
         self.life -= dmg
 
     def gain_life(self, amount):
         self.game.apply_to_battlefield(
-            lambda p: p.trigger(triggers.triggerConditions.onLifeGain))
+            lambda p: p.trigger(triggers.triggerConditions.onLifeGain, amount))
         self.game.apply_to_battlefield(
             lambda p: p.trigger(
-                triggers.triggerConditions.onControllerLifeGain),
+                triggers.triggerConditions.onControllerLifeGain, amount),
             lambda p: p.controller == self)
 
         if self.turn_events['life gain']:
@@ -418,7 +427,13 @@ class Player():
         self.life += amount
 
     def lose_life(self, amount):
-        # trigger
+        self.game.apply_to_battlefield(
+            lambda p: p.trigger(triggers.triggerConditions.onLifeLoss, amount))
+        self.game.apply_to_battlefield(
+            lambda p: p.trigger(
+                triggers.triggerConditions.onControllerLifeLoss, amount),
+            lambda p: p.controller == self)
+
         if self.turn_events['life loss']:
             self.turn_events['life loss'] += amount
         else:
@@ -440,12 +455,38 @@ class Player():
         self.last_turn_events = self.turn_events
         self.turn_events = defaultdict(lambda: None)
 
-    def controls(self, subtype=None, type=None, supertype=None):
+    def controls(self, subtype=None, types=None, supertype=None):
         """ shortcut for checking whether a player controls something (e.g. Island, Goblin) """
+        filt = set()
         if subtype:
-            return self.battlefield.filter(filter_func=lambda p: subtype in p.characteristics.subtype)
+            f = self.battlefield.filter(
+                       filter_func=lambda p: subtype in p.characteristics.subtype)
+            if not filt:
+                filt = f
+            else:
+                filt &= f
 
-        return False
+        if types:
+            f = self.battlefield.filter(
+                       filter_func=lambda p: types in p.characteristics.types)
+            if not filt:
+                filt = f
+            else:
+                filt &= f
+
+        if supertype:
+            f = self.battlefield.filter(
+                       filter_func=lambda p: supertype in p.characteristics.supertype)
+            if not filt:
+                filt = f
+            else:
+                filt &= f
+
+        return filt
+
+
+    def add_static_effect(self, apply_to, name, value, source, toggle_func):
+        raise NotImplementedError
 
 
     def print_player_state(self):

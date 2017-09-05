@@ -75,6 +75,7 @@ class TriggeredAbility():
             prompts = ["Choose a target\n"] * len(target_criterias)
         self.target_prompts = prompts
         self.targets_chosen = []
+        self.trigger_amount = None
 
     def resolve(self):
         return eval(self.effect)

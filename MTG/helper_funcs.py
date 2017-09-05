@@ -70,14 +70,18 @@ def parse_targets(criterias):
     for i, v in enumerate(criterias):
         if v == 'creature':
             criterias[i] = lambda self, p: p.is_permanent and p.is_creature
+
+        if v == 'opponent creature':
+            criterias[i] = lambda self, p: p.is_creature and p.controller != self.controller
+
         if v == 'opponent':
-            criterias[i] = lambda self, p: p.__class__.__name__ == 'Player' and p != self
+            criterias[i] = lambda self, p: p.is_player and p != self
 
         if v == 'player':
-            criterias[i] = lambda self, p: p.__class__.__name__ == 'Player'
+            criterias[i] = lambda self, p: p.is_player
 
         if v == 'creature or player':
-            criterias[i] = (lambda self, p: p.__class__.__name__ == 'Player'
+            criterias[i] = (lambda self, p: p.is_player
                          or (p.is_creature and p.is_permanent))
 
     return criterias

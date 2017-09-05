@@ -85,11 +85,11 @@ class Zone():
             return False
 
     def filter(self, characteristics=None, filter_func=None):
-        found = []
+        found = set()
         if filter_func:
             for ele in self:
                 if filter_func(ele):
-                    found.append(ele)
+                    found.add(ele)
 
         else:
             assert (characteristics is None
@@ -97,7 +97,7 @@ class Zone():
 
             for ele in self:
                 if ele.characteristics.satisfy(characteristics):
-                    found.append(ele)
+                    found.add(ele)
 
         return found
 
@@ -107,7 +107,7 @@ class Zone():
     def get_card_by_name(self, name):
         cards = self.filter(gameobject.Characteristics(name=name))
         if cards:
-            return cards[0]
+            return list(cards)[0]
         else:
             return None
 

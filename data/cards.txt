@@ -34,8 +34,8 @@
 # 		triggerCondition2
 # 			effect2
 
-# 			If:
-# 				intervening-if statement (optional) goes here
+# 				If:
+# 					intervening-if statement (optional) goes here
 
 
 # 	# called using lambda self: __effect__ if no targets
@@ -237,8 +237,8 @@ First Response
 	Triggers:
 		onUpkeep
 			self.controller.create_token('1/1 white Soldier')
-			If:
-				self.controller.last_turn_events['life loss']
+				If:
+					self.controller.last_turn_events['life loss']
 
 
 
@@ -254,10 +254,9 @@ Resolute Archangel
 
 	Triggers:
 		onEtB
-			self.controller.set_life_total(
-											self.controller.startingLife)
-			If:
-				self.controller.life < self.controller.startingLife
+			self.controller.set_life_total(self.controller.startingLife)
+				If:
+					self.controller.life < self.controller.startingLife
 
 
 
@@ -386,6 +385,8 @@ Grindclock
 			Targets:
 				'player'
 
+
+
 ##############################
 Battle Mastery
 
@@ -394,6 +395,8 @@ Battle Mastery
 			'creature'
 
 		self.add_ability("Double Strike")
+
+
 
 ##############################
 Marked by Honor
@@ -405,6 +408,8 @@ Marked by Honor
 		self.add_PT((2, 2))
 		self.add_ability("Vigilance")
 
+
+
 ##############################
 Dauntless River Marshal
 
@@ -412,5 +417,147 @@ Dauntless River Marshal
 		3U: self.targets_chosen[0].tap()
 			Targets:
 				'creature'
+
+
+
+##############################
+Divine Favor
+
+	Aura:
+		Targets:
+			'creature'
+
+		self.add_PT((1, 3))
+
+	Triggers:
+		onEtB
+			self.controller.gain_life(3)
+
+
+
+##############################
+Kinsbaile Skirmisher
+
+	Triggers:
+		onEtB
+			self.targets_chosen[0].add_effect("modifyPT", (1, 1), self, self.game.eot_time)
+				Targets:
+					'creature'
+
+
+
+##############################
+Ephemeral Shields
+
+	Targets:
+		'creature'
+
+	self.targets_chosen[0].add_effect('gainAbility', 'Indestructible', self, self.game.eot_time)
+
+
+
+##############################
+Heliod's Pilgrim
+
+	# Triggers:
+	# 	onEtB
+	# 		self.controller.search_lib(subtype='Aura') if self.controller.make_choice(
+	# 						"Would you like to search your library for an aura?")
+	# 															else None 
+
+
+
+##############################
+Preeminent Captain
+
+	# Triggers:
+	# 	onAttack
+	# 		self.controller.... if self.controller.make_choice(
+	# 						"Would you like to %s?" % '...')
+	# 															else None 
+
+
+
+##############################
+Selfless Cathar
+
+	Abilities:
+		# the reason why we need this big fat lambda is b/c list comprehension doesn't take in class variable namespace otherwise
+		# so it raises NameError: name 'self' is not defined
+		1W, Sacrifice ~: (lambda self=self: [c.add_effect('modifyPT', (1, 1), self, self.game.eot_time)
+								for c in self.controller.battlefield if c.is_creature])()
+
+
+
+##############################
+Wall of Essence
+
+	Triggers:
+		onTakeCombatDamage
+			self.controller.gain_life(self.trigger_amount)
+
+
+
+##############################
+Dauntless River Marshal
+
+	StaticEffects:
+		'self'
+			'modifyPT'
+			(1,1)
+			lambda eff: eff.source.controller.controls(subtype="Island")
+
+
+
+##############################
+Warden of the Beyond
+
+	StaticEffects:
+		'self'
+			'modifyPT'
+			(2,2)
+			lambda eff: len(eff.source.controller.opponent.exile) > 0
+
+
+
+##############################
+Aeronaut Tinkerer
+
+	StaticEffects:
+		'self'
+			'gainAbility'
+			'Flying'
+			lambda eff: eff.source.controller.controls(types="Artifact")
+
+
+
+##############################
+Chasm Skulker
+
+	Triggers:
+		onDrawCard
+			self.card.add_counter("+1/+1")
+
+		onDeath
+			self.controller.create_token("1/1 blue Squid", 
+						self.num_counters("+1/+1"), "Islandwalk")
+
+
+
+##############################
+Frost Lynx
+
+	Triggers:
+		onEtB
+			self.targets_chosen[0].tap()
+			self.targets_chosen[0].freeze()
+				Targets:
+					'opponent creature'
+
+
+##############################
+_name_
+
+
 
 ##############################

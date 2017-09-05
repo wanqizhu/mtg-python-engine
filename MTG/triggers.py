@@ -38,9 +38,13 @@ class triggerConditions(Enum):
     onDealDamageToPlayers = 19
     onDealDamageToCreatures = 20
     onDealDamage = 21
-    onTakingDamage = 22
+    onTakeDamage = 22
     onAttack = 23
     onBlock = 24
+    onCombatDamage = 25
+    onCombatDamageToPlayers = 26
+    onCombatDamageToCreatures = 27
+    onTakeCombatDamage = 28
     # global events
     onRevolt = 30  # permanent leaving battlefield
     onControllerLifeLoss = 31
@@ -48,3 +52,4 @@ class triggerConditions(Enum):
     onControllerLifeGain = 33
     onLifeGain = 34
     onCounterPutOnPermanent = 35
+    onDrawCard = 36

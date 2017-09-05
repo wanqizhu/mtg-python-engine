@@ -299,7 +299,7 @@ class TestPlayer(unittest.TestCase):
             # unfortunately each instance of the patched method share the same call history
             # so we can't assert that, for example, c1.take_damage was called with source=c2 and vice versa
             mock_take_damage.assert_has_calls(
-                [mock.call(c1, 2), mock.call(c2, 1)])
+                [mock.call(c1, 2, True), mock.call(c2, 1, True)])
 
     @mock.patch.object(permanent.Permanent, 'dies')
     def test_lethal_damage_in_combat(self, mock_dies):

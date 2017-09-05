@@ -3,16 +3,18 @@
 - make Stack / play.Play object more readable
    - add more descriptors for printout
 
-- make parser parse targeted activated/triggered abilities
 
 
 - other cost modifiers
 
+- move player triggers to player.Player()'s own trigger_listener dict
+	e.g. lifegain
+	it then broadcasts to permanents
 
 
 - Activated Abilities
  - IMPLEMENT COSTS OTHER THAN TAP
- 	- sacrifice ~
+
  	- function signatures in general (?)
  		- return True if action successful and did something
  		- raise error if illegal
@@ -26,9 +28,10 @@
 
 
 - eot / conditional / aura modifiers on permanents
-	- auras
-	- MULTIPLE MODIFIERS -- e.g. Zof Shade -- they need to stack correctly while maintaining original
 
+- consider places to use sets instead of list
+
+- make WIKI / functionality guide
 
 
 
@@ -39,8 +42,12 @@ rules: http://media.wizards.com/2017/downloads/MagicCompRules_20170707.pdf
 
 KNOWN BUGS
 
-	- invalid card names should raise NotImplementedError
-
+	- is there a better solution to each individual card class having its own variables rather than
+    
+                if card.static_effects == []:           # this is a variable of card.Card()
+                card.static_effects = []                # this is a variable of something in M15_cards.py (e.g. c383180)
+    
+          This just seems way too janky
 
 
 

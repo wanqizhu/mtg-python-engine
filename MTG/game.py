@@ -45,11 +45,13 @@ class Game(object):
         # self.previous_state = GAME_PREVIOUS_STATE
 
     def opponent(self, player):
-        """Opponent in 2 player game"""
+        """Opponents -- return a single player in 2p game"""
         assert player in self.players_list
-        for p in self.players_list:
-            if p != player:
-                return p
+        op = [p for p in self.players_list if p != player]
+        if isinstance(op, list) and len(op) == 1:
+            return op[0]
+
+        return op
 
     @property
     def timestamp(self):
@@ -110,9 +112,9 @@ class Game(object):
 
         self.apply_to_battlefield(
             lambda p: p.check_effect_expiration())
-        
+
         self.apply_to_battlefield(
-            lambda p: p.dies(),
+            lambda p: p.destroy(),
             lambda p: p.is_creature and
                       p.status.damage_taken >= p.toughness)
 
@@ -420,7 +422,7 @@ class Game(object):
             # if no first strikes avaliable, skip to combat damage
             if not self.apply_to_battlefield(
                     lambda p: p.deals_damage(
-                        p.status.is_attacking, p.power),
+                        p.status.is_attacking, p.power, is_combat=True),
                     lambda p: p.status.is_attacking and (p.has_ability("First Strike")
                                                          or p.has_ability("Double Strike"))):
 
@@ -433,14 +435,14 @@ class Game(object):
             # attackers do damage
             self.apply_to_battlefield(
                 lambda p: p.deals_damage(p.status.is_attacking,
-                                         p.power),
+                                         p.power, is_combat=True),
                 lambda p: p.status.is_attacking and (not p.has_ability("First Strike")
                                                      or p.has_ability("Double Strike")))
 
             # blockers do damage
             self.apply_to_battlefield(
                 lambda p: p.deals_damage(p.status.is_blocking,
-                                         p.power),
+                                         p.power, is_combat=True),
                 lambda p: p.status.is_blocking and (not p.has_ability("First Strike")
                                                     or p.has_ability("Double Strike")))
 

@@ -106,6 +106,9 @@ def add_activated_ability(cardname, cost, effect, target_criterias=None, prompts
             costs.append("self.controller.pay(life=%s)" %
                          re.search('[\dX]+', itm).group(0))
 
+        if itm == 'Sacrifice ~':
+            costs.append("self.sacrifice()")
+
     # elif other costs
 
     costs = " and ".join(costs)
@@ -200,6 +203,8 @@ def add_trigger(cardname, condition, effect, requirements=lambda self: True,
         target_criterias = helper_funcs.parse_targets(target_criterias)
         if not target_prompts:
             target_prompts = ["Choose a target\n"] * len(target_criterias)
+    else:
+        target_criterias = None
 
     # each element in the dict is a list of triggers, since there could be multiple abilities
     # that trigger from the same effect, e.g. tap AND draw a card on etb
@@ -207,15 +212,16 @@ def add_trigger(cardname, condition, effect, requirements=lambda self: True,
     card.triggers[condition].append((effect, requirements,
                                      target_criterias, target_prompts))
 
-def add_self_static_effect(cardname, name, value, toggle_func=lambda eff: False):
+def add_static_effect(cardname, apply_to, name, value, toggle_func=lambda eff: False):
     if not name_to_id(cardname):
         return
     card = card_from_name(cardname, get_instance=False)
 
+
     if card.static_effects == []:
         card.static_effects = []
 
-    card.static_effects.append((name, value, toggle_func))
+    card.static_effects.append((apply_to, name, value, toggle_func))
 
 
 
@@ -237,6 +243,7 @@ def parse_card_from_lines(lines, log=None):
     Each set of lines correspond to all abilities/effects of a single card
     """
     stage = 'new card'
+    substage = ''
     name = ''
 
     effects = []
@@ -244,9 +251,12 @@ def parse_card_from_lines(lines, log=None):
     targets = []
     target_prompts = []
     _triggers = []  # _ since we import MTG.triggers
+    _trigger_targets = []
 
     aura_targets = []
     aura_effects = []
+
+    static_effects = []
 
 
     prev_ind_lv = 0
@@ -289,19 +299,18 @@ def parse_card_from_lines(lines, log=None):
             if line == 'Abilities:':
                 stage = 'abilities'
                 continue
-
             elif line == 'Targets:':
                 stage = 'targets'
                 continue
-
             elif line == 'Triggers:':
                 stage = 'triggers'
                 continue
-
             elif line == 'Aura:':
                 stage = 'aura'
                 continue
-
+            elif line == 'StaticEffects:':
+                stage = 'static'
+                continue
             else:
                 stage = 'effects'
 
@@ -334,13 +343,22 @@ def parse_card_from_lines(lines, log=None):
         elif stage == 'triggers':
             if ind_lv == 2:  # new trigger condition
                 _triggers.append([line, []])
+                _trigger_targets.append([])
             elif ind_lv == 3:
-                if line == 'If:':
-                    pass
-                else:
                     _triggers[-1][-1].append(line)  # trigger effect
-            elif ind_lv == 4:  # previous line should have been 'If:'
-                _triggers[-1].append(line)  # optional trigger requirements
+            elif ind_lv == 4:
+                if line == 'If:':
+                    substage = 'requirements'
+                elif line == 'Targets:':
+                    substage = 'targets'
+
+            elif ind_lv == 5:
+                if substage == 'requirements':
+                    _triggers[-1].append(line)  # optional trigger requirements
+                elif substage == 'targets':
+                    if line[0] != "'":
+                        line = 'lambda self, p: ' + line
+                    _trigger_targets[-1].append(line)
 
         elif stage == 'aura':
             if ind_lv == 2:
@@ -354,20 +372,27 @@ def parse_card_from_lines(lines, log=None):
                     line = 'lambda self, p: ' + line
                 aura_targets.append(line)
 
+        elif stage == 'static':
+            if ind_lv == 2:
+                static_effects.append([line])  # apply_to
+            elif ind_lv == 3:
+                static_effects[-1].append(line)  # effect_name, effect_value, toggle_func
 
 
     # print(name, targets, abilities, _triggers, effects)
     str_to_exe = ""
 
+    name = '"' + name + '"'
+
     if abilities:
         for cost, effect, ability_targets in abilities:
             ability_targets = '[' + ', '.join(ability_targets) + ']'
-            str_to_exe += "add_activated_ability(%r, %r, %r, %s)\n" % (name, cost, effect, ability_targets)
+            str_to_exe += "add_activated_ability(%s, %r, %r, %s)\n" % (name, cost, effect, ability_targets)
 
 
     if targets:
         targets = '[' + ', '.join(targets) + ']'
-        str_to_exe += "add_targets(%r, %s, prompts=%r)\n" % (
+        str_to_exe += "add_targets(%s, %s, prompts=%r)\n" % (
                     name, targets, target_prompts)
 
 
@@ -377,34 +402,39 @@ def parse_card_from_lines(lines, log=None):
     #     turning them from strings into statements
 
     if _triggers:
-        for trig in _triggers:
-            if len(trig) == 2:
-                trig[1] = '[' + ', '.join(trig[1]) + ']'
-                str_to_exe += "add_trigger(%r, triggers.triggerConditions[%r], %r)\n" % (
-                                    name, trig[0], trig[1])
+        for trig, _trig_targets in zip(_triggers, _trigger_targets):
+            trig[1] = '[' + ', '.join(trig[1]) + ']'
+            _trig_targets = '[' + ', '.join(_trig_targets) + ']'
 
-            else:  # optional trigger requirements
-                trig[1] = '[' + ', '.join(trig[1]) + ']'
-                trig[2] =  "lambda self: " + trig[2]
-                str_to_exe += "add_trigger(%r, triggers.triggerConditions[%r], %r, %s)\n" % (
-                                    name, trig[0], trig[1], trig[2])
+            if len(trig) == 2:  # optional trigger requirements
+                trig.append(None)
+            else:
+                trig[2] =  "lambda self: " + trig[2]   
+                
+            str_to_exe += "add_trigger(%s, triggers.triggerConditions[%r], %r, %s, %s)\n" % (
+                                    name, trig[0], trig[1], trig[2], _trig_targets)
 
 
     if effects:
         if not targets:
             effects = 'lambda self: [' + ', '.join(effects) + ']'
-            str_to_exe += "add_play_func_no_target(%r, %s)\n" % (name, effects)
+            str_to_exe += "add_play_func_no_target(%s, %s)\n" % (name, effects)
 
         else:
             effects = ("lambda self, targets, is_legal_target: ["
                       + ', '.join(effects) + ']')
-            str_to_exe += "add_play_func_with_targets(%r, %s)\n" % (
+            str_to_exe += "add_play_func_with_targets(%s, %s)\n" % (
                                 name, effects)
 
     if aura_effects:
         aura_effects = '[' + ', '.join(aura_effects) + ']'
         aura_targets = '[' + ', '.join(aura_targets) + ']'
-        str_to_exe += "add_aura_effect(%r, %r, %s)\n" % (name, aura_effects, aura_targets)
+        str_to_exe += "add_aura_effect(%s, %r, %s)\n" % (name, aura_effects, aura_targets)
+
+    if static_effects:
+        for eff in static_effects:
+            str_to_exe += "add_static_effect({}, {}, {}, {}, {})\n".format(name,
+                                            *eff)
 
     if log:
         log.write(str_to_exe + "\n")
@@ -436,12 +466,3 @@ def set_up_cards(FILES=['data/cards.txt']):
                 lines = []
             else:  # wait to parse cards until we've read in all information about a card
                 lines.append(line)
-
-
-    add_trigger("Kinsbaile Skirmisher", triggers.triggerConditions['onEtB'],
-            '[self.targets_chosen[0].add_effect("modifyPT", (1, 1), self, self.game.eot_time)]',
-            requirements=None,
-            target_criterias=['creature'])
-
-    add_self_static_effect("Dauntless River Marshal", "modifyPT", (1,1),
-                           lambda eff: eff.source.controller.controls(subtype="Island"))
