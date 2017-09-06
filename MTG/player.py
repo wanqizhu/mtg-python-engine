@@ -51,6 +51,8 @@ class Player():
         self.turn_events = defaultdict(lambda: None)
         self.last_turn_events = defaultdict(lambda: None)
 
+        self.static_effects = []
+
         # todo: cost modifier tracker
 
     def __repr__(self):
@@ -68,6 +70,10 @@ class Player():
     @property
     def is_active(self):
         return self == self.game.current_player
+
+    @property
+    def opponent(self):
+        return self.game.opponent(self)
 
     @property
     def creatures(self):
@@ -282,11 +288,6 @@ class Player():
 
         return _play
 
-    @property
-    def opponent(self):
-        return self.game.opponent(self)
-
-
     # separate func for unit testing
     def make_choice(self, prompt_string):
         # if not TEST:
@@ -301,6 +302,28 @@ class Player():
         # else:
         #     ## TODO: unit tests
         #     pass
+
+
+    def add_static_effect(self, name, value, source, toggle_func, exempt_source=False):
+        """ toggle_func: condition func on which permanents the static effect affects -- lambda eff: True
+
+        e.g. lambda eff: eff.source.is_creature applies to all creatures
+
+        exempt_source: True if the effect only applies to 'other permanents'
+        """
+        self.static_effects.append((name, value, source, toggle_func))
+        for p in self.battlefield:
+            p.add_effect(name, value, source=source, is_active=False, toggle_func=toggle_func)
+
+        if not exempt_source:  # when this func is called during permanent.__init__(),
+                               # the card isn't on the battlefield yet. 
+            source.add_effect(name, value, source=source, is_active=False, toggle_func=toggle_func)
+
+    def remove_static_effect(self, source):
+        """ remove all effects from a certain source """
+        self.static_effects = [eff for eff in self.static_effects if eff[2] != source]
+        # each permanent should auto-remove since source's timestamp has changed
+
 
     def play_card(self, card):
         if isinstance(card, str):  # convert card name to Card object
@@ -447,10 +470,6 @@ class Player():
         elif self.life > value:
             self.lose_life(life - value)
 
-    def lose(self):
-        print("{} has lost the game\n".format(self))
-        self.lost = True
-
     def end_turn(self):
         self.last_turn_events = self.turn_events
         self.turn_events = defaultdict(lambda: None)
@@ -484,9 +503,9 @@ class Player():
 
         return filt
 
-
-    def add_static_effect(self, apply_to, name, value, source, toggle_func):
-        raise NotImplementedError
+    def lose(self):
+        print("{} has lost the game\n".format(self))
+        self.lost = True
 
 
     def print_player_state(self):

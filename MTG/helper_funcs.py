@@ -71,11 +71,21 @@ def parse_targets(criterias):
         if v == 'creature':
             criterias[i] = lambda self, p: p.is_permanent and p.is_creature
 
+        if v == 'your creature':
+            criterias[i] = lambda self, p: p.is_permanent and p.is_creature and p.controller == self.controller
+
+        if v == 'other creature':
+            criterias[i] = lambda self, p: p.is_permanent and p.is_creature and p != self
+
+        if v == 'your other creature':
+            criterias[i] = lambda self, p: (p.is_permanent and p.is_creature
+                                            and p.controller == self.controller and p != self)
+
         if v == 'opponent creature':
             criterias[i] = lambda self, p: p.is_creature and p.controller != self.controller
 
         if v == 'opponent':
-            criterias[i] = lambda self, p: p.is_player and p != self
+            criterias[i] = lambda self, p: p.is_player and p != self.controller
 
         if v == 'player':
             criterias[i] = lambda self, p: p.is_player

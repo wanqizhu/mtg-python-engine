@@ -131,7 +131,7 @@ class Battlefield(Zone):
             self.elements.append(obj)
             obj.status = permanent.Status()  # reset status upon entering battlefield
 
-        obj.timestamp = obj.game.timestamp  # reset timestamp
+        # obj.timestamp = obj.game.timestamp  # no need; timestamp already reset when init permanent / leaving battlefield
         obj.trigger(triggers.triggerConditions.onEtB)
 
 

@@ -301,8 +301,7 @@ class TestPlayer(unittest.TestCase):
             mock_take_damage.assert_has_calls(
                 [mock.call(c1, 2, True), mock.call(c2, 1, True)])
 
-    @mock.patch.object(permanent.Permanent, 'dies')
-    def test_lethal_damage_in_combat(self, mock_dies):
+    def test_lethal_damage_in_combat(self):
         """ single creature blocking single attacker; both die"""
         with mock.patch('builtins.input', side_effect=[
                 '__self.battlefield.add("Sewn-Eye Drake")', '',  # p0
@@ -316,7 +315,7 @@ class TestPlayer(unittest.TestCase):
                 '']):
 
             self.GAME.handle_turn()
-            mock_dies.assert_any_call()
+            self.assertEqual(len(self.player.graveyard), 1)
             self.assertEqual(self.player.life, 20)
             self.assertEqual(self.opponent.life, 20)
 
@@ -423,6 +422,9 @@ class TestPlayer(unittest.TestCase):
     #     pass
 
     # def test_lifelink(self):
+    #     pass
+
+    # def test_combat_damage_triggers(self):
     #     pass
 
     def test_haste(self):
@@ -661,6 +663,95 @@ class TestPlayer(unittest.TestCase):
             self.player.autoPayMana = True
             self.GAME.handle_turn()
             self.assertTrue(all(self.player.tmp))
+
+
+    def test_board_affecting_static_abilities(self):
+        """Testing Kinsbaile Skirmisher"""
+        with mock.patch('builtins.input', side_effect=[
+                '__self.battlefield.add("Soulmender")',
+                '__self.battlefield.add("Paragon of New Dawns")',
+                '__self.battlefield.add("Child of Night")',
+                '__self.tmp = [[p.power for p in self.battlefield] == [2, 2, 2]]',
+                '__self.battlefield.add("Paragon of New Dawns")',
+                '__self.tmp.append([p.power for p in self.battlefield] == [3, 3, 2, 3])',
+                'addmana',
+                '__self.draw_card("Lightning Bolt")',
+                'p Lightning Bolt', 'b 1', '', '',
+                '__self.tmp.append([p.power for p in self.battlefield] == [2, 2, 2])',
+                '__self.battlefield.add("Paragon of New Dawns")',
+                '__self.battlefield.add("Paragon of New Dawns")',
+                '__self.battlefield.add("Soulmender")',
+                's end', 's end',
+                '__self.tmp.append([p.power for p in self.battlefield] == [4, 2, 4, 4, 4, 4])',
+                's upkeep', 's upkeep'
+        ]):
+            self.player.autoPayMana = True
+            self.GAME.handle_turn()
+            # assert effect still holds
+            self.player.tmp.append([p.power for p in self.player.battlefield] == [4, 2, 4, 4, 4, 4])
+            self.assertTrue(all(self.player.tmp), self.player.tmp)
+
+
+    def test_conditional_self_affecting_static_abilities(self):
+        """Testing Dauntless River Marshall & Warden of the Beyond
+
+        Conditional +1/+1 (or +2/+2) -- examples of self-affecting static abilities
+        """
+        with mock.patch('builtins.input', side_effect=[
+                '__self.battlefield.add("Dauntless River Marshal")',
+                '__self.battlefield.add("Warden of the Beyond")',
+                '__self.tmp = [[p.power for p in self.battlefield] == [2, 2]]',
+                's main', 's main',
+                '__self.draw_card("Island")',
+                'p Island',
+                '__self.tmp.append([p.power for p in self.battlefield if p.is_creature] == [3, 2])',
+                '',
+                '__self.battlefield.add("Plains")',  # player 1 exiles a card
+                '__self.battlefield[0].exile()',
+                '',
+                '__self.tmp.append([p.power for p in self.battlefield if p.is_creature] == [3, 4])',
+                'addmana',
+                '__self.draw_card("Lightning Bolt")',
+                'p Lightning Bolt', 'b 1', '', '',  # deal 3 dmg to warden, which is currently a 4/4
+                '__self.tmp.append(len(self.battlefield) == 3)',  # warden should still be alive
+                '__self.opponent.exile.pop()',  # clear opponent exile
+                '', '',  # apply SBAs,
+                '__self.tmp.append(len(self.battlefield) == 2)',  # warden should die
+                '__self.battlefield.add("Dauntless River Marshal")',  # new River Marshal should immediately get buff
+                '__self.tmp.append([p.power for p in self.battlefield if p.is_creature] == [3, 3])',
+                's upkeep', 's upkeep'
+        ]):
+            self.player.autoPayMana = True
+            self.GAME.handle_turn()
+            self.assertTrue(all(self.player.tmp), self.player.tmp)
+
+
+    def test_indestructible(self):
+        with mock.patch('builtins.input', side_effect=[
+                '__self.draw_card("Ephemeral Shields")',
+                '__self.battlefield.add("Soulmender")',
+                '__self.battlefield.add("Soulmender")',
+                'p Ephemeral Shields',
+                'b 0',
+                '0 1', '', '',  # use convoke to pay
+                '__self.tmp = [self.battlefield[0].has_ability("Indestructible")]',
+                '__self.battlefield[0].destroy()',
+                '', '',
+                '__self.tmp.append(len(self.battlefield == 2))',  # shouldn't be destroyed
+                '__self.draw_card("Lightning Bolt")',
+                'addmana',
+                'p Lightning Bolt', 'b 0', '', '',  # damage shouldn't kill
+                '__self.tmp.append(len(self.battlefield == 2))',
+                '__self.draw_card("Ulcerate")',
+                'p Ulcerate', 'b 0', '', '',    # however, lowering toughness below 0 should
+                '__self.tmp.append(len(self.battlefield == 1))',
+                's upkeep', 's upkeep'
+        ]):
+            self.player.autoPayMana = True
+            self.GAME.handle_turn()
+            self.assertTrue(all(self.player.tmp), self.player.tmp)
+
+
 
 
     # def test_trigger_ordering(self):

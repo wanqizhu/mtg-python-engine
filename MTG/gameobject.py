@@ -50,9 +50,6 @@ class Characteristics():
         return True
 
 
-Effect = namedtuple('Effect', ['value', 'source', 'expiration', 'timestamp'])
-
-
 class GameObject():
     is_player = False
 
@@ -67,6 +64,7 @@ class GameObject():
             self.game = self.controller.game
         self.effects = defaultdict(lambda: SortedListWithKey(
                                            [], lambda x : x.timestamp))
+        self.timestamp = None
 
     def __repr__(self):
         # pdb.set_trace()
@@ -170,19 +168,19 @@ class GameObject():
         """ color is a list"""
         return color == self.characteristics.color
 
-    def add_effect(self, name, value, source=None, expiration=math.inf):
-        eff = Effect(value, source, expiration, self.controller.game.timestamp)
-        self.effects[name].add(eff)
-        self.check_effect_expiration()
+    def exile(self):
+        self.change_zone(self.owner.exile)
+
 
 
     def change_zone(self, target_zone, from_top=0, shuffle=True):
         current_zone = self.zone
         if current_zone.remove(self):
             if current_zone.is_battlefield:
-                # shift from permanent back to card
-                c = self.original_card
+                self.controller.remove_static_effect(self)  # remove static effects
+                c = self.original_card  # shift from permanent back to card
                 c.previousState = self
+                self.timestamp = self.game.timestamp  # reset timestamp
             else:
                 c = self
 

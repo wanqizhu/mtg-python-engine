@@ -556,8 +556,37 @@ Frost Lynx
 
 
 ##############################
-_name_
+Paragon of New Dawns
 
+	StaticEffects:
+		'controller -self'
+			'modifyPT'
+			(1, 1)
+			lambda eff: eff.apply_target.is_creature and eff.apply_target.has_color("W")
+
+	Abilities:
+		W, T: self.targets_chosen[0].add_effect("gainAbility", "Vigilance", self, self.game.eot_time)
+			Targets:
+				p.is_permanent and p.is_creature
+								and p.controller == self.controller and p != self
+								and p.has_color("W")
+
+
+##############################
+Paragon of Gathering Mists
+
+	StaticEffects:
+		'controller -self'
+			'modifyPT'
+			(1, 1)
+			lambda eff: eff.apply_target.is_creature and eff.apply_target.has_color("U")
+
+	Abilities:
+		U, T: self.targets_chosen[0].add_effect("gainAbility", "Flying", self, self.game.eot_time)
+			Targets:
+				p.is_permanent and p.is_creature
+								and p.controller == self.controller and p != self
+								and p.has_color("U")
 
 
 ##############################

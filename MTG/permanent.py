@@ -10,7 +10,6 @@ from functools import reduce
 from MTG import gameobject
 from MTG import zone
 from MTG import cardtype
-from MTG import mana
 from MTG import triggers
 from MTG import play
 from MTG import abilities
@@ -18,105 +17,105 @@ from MTG import abilities
 
 
 
-class Modifier():
-    def __init__(self, target, modifications=[], to_apply=True):
-        """
-        Modifications is a list of tuples
-            (name-of-method-to-modify, modified-value-or-function,
-                (optional) add_on=False)
+# class Modifier():
+#     def __init__(self, target, modifications=[], to_apply=True):
+#         """
+#         Modifications is a list of tuples
+#             (name-of-method-to-modify, modified-value-or-function,
+#                 (optional) add_on=False)
 
-        If add_on is True and we're modifying a value, then the modification
-         will be added on to the original value
+#         If add_on is True and we're modifying a value, then the modification
+#          will be added on to the original value
 
-        So (characteristics.power, 4, True) buffs creature by +4/+0, whereas
-           (characteristics.power, 4) sets base power to 4
+#         So (characteristics.power, 4, True) buffs creature by +4/+0, whereas
+#            (characteristics.power, 4) sets base power to 4
 
-        """
-        self.target = target
-        self.original_methods = {}
-        self.modified_methods = {}
-        self.applied = True
+#         """
+#         self.target = target
+#         self.original_methods = {}
+#         self.modified_methods = {}
+#         self.applied = True
 
-        self.add(modifications, to_apply)
+#         self.add(modifications, to_apply)
 
-    @property
-    def method_names(self):
-        return self.original_methods.keys()
+#     @property
+#     def method_names(self):
+#         return self.original_methods.keys()
 
-    def apply(self):
-        """Essentially, what setattr() is doing is:
+#     def apply(self):
+#         """Essentially, what setattr() is doing is:
 
-            reduce(...) gets to the object
-             which actually contains the attribute/method we want to change
+#             reduce(...) gets to the object
+#              which actually contains the attribute/method we want to change
 
-            so if name is 'tap' or any 1st level method of Permanent, it just return self.target
+#             so if name is 'tap' or any 1st level method of Permanent, it just return self.target
 
-            but if name is 'characteristics.power', then it returns self.target[characteristics]
+#             but if name is 'characteristics.power', then it returns self.target[characteristics]
 
-            Then, it performes 'target.name = modification' through setattr(...)
+#             Then, it performes 'target.name = modification' through setattr(...)
 
-             where target is the target returned by reduce(getattr(...)) above
-             and name is only the last part of name -- the actual name of the method
+#              where target is the target returned by reduce(getattr(...)) above
+#              and name is only the last part of name -- the actual name of the method
 
-        This is akin to finding the path-to-file, then changing the file from that directory
+#         This is akin to finding the path-to-file, then changing the file from that directory
 
-        e.g. we're given a full path, and then we call
-         setattr(path-to-directory, filename, value-to-assign)
+#         e.g. we're given a full path, and then we call
+#          setattr(path-to-directory, filename, value-to-assign)
 
-        In the case where name is just a 1st level method, this call is equivalent to
-         setattr(self.target, name, modification)
+#         In the case where name is just a 1st level method, this call is equivalent to
+#          setattr(self.target, name, modification)
 
-        Or: eval('self.target.' + name + ' = ' + modification)
+#         Or: eval('self.target.' + name + ' = ' + modification)
 
-        """
-        for name, modification in self.modified_methods.items():
-            setattr(
-                reduce(getattr, name.split('.')[:-1], self.target),
-                name.split('.')[-1],
-                modification)
+#         """
+#         for name, modification in self.modified_methods.items():
+#             setattr(
+#                 reduce(getattr, name.split('.')[:-1], self.target),
+#                 name.split('.')[-1],
+#                 modification)
 
-        self.applied = True
+#         self.applied = True
 
-    def reset(self):
-        for name, original in self.original_methods.items():
-            setattr(
-                reduce(getattr, name.split('.')[:-1], self.target),
-                name.split('.')[-1],
-                original)
-        self.applied = False
+#     def reset(self):
+#         for name, original in self.original_methods.items():
+#             setattr(
+#                 reduce(getattr, name.split('.')[:-1], self.target),
+#                 name.split('.')[-1],
+#                 original)
+#         self.applied = False
 
-    def add(self, modifications, to_apply=True):
-        for name, modification, *is_add_on in modifications:
-            """The reason why we use reduce is so we can parse names like
+#     def add(self, modifications, to_apply=True):
+#         for name, modification, *is_add_on in modifications:
+#             """The reason why we use reduce is so we can parse names like
 
-            characteristics.power
+#             characteristics.power
 
-            Essentially, if name refers to a method of Permanent (e.g. 'tap'),
-            then a simple getattr/setattr call will suffice (e.g. getattr(self.target, 'tap'))
+#             Essentially, if name refers to a method of Permanent (e.g. 'tap'),
+#             then a simple getattr/setattr call will suffice (e.g. getattr(self.target, 'tap'))
 
-            But that doesn't work with 'characteristics.power'
+#             But that doesn't work with 'characteristics.power'
 
-            So we need to chain getattr/setattr using reduce
-            """
+#             So we need to chain getattr/setattr using reduce
+#             """
 
-            self.original_methods[name] = reduce(getattr, name.split('.'),
-                                                 self.target)
+#             self.original_methods[name] = reduce(getattr, name.split('.'),
+#                                                  self.target)
 
-            if is_add_on and is_add_on[0]:
-                modification += self.original_methods[name]
+#             if is_add_on and is_add_on[0]:
+#                 modification += self.original_methods[name]
 
-            self.modified_methods[name] = modification
+#             self.modified_methods[name] = modification
 
-            if to_apply:
-                setattr(
-                    reduce(getattr, name.split('.')[:-1], self.target),
-                    name.split('.')[-1],
-                    modification)
+#             if to_apply:
+#                 setattr(
+#                     reduce(getattr, name.split('.')[:-1], self.target),
+#                     name.split('.')[-1],
+#                     modification)
 
-        if to_apply and self.applied:
-            self.applied = True
-        else:
-            self.applied = False
+#         if to_apply and self.applied:
+#             self.applied = True
+#         else:
+#             self.applied = False
 
 
 
@@ -168,7 +167,7 @@ class Effect():
         while active, the toggle function is negated; thus, it is passed into Effect(...)
         as a boolean dictionary (toggle_funcs)
     """
-    def __init__(self, value, timestamp, source=None, expiration=math.inf, is_active=True,
+    def __init__(self, value, timestamp, apply_target=None, source=None, expiration=math.inf, is_active=True,
                  toggle_func=lambda eff: False):
         self.value = value
         self.source = source
@@ -177,6 +176,7 @@ class Effect():
         self.toggle_funcs = {False: toggle_func,
                              True: lambda eff: not toggle_func(eff)}
         self.timestamp = timestamp
+        self.apply_target = apply_target
 
 
 
@@ -188,13 +188,17 @@ class Permanent(gameobject.GameObject):
         self._owner = owner
         self.zone = self.controller.battlefield
         self.original_card = original_card
-        self.modifier = Modifier(self, modifications)
+        # self.modifier = Modifier(self, modifications)
         self.timestamp = self.game.timestamp
         # sort by timestamp
-        # each self.effects[name] is a sortedlist of Effect = namedtuple
-        # each tuple always ends with (..., EXPIRATION_TIME, TIMESTAMP)
+        # each self.effects[name] is a sortedlist of Effect
+        # including (..., EXPIRATION_TIME, TIMESTAMP)
         self.effects = defaultdict(lambda: SortedListWithKey(
                                            [], lambda x : x.timestamp))
+
+        for name, value, source, toggle_func in self.controller.static_effects:
+            # apply existing static effects
+            self.add_effect(name, value, source=source, is_active=False, toggle_func=toggle_func)
 
         if status is None:
             self.status = Status()
@@ -213,13 +217,22 @@ class Permanent(gameobject.GameObject):
             for apply_to, name, value, toggle_func in original_card.static_effects:
                 if apply_to == 'self':
                     self.add_effect(name, value, source=self, is_active=False, toggle_func=toggle_func)
-                else:
-                    self.controller.add_static_effect(apply_to, name, value, source=self, toggle_func=toggle_func)
+                elif apply_to == 'controller':
+                    self.controller.add_static_effect(name, value, source=self, toggle_func=toggle_func)
+                elif apply_to == 'game':
+                    self.game.add_static_effect(name, value, source=self, toggle_func=toggle_func)
+                elif apply_to == 'controller -self':  # does not apply ability to self (e.g. 'other creatures ...')
+                    self.controller.add_static_effect(name, value, source=self, toggle_func=toggle_func, exempt_source=True)
+                elif apply_to == 'game -self':
+                    self.game.add_static_effect(name, value, source=self, toggle_func=toggle_func, exempt_source=True)
+
         else:
             self.attributes = []
             self.activated_abilities = []
             self.trigger_listeners = {}
             self.continuous_effects = ''
+
+
 
         self.controller.battlefield.add(self)
         self.is_token = False
@@ -262,48 +275,66 @@ class Permanent(gameobject.GameObject):
                     lambda: self.activated_abilities[num].resolve(), source=self.activated_abilities[num],
                     name=name, is_mana_ability=self.activated_abilities[num].is_mana_ability)
 
-    def clear_modifier(self):
-        """Clears end-of-turn effects"""
-        self.modifier.reset()
+    # def clear_modifier(self):
+    #     """Clears end-of-turn effects"""
+    #     self.modifier.reset()
 
-    def add_effect(self, name, value, source=None, expiration=math.inf, is_active=True, toggle_func=lambda eff: True):        
-        eff = Effect(value, self.controller.game.timestamp, source,
+    def add_effect(self, name, value, source=None, expiration=math.inf,
+                   is_active=True, toggle_func=lambda eff: True):
+        if expiration == math.inf and source:
+            # static effect; auto expries if source expires
+            t = source.timestamp
+            expiration = lambda eff: eff.source.timestamp != t
+
+        eff = Effect(value, self.controller.game.timestamp, self, source,
                      expiration, is_active, toggle_func)
         self.effects[name].add(eff)
         self.check_effect_expiration()
 
+    def get_effect(self, name):
+        if name in self.effects:
+            return [eff for eff in self.effects[name] if eff.is_active]
+        else:
+            return []
+
     def check_effect_expiration(self):
+        did_something = False
         time = self.controller.game.timestamp
         for category in self.effects.values():
-                for eff in category[:]:
-                    if eff.toggle_funcs[eff.is_active](eff):
-                        eff.is_active = not eff.is_active
+            for eff in category[:]:
+                if eff.toggle_funcs[eff.is_active](eff):
+                    eff.is_active = not eff.is_active
+                    print("{} active/nonactive toggled".format(eff))
 
-                    if isinstance(eff.expiration, (int, float)):
-                        if eff.expiration < time:
-                            category.remove(eff)
-                            print("{} has expired (time)".format(eff))
-                    elif callable(eff.expiration):
-                        if eff.expiration(eff):
-                            category.remove(eff)
-                            print("{} has expired (condition)".format(eff))
+                if isinstance(eff.expiration, (int, float)):
+                    if eff.expiration < time:
+                        category.remove(eff)
+                        print("{} has expired (time)".format(eff))
+                        did_something = True
+
+                elif callable(eff.expiration):
+                    if eff.expiration(eff):
+                        category.remove(eff)
+                        print("{} has expired (condition)".format(eff))
+                        did_something = True
+
+        return did_something
 
 
-    def get_effect(self, name):
-        return [eff for eff in self.effects[name] if eff.is_active]
+
 
     def tap(self):
         if not self.status.tapped:
             self.status.tapped = True
+            self.trigger("onTap")
             return True
         return False
-
 
     def untap(self):
         if (self.status.tapped) and not self.status.not_untap:
             self.status.tapped = False
+            self.trigger("onUntap")
             return True
-            # self.untapTrigger
 
         if self.status.not_untap:
             self.status.not_untap -= 1
@@ -328,6 +359,12 @@ class Permanent(gameobject.GameObject):
             return self._calculate_pt()[1]
         else:
             return None
+
+    def add_counter(self, counter="+1/+1", num=1):
+        self.status.counters[counter] += num
+
+    def num_counters(self, counter):
+        return self.status.counters[counter]
 
     def _calculate_pt(self):
         # layer 7a
@@ -381,6 +418,11 @@ class Permanent(gameobject.GameObject):
                 if (attacker.has_ability('Intimidate')
                         and not (self.is_artifact or self.share_color(attacker))):
                     return False
+
+                for landtype in ["Plains", "Island", "Swamp", "Mountain", "Forest"]:
+                    if attacker.has_ability(landtype+"walk") and self.controller.controls(subtype=landtype):
+                        return False
+
                 # TODO: other blocking restrictions (e.g. can't block alone)
                 pass
 
@@ -389,7 +431,8 @@ class Permanent(gameobject.GameObject):
     def attacks(self, player):
         # trigger
         self.status.is_attacking = player
-        self.tap()
+        if not self.has_ability("Vigilance"):
+            self.tap()
 
     def blocks(self, creature):
         if self.can_block(creature):
@@ -537,11 +580,7 @@ class Permanent(gameobject.GameObject):
     def flicker(self):
         self.change_zone(self.owner.battlefield)
 
-    def add_counter(self, counter, num=1):
-        self.status.counters[counter] += num
 
-    def num_counters(self, counter):
-        return self.status.counters[counter]
 
 
 class Aura(Permanent):

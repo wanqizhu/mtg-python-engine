@@ -2,6 +2,7 @@ import sys
 import os
 import traceback
 import time
+import pdb
 
 from copy import deepcopy
 
@@ -44,15 +45,6 @@ class Game(object):
 
         # self.previous_state = GAME_PREVIOUS_STATE
 
-    def opponent(self, player):
-        """Opponents -- return a single player in 2p game"""
-        assert player in self.players_list
-        op = [p for p in self.players_list if p != player]
-        if isinstance(op, list) and len(op) == 1:
-            return op[0]
-
-        return op
-
     @property
     def timestamp(self):
         return (self.turn_num * 100
@@ -68,7 +60,21 @@ class Game(object):
         i = self.players_list.index(self.current_player)
         return self.players_list[i:] + self.players_list[:i]
 
-    # TODO
+
+    def opponent(self, player):
+        """Opponents -- return a single player in 2p game"""
+        assert player in self.players_list
+        op = [p for p in self.players_list if p != player]
+        if isinstance(op, list) and len(op) == 1:
+            return op[0]
+
+        return op
+
+    def add_static_effect(name, value, source, toggle_func):
+        for p in self.players_list:
+            p.add_static_effect(name, value, source, toggle_func)
+
+
     def apply_stack_item(self, stack_item):
         """ resolving a spell/effect from stack"""
         print(stack_item)
@@ -108,18 +114,22 @@ class Game(object):
 
     # TODO
     def apply_state_based_actions(self):
-        # print("Applying state based actions")
+        print("Applying state based actions")
+        _any_action = False
+        def any_action():
+            nonlocal _any_action
+            _any_action = True
 
         self.apply_to_battlefield(
-            lambda p: p.check_effect_expiration())
+            lambda p: any_action() if p.check_effect_expiration() else None)
 
         self.apply_to_battlefield(
-            lambda p: p.destroy(),
+            lambda p: any_action() if p.destroy() else None,
             lambda p: p.is_creature and
                       p.status.damage_taken >= p.toughness)
 
         self.apply_to_battlefield(
-            lambda p: p.change_zone(p.owner.graveyard),
+            lambda p: any_action() if p.change_zone(p.owner.graveyard) else None,
             lambda p: p.is_aura and
                       p.enchant_target is None)
 
@@ -128,11 +138,15 @@ class Game(object):
             if _player.life <= 0:
                 _player.lose()
             if _player.lost:  # PROBLEM with multiplayer -- maybe skip over rest of turn / destroy all cards owned by that player?
+                any_action()
                 self.players_list.remove(_player)
                 self.num_players -= 1
 
         if self.num_players <= 1:
             raise GameOverException
+
+        if _any_action:
+            self.apply_state_based_actions()
 
 
 
@@ -503,6 +517,8 @@ class Game(object):
             0)  # cycles to next player's turn
         self.turn_num += 1
         return True
+
+
 
     # debug
 
