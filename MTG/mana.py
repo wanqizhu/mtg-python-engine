@@ -15,9 +15,7 @@ class Mana(Enum):
     GENERIC = 6
 
 
-# any length > 0 of the following: { X, numbers, hybrid e.g. (U/R), WUBRGC }
-mana_pattern = re.compile(
-    '(X|' '\d|' '(\([WUBRGC2]/[WUBRGC]\))|' '[WUBRGC])+')
+
 
 
 def str_to_mana_dict(manacost):

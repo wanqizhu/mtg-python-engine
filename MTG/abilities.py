@@ -35,6 +35,7 @@ class StaticAbilities(Enum):
 
 class ActivatedAbility():
     def __init__(self, card, cost, effect, target_criterias=None, prompts=None, is_mana_ability=False):
+        """ card: permanent that the ability is attached to """
         self.card = card
         self.controller = card.controller
         self.game = self.controller.game

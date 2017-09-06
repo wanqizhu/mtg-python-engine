@@ -121,6 +121,10 @@ class Game(object):
             _any_action = True
 
         self.apply_to_battlefield(
+            lambda p: any_action() if p.zone.remove(p) else None,
+            lambda p: p.is_token and not p.zone.is_battlefield)
+
+        self.apply_to_battlefield(
             lambda p: any_action() if p.check_effect_expiration() else None)
 
         self.apply_to_battlefield(

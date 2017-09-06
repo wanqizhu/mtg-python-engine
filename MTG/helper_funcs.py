@@ -1,4 +1,9 @@
 import traceback
+import re
+
+# any length > 0 of the following: { X, numbers, hybrid e.g. (U/R), WUBRGC }
+mana_pattern = re.compile(
+    '(X|' '\d|' '(\([WUBRGC2]/[WUBRGC]\))|' '[WUBRGC])+')
 
 def get_card_from_user_input(player, string):
     """Convert a user input (naming a card in a zone) to an actual game object
@@ -95,3 +100,26 @@ def parse_targets(criterias):
                          or (p.is_creature and p.is_permanent))
 
     return criterias
+
+def parse_ability_costs(cost):
+    _costs = cost.split(', ')
+    costs = []
+
+    if 'T' in _costs:
+        costs.append("self.tap() and not self.is_summoning_sick")
+
+    for itm in _costs:
+        if mana_pattern.match(itm):
+            costs.append("self.controller.pay('%s')" % itm)
+
+        if re.match('[pP]ay [\dX]+ life', itm):
+            costs.append("self.controller.pay(life=%s)" %
+                         re.search('[\dX]+', itm).group(0))
+
+        if itm == 'Sacrifice ~':
+            costs.append("self.sacrifice()")
+
+    # elif other costs
+
+    costs = " and ".join(costs)
+    return costs

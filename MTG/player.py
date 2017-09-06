@@ -408,8 +408,11 @@ class Player():
             self.graveyard.add(self.library.pop())
         return True
 
-    def create_token(self, attributes, num=1, token_abilities=[]):
-        token.create_token(attributes, self, num, token_abilities)
+    def create_token(self, attributes, num=1, keyword_abilities=[], activated_abilities=[]):
+        token.create_token(attributes, self, num, keyword_abilities, activated_abilities)
+
+    def investigate(self, num=1):
+        self.create_token('colorless Clue artifact', num, [], [['2, T, Sacrifice ~', 'self.controller.draw()']])
 
     # TODO: handle paying X life / X mana
     def pay(self, mana=None, life=0):

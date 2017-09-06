@@ -52,6 +52,7 @@ class Characteristics():
 
 class GameObject():
     is_player = False
+    is_token = False
 
     def __init__(self, characteristics=Characteristics(),
                  controller=None, owner=None, zone=None, previousState=None):
@@ -176,13 +177,14 @@ class GameObject():
     def change_zone(self, target_zone, from_top=0, shuffle=True):
         current_zone = self.zone
         if current_zone.remove(self):
-            if current_zone.is_battlefield:
+            if current_zone.is_battlefield and self.original_card:
                 self.controller.remove_static_effect(self)  # remove static effects
                 c = self.original_card  # shift from permanent back to card
                 c.previousState = self
                 self.timestamp = self.game.timestamp  # reset timestamp
             else:
                 c = self
+
 
             if target_zone.is_library:
                 return target_zone.add(c, from_top, shuffle)

@@ -1,4 +1,4 @@
-import re, sys
+import re, sys, traceback
 
 from bs4 import BeautifulSoup
 # from lexer import lexer
@@ -12,12 +12,13 @@ from MTG import abilities
 
 
 def run():
-    with open('parser/data/cards_sm.xml') as f:
+    # switch to sm_cards and replace-all 'all_set', 'sm_set' to just parse a sample of cards
+    with open('parser/data/cards.xml') as f:
         soup = BeautifulSoup(f, 'xml')
 
     card_list = soup.cockatrice_carddatabase.cards.find_all('card')
     cnt = 0
-    fout = open("data/sm_set_cards.py", "w")
+    fout = open("data/all_set_cards.py", "w")
     fout.write("from MTG import card\n"
         "from MTG import gameobject\n"
         "from MTG import cardtype\n"
@@ -45,14 +46,16 @@ def run():
             _type = _type[0].split(' ')
 
             if len(_type) > 1 and _type[0].upper() in cardtype.SuperType._member_names_:
-                supertype = '[cardtype.SuperType.'+_type[0].upper() + ']'
+                supertype = '[cardtype.SuperType[%r]]' % _type[0].upper()
                 _type.pop(0)
 
-            types = '[' + ', '.join(['cardtype.CardType.'+i.upper() for i in _type]) + ']'
-        
-            if 'Creature' in _type:
-                characteristics['power'], characteristics['toughness'] = map(int, card.find('pt').text.split('/'))
+            types = '[' + ', '.join(['cardtype.CardType[%r]' % i.upper() for i in _type]) + ']'
 
+            if 'Creature' in _type:
+                try:
+                    characteristics['power'], characteristics['toughness'] = map(int, card.find('pt').text.split('/'))
+                except ValueError:
+                    pass
             # static abilities
             _abilities = []
 
@@ -66,7 +69,7 @@ def run():
 
         except:
 
-            print(sys.exc_info())
+            traceback.print_exc()
             pass
 
 
@@ -93,10 +96,10 @@ def run():
 # """.format(id_to_name, name_to_id))
 
 
-    with open("data/sm_set_id_to_name_dict.pkl", "wb") as f:
+    with open("data/all_set_id_to_name_dict.pkl", "wb") as f:
         pickle.dump(id_to_name, f)
 
-    with open("data/sm_set_name_to_id_dict.pkl", "wb") as f:
+    with open("data/all_set_name_to_id_dict.pkl", "wb") as f:
         pickle.dump(name_to_id, f)
 
     fout.close()

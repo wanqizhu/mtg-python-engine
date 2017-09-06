@@ -5,7 +5,12 @@ import pickle
 from MTG import abilities
 
 
-SET = 'M15'
+# SET = 'M15'
+SET = 'AllSets'
+NAME = 'cube'
+
+# only_parse_list = None
+only_parse_list = set(open('parser/cube_card_list.txt').read().strip().split('\n'))
 
 
 def star_or_int(c):
@@ -17,26 +22,39 @@ def star_or_int(c):
 
 def run():
     with open('parser/data/%s.json' % SET) as f:
-        card_list = json.load(f)['cards']
+        cards = json.load(f)
+        card_list = []
+        for _set in cards.values():
+            card_list.extend(_set['cards'])
 
-    fout = open("data/%s_cards.py" % SET, "w")
+
+    fout = open("data/%s_cards.py" % NAME, "w")
     fout.write("from MTG import card\n"
                "from MTG import gameobject\n"
                "from MTG import cardtype\n"
                "from MTG import abilities\n"
                "from MTG import mana\n\n")
 
-    id_to_name = {}
+
     name_to_id = {}
 
     for card in card_list:
+        if only_parse_list and card["name"] not in only_parse_list:
+            continue
+
+        if card["name"] in name_to_id:  # already parsed card (ignore reprints)
+            continue
 
         try:
             supertype = []
             subtype = []
             _abilities = []
 
-            ID = 'c' + str(card["multiverseid"])
+            if "multiverseid" in card:
+                ID = 'c' + str(card["multiverseid"])
+            else:
+                continue
+                # ID = 'c' + str(card["id"])
             name = card["name"]
             characteristics = {'name': name}
             characteristics['text'] = card["text"] if "text" in card else ''
@@ -85,7 +103,6 @@ def run():
 
 """.format(ID, name, ID, characteristics, supertype, types, _abilities))
 
-        id_to_name[ID] = name
         name_to_id[name] = ID
 
 
@@ -97,10 +114,9 @@ def run():
 
 # """.format(id_to_name, name_to_id))
 
-    with open("data/%s_id_to_name_dict.pkl" % SET, "wb") as f:
-        pickle.dump(id_to_name, f)
 
-    with open("data/%s_name_to_id_dict.pkl" % SET, "wb") as f:
+
+    with open("data/%s_name_to_id_dict.pkl" % NAME, "wb") as f:
         pickle.dump(name_to_id, f)
 
     fout.close()

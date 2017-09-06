@@ -18,16 +18,17 @@
  	- function signatures in general (?)
  		- return True if action successful and did something
  		- raise error if illegal
- 		- return False if did nothing
+ 		- return False/None if did nothing
 
 
  	- optional targeting (up to ...)
 
 
+Instead of tying effect expiration to SOURCE card's timestamp, each card should have a list of 'abilities' in general, and then each effect should tie to that specific ABILITY's timestamp
+		- this enables cards like 'turn to frog' which removes abilities w/o removing the SOURCE CARD
+
 - Static Abilities
 
-
-- eot / conditional / aura modifiers on permanents
 
 - consider places to use sets instead of list
 

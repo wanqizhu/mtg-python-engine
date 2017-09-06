@@ -13,7 +13,7 @@ from MTG import helper_funcs
 from MTG import permanent
 
 
-SETPREFIX = ['M15', 'sm_set']
+SETPREFIX = ['M15', 'sm_set', 'cube']
 name_to_id_dict = {}
 id_to_name_dict = {}
 
@@ -25,11 +25,8 @@ for pre in SETPREFIX:
     except:
         print("%s name_to_id_dict not found\n" % pre)
 
-    try:
-        with open('data/%s_id_to_name_dict.pkl' % pre, 'rb') as f:
-            id_to_name_dict.update(pickle.load(f))
-    except:
-        print("%s id_to_name_dict not found\n" % pre)
+
+id_to_name_dict = {value: key for key, value in name_to_id_dict.items()}
 
 
 def id_to_name(ID):
@@ -92,26 +89,7 @@ def add_activated_ability(cardname, cost, effect, target_criterias=None, prompts
     card = card_from_name(cardname, get_instance=False)
     is_mana_ability = 'mana.add' in effect
 
-    _costs = cost.split(', ')
-    costs = []
-
-    if 'T' in _costs:
-        costs.append("self.tap() and not self.is_summoning_sick")
-
-    for itm in _costs:
-        if mana.mana_pattern.match(itm):
-            costs.append("self.controller.pay('%s')" % itm)
-
-        if re.match('[pP]ay [\dX]+ life', itm):
-            costs.append("self.controller.pay(life=%s)" %
-                         re.search('[\dX]+', itm).group(0))
-
-        if itm == 'Sacrifice ~':
-            costs.append("self.sacrifice()")
-
-    # elif other costs
-
-    costs = " and ".join(costs)
+    costs = helper_funcs.parse_ability_costs(cost)
 
     if not card.activated_abilities:  # hasn't been initiated yet
         card.activated_abilities = []
