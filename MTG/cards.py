@@ -414,13 +414,13 @@ def parse_card_from_lines(lines, log=None):
             str_to_exe += "add_static_effect({}, {}, {}, {}, {})\n".format(name,
                                             *eff)
 
-    if log:
+    if log and str_to_exe:
         log.write(str_to_exe + "\n")
 
     exec(str_to_exe)
 
 
-def set_up_cards(FILES=['data/cards.txt']):
+def set_up_cards(FILES=['data/m15_cards.txt', 'data/cube_cards.txt']):
     """
     Read in cards information from data/cards.txt
 
@@ -431,16 +431,16 @@ def set_up_cards(FILES=['data/cards.txt']):
     f_log = open('set_up_cards.log', 'w')
 
     for name in FILES:
-        f = open(name, 'r')
-        lines = []  # buffer
+        with open(name, 'r') as f:
+            lines = []  # buffer
 
-        for line in f:
-            line = line.rstrip()
-            if not line:
-                continue
+            for line in f:
+                line = line.rstrip()
+                if not line:
+                    continue
 
-            if line[:3] == '###':  # end of a card
-                parse_card_from_lines(lines, f_log)
-                lines = []
-            else:  # wait to parse cards until we've read in all information about a card
-                lines.append(line)
+                if line[:3] == '###':  # end of a card
+                    parse_card_from_lines(lines, f_log)
+                    lines = []
+                else:  # wait to parse cards until we've read in all information about a card
+                    lines.append(line)

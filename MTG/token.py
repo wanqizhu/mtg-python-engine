@@ -33,11 +33,14 @@ def create_token(attributes, controller, num=1, keyword_abilities=[], activated_
         if creature_token_pattern.match(attributes):
             pt, color, *c_type = attributes.split(' ')
             p, t = map(int, pt.split('/'))
-            types = cardtype.CardType.CREATURE
+            types = [cardtype.CardType.CREATURE]
+            if 'artifact' in c_type:
+                types.append(cardtype.CardType.ARTIFACT)
+                c_type.remove('artifact')
         else:
             p, t = None, None
             color, *c_type = attributes.split(' ')
-            types = cardtype.CardType[c_type.pop().upper()]
+            types = [cardtype.CardType[c_type.pop().upper()]]
 
         color = {'colorless': 'C',
                  'white': 'W',
@@ -60,8 +63,7 @@ def create_token(attributes, controller, num=1, keyword_abilities=[], activated_
 
         for i in range(num):
             characteristics = gameobject.Characteristics(name='Token: %s' % name,
-                                                         types=[
-                                                             types],
+                                                         types=types,
                                                          power=p,
                                                          toughness=t,
                                                          subtype=c_type,

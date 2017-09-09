@@ -169,6 +169,21 @@ class GameObject():
         """ color is a list"""
         return color == self.characteristics.color
 
+    @property
+    def is_monocolored(self):
+        return len(self.characteristics.color) == 1
+
+    @property
+    def is_multicolored(self):
+        return len(self.characteristics.color) > 1
+
+    @property
+    def is_colorless(self):
+        return len(self.characteristics.color) == 0
+
+    def has_subtype(self, subtype):
+        return subtype in self.characteristics.subtype
+
     def exile(self):
         self.change_zone(self.owner.exile)
 

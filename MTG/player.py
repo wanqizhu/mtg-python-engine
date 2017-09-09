@@ -414,6 +414,47 @@ class Player():
     def investigate(self, num=1):
         self.create_token('colorless Clue artifact', num, [], [['2, T, Sacrifice ~', 'self.controller.draw()']])
 
+    def sacrifice(self, num=1, filter_func=lambda p: p.is_creature):
+        if num <= 0:
+            return True
+
+        avaliable_targets = self.battlefield.filter(filter_func=filter_func)
+        if not avaliable_targets or len(avaliable_targets) > num:
+            return False
+
+        ans = self.make_choice("Avaliable permanents: %s\nWhat would you like to sacrifice? (need %d)"
+                               % (avaliable_targets, num))
+
+        if not ans:
+            return False
+
+        sacs = []
+
+        # fetch the chosen indices
+        ans = ans.split(" ")
+        for ind in ans:
+            try:
+                ind = int(ind)
+                if avaliable_targets[ind] not in sacs:
+                    sacs.append(avaliable_targets[ind])
+
+            except ValueError:
+                continue
+
+        if len(avaliable_targets) < num:
+            print("auto saccing...")
+            for p in avaliable_targets:
+                if p not in sacs:
+                    sacs.append(p)
+                if len(avaliable_targets) == num:
+                    break
+
+        for p in sacs:
+            p.sacrifice()
+
+        return sacs
+
+
     # TODO: handle paying X life / X mana
     def pay(self, mana=None, life=0):
         """

@@ -1,4 +1,3 @@
-
 add_activated_ability("Plains", 'T', 'self.controller.mana.add(mana.Mana.WHITE, 1)', [])
 
 add_activated_ability("Island", 'T', 'self.controller.mana.add(mana.Mana.BLUE, 1)', [])
@@ -97,8 +96,6 @@ add_trigger("Kinsbaile Skirmisher", triggers.triggerConditions['onEtB'], '[self.
 add_targets("Ephemeral Shields", ['creature'], prompts=[])
 add_play_func_with_targets("Ephemeral Shields", lambda self, targets, is_legal_target: [self.targets_chosen[0].add_effect('gainAbility', 'Indestructible', self, self.game.eot_time)])
 
-
-
 add_activated_ability("Selfless Cathar", '1W, Sacrifice ~', "(lambda self=self: [c.add_effect('modifyPT', (1, 1), self, self.game.eot_time) for c in self.controller.battlefield if c.is_creature])()", [])
 
 add_trigger("Wall of Essence", triggers.triggerConditions['onTakeCombatDamage'], '[self.controller.gain_life(self.trigger_amount)]', None, [])
@@ -120,7 +117,21 @@ add_static_effect("Paragon of New Dawns", 'controller -self', 'modifyPT', (1, 1)
 add_activated_ability("Paragon of Gathering Mists", 'U, T', 'self.targets_chosen[0].add_effect("gainAbility", "Flying", self, self.game.eot_time)', [lambda self, p: p.is_permanent and p.is_creature and p.controller == self.controller and p != self and p.has_color("U")])
 add_static_effect("Paragon of Gathering Mists", 'controller -self', 'modifyPT', (1, 1), lambda eff: eff.apply_target.is_creature and eff.apply_target.has_color("U"))
 
+add_targets("Void Snare", [lambda self, p: p.is_permanent and not p.is_land], prompts=[])
+add_play_func_with_targets("Void Snare", lambda self, targets, is_legal_target: [p.bounce()])
 
+add_trigger("Black Cat", triggers.triggerConditions['onDeath'], '[self.targets_chosen[0].discard(random=True)]', None, ['opponent'])
 
+add_trigger("Thraben Inspector", triggers.triggerConditions['onEtB'], '[self.controller.investigate()]', None, [])
 
+add_activated_ability("Selfless Spirit", 'Sacrifice ~', '(lambda self=self: [c.add_effect("gainAbility", "Indestructible", self, self.game.eot_time) for c in self.controller.battlefield if c.is_creature])()', [])
+
+add_trigger("Wall of Omens", triggers.triggerConditions['onEtB'], '[self.controller.draw()]', None, [])
+
+add_trigger("Blade Splicer", triggers.triggerConditions['onEtB'], '[self.controller.create_token("3/3 colorless Golem artifact")]', None, [])
+add_static_effect("Blade Splicer", 'controller', "gainAbility", "First Strike", lambda eff: eff.apply_target.is_creature and eff.apply_target.has_subtype("Golem"))
+
+add_trigger("Felidar Guardian", triggers.triggerConditions['onEtB'], '[self.targets_chosen[0].flicker() if self.controller.make_choice("Would you like to flicker another permanent?") else None]', None, [lambda self, p: p.is_permanent and p.controller == self.controller and p != self.card])
+
+add_trigger("Restoration Angel", triggers.triggerConditions['onEtB'], '[self.targets_chosen[0].flicker() if self.controller.make_choice("Would you like to flicker a non-Angel creature?") else None]', None, [lambda self, p: p.is_creature and p.controller == self.controller and not p.has_subtype("Angel")])
 

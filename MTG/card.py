@@ -23,6 +23,7 @@ class Card(gameobject.GameObject):
 
     static_effects = []
     continuous_effects = ''
+    status = None
 
 
     def __init__(self, characteristics=gameobject.Characteristics(),

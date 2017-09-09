@@ -201,7 +201,10 @@ class Permanent(gameobject.GameObject):
             self.add_effect(name, value, source=source, is_active=False, toggle_func=toggle_func)
 
         if status is None:
-            self.status = Status()
+            if original_card and original_card.status:
+                self.status = original_card.status
+            else:
+                self.status = Status()
         else:
             self.status = status
 
@@ -578,6 +581,7 @@ class Permanent(gameobject.GameObject):
         self.change_zone(self.owner.hand)
 
     def flicker(self):
+        self.change_zone(self.owner.exile)
         self.change_zone(self.owner.battlefield)
 
 
