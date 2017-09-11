@@ -65,24 +65,32 @@ class ActivatedAbility():
 
 
 class TriggeredAbility():
-    def __init__(self, card, effect, requirements, target_criterias=None, prompts=None):
+    def __init__(self, card, effect, requirements, target_criterias=None,
+                 prompts=None, intervening_if=True):
         self.card = card
         self.controller = card.controller
         self.game = self.controller.game
         self.effect = effect
         self.requirements = requirements
+        if intervening_if is True:  # same as requirements
+            self.intervening_if = requirements
+        elif intervening_if is False:
+            self.intervening_if = lambda self: True
+        else:
+            self.intervening_if = intervening_if
         self.target_criterias = target_criterias
         if target_criterias and not prompts:
             prompts = ["Choose a target\n"] * len(target_criterias)
         self.target_prompts = prompts
         self.targets_chosen = []
-        self.trigger_amount = None
+        self.trigger_amount = 1
+        self.trigger_source = None
 
     def resolve(self):
         return eval(self.effect)
 
     def condition_satisfied(self):
-        return self.requirements(self.card)
+        return self.requirements(self)
 
     def choose_targets(self):
         targets_chosen = helper_funcs.choose_targets(self)
@@ -95,7 +103,7 @@ class TriggeredAbility():
     def put_on_stack(self):
         if self.choose_targets():
             return play.Play(lambda: self.resolve(),
-                               apply_condition=lambda: self.condition_satisfied(),
+                               apply_condition=lambda: self.intervening_if(self),
                                name=self.card.name + ' triggered ability ' + str(self),
                                source=self)
         return None

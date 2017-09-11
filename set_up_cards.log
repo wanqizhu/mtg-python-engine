@@ -19,9 +19,9 @@ add_play_func_with_targets("Congregate", lambda self, targets, is_legal_target: 
 
 add_play_func_no_target("Mass Calcify", lambda self: [self.game.apply_to_battlefield( lambda p: p.destroy(), lambda p: p.is_creature and not p.has_color('W'))])
 
-add_trigger("Ajani's Pridemate", triggers.triggerConditions['onControllerLifeGain'], '[self.card.add_counter("+1/+1") if self.controller.make_choice( "Would you like to put a +1/+1 counter on %r?" % self.card) else None]', None, [])
+add_trigger("Ajani's Pridemate", triggers.triggerConditions['onControllerLifeGain'], '[self.card.add_counter("+1/+1") if self.controller.make_choice( "Would you like to put a +1/+1 counter on %r?" % self.card) else None]', None, [], False)
 
-add_trigger("Tireless Missionaries", triggers.triggerConditions['onEtB'], '[self.controller.gain_life(3)]', None, [])
+add_trigger("Tireless Missionaries", triggers.triggerConditions['onEtB'], '[self.controller.gain_life(3)]', None, [], False)
 
 add_activated_ability("Soulmender", 'T', 'self.controller.gain_life(1)', [])
 
@@ -45,11 +45,11 @@ add_play_func_with_targets("Mind Rot", lambda self, targets, is_legal_target: [t
 
 add_activated_ability("Shadowcloak Vampire", 'Pay 2 life', "self.card.add_effect('gainAbility', 'Flying', self, self.game.eot_time)", [])
 
-add_trigger("First Response", triggers.triggerConditions['onUpkeep'], "[self.controller.create_token('1/1 white Soldier')]", lambda self: self.controller.last_turn_events['life loss'], [])
+add_trigger("First Response", triggers.triggerConditions['onUpkeep'], "[self.controller.create_token('1/1 white Soldier')]", lambda self: self.controller.last_turn_events['life loss'], [], True)
 
 add_play_func_no_target("Raise the Alarm", lambda self: [self.controller.create_token('1/1 white Soldier', 2)])
 
-add_trigger("Resolute Archangel", triggers.triggerConditions['onEtB'], '[self.controller.set_life_total(self.controller.startingLife)]', lambda self: self.controller.life < self.controller.startingLife, [])
+add_trigger("Resolute Archangel", triggers.triggerConditions['onEtB'], '[self.controller.set_life_total(self.controller.startingLife)]', lambda self: self.controller.life < self.controller.startingLife, [], True)
 
 add_play_func_no_target("Sanctified Charge", lambda self: [[c.add_effect('modifyPT', (2, 1), self, self.game.eot_time) for c in self.controller.battlefield if c.is_creature], [c.add_effect('gainAbility', 'First Strike', self, self.game.eot_time) for c in self.controller.battlefield if c.is_creature and c.has_color('W')]])
 
@@ -68,7 +68,7 @@ add_play_func_with_targets("Pillar of Light", lambda self, targets, is_legal_tar
 add_targets("Chronostutter", ['creature'], prompts=[])
 add_play_func_with_targets("Chronostutter", lambda self, targets, is_legal_target: [targets[0].change_zone(t[0].owner.library, 1, False)])
 
-add_trigger("Coral Barrier", triggers.triggerConditions['onEtB'], "[self.controller.create_token('1/1 blue Squid', 1, 'Islandwalk')]", None, [])
+add_trigger("Coral Barrier", triggers.triggerConditions['onEtB'], "[self.controller.create_token('1/1 blue Squid', 1, 'Islandwalk')]", None, [], False)
 
 add_targets("Hydrosurge", ['creature'], prompts=[])
 add_play_func_with_targets("Hydrosurge", lambda self, targets, is_legal_target: [targets[0].add_effect('modifyPT', (-5, 0), self, self.game.eot_time)])
@@ -88,17 +88,17 @@ add_aura_effect("Marked by Honor", '[self.add_PT((2, 2)), self.add_ability("Vigi
 
 add_activated_ability("Dauntless River Marshal", '3U', 'self.targets_chosen[0].tap()', ['creature'])
 
-add_trigger("Divine Favor", triggers.triggerConditions['onEtB'], '[self.controller.gain_life(3)]', None, [])
+add_trigger("Divine Favor", triggers.triggerConditions['onEtB'], '[self.controller.gain_life(3)]', None, [], False)
 add_aura_effect("Divine Favor", '[self.add_PT((1, 3))]', ['creature'])
 
-add_trigger("Kinsbaile Skirmisher", triggers.triggerConditions['onEtB'], '[self.targets_chosen[0].add_effect("modifyPT", (1, 1), self, self.game.eot_time)]', None, ['creature'])
+add_trigger("Kinsbaile Skirmisher", triggers.triggerConditions['onEtB'], '[self.targets_chosen[0].add_effect("modifyPT", (1, 1), self, self.game.eot_time)]', None, ['creature'], False)
 
 add_targets("Ephemeral Shields", ['creature'], prompts=[])
 add_play_func_with_targets("Ephemeral Shields", lambda self, targets, is_legal_target: [self.targets_chosen[0].add_effect('gainAbility', 'Indestructible', self, self.game.eot_time)])
 
 add_activated_ability("Selfless Cathar", '1W, Sacrifice ~', "(lambda self=self: [c.add_effect('modifyPT', (1, 1), self, self.game.eot_time) for c in self.controller.battlefield if c.is_creature])()", [])
 
-add_trigger("Wall of Essence", triggers.triggerConditions['onTakeCombatDamage'], '[self.controller.gain_life(self.trigger_amount)]', None, [])
+add_trigger("Wall of Essence", triggers.triggerConditions['onTakeCombatDamage'], '[self.controller.gain_life(self.trigger_amount)]', None, [], False)
 
 add_static_effect("Dauntless River Marshal", 'self', 'modifyPT', (1,1), lambda eff: eff.source.controller.controls(subtype="Island"))
 
@@ -106,10 +106,10 @@ add_static_effect("Warden of the Beyond", 'self', 'modifyPT', (2,2), lambda eff:
 
 add_static_effect("Aeronaut Tinkerer", 'self', 'gainAbility', 'Flying', lambda eff: eff.source.controller.controls(types="Artifact"))
 
-add_trigger("Chasm Skulker", triggers.triggerConditions['onDrawCard'], '[self.card.add_counter("+1/+1")]', None, [])
-add_trigger("Chasm Skulker", triggers.triggerConditions['onDeath'], '[self.controller.create_token("1/1 blue Squid", self.num_counters("+1/+1"), "Islandwalk")]', None, [])
+add_trigger("Chasm Skulker", triggers.triggerConditions['onDrawCard'], '[self.card.add_counter("+1/+1")]', None, [], False)
+add_trigger("Chasm Skulker", triggers.triggerConditions['onDeath'], '[self.controller.create_token("1/1 blue Squid", self.num_counters("+1/+1"), "Islandwalk")]', None, [], False)
 
-add_trigger("Frost Lynx", triggers.triggerConditions['onEtB'], '[self.targets_chosen[0].tap(), self.targets_chosen[0].freeze()]', None, ['opponent creature'])
+add_trigger("Frost Lynx", triggers.triggerConditions['onEtB'], '[self.targets_chosen[0].tap(), self.targets_chosen[0].freeze()]', None, ['opponent creature'], False)
 
 add_activated_ability("Paragon of New Dawns", 'W, T', 'self.targets_chosen[0].add_effect("gainAbility", "Vigilance", self, self.game.eot_time)', [lambda self, p: p.is_permanent and p.is_creature and p.controller == self.controller and p != self and p.has_color("W")])
 add_static_effect("Paragon of New Dawns", 'controller -self', 'modifyPT', (1, 1), lambda eff: eff.apply_target.is_creature and eff.apply_target.has_color("W"))
@@ -120,18 +120,24 @@ add_static_effect("Paragon of Gathering Mists", 'controller -self', 'modifyPT', 
 add_targets("Void Snare", [lambda self, p: p.is_permanent and not p.is_land], prompts=[])
 add_play_func_with_targets("Void Snare", lambda self, targets, is_legal_target: [p.bounce()])
 
-add_trigger("Black Cat", triggers.triggerConditions['onDeath'], '[self.targets_chosen[0].discard(random=True)]', None, ['opponent'])
+add_trigger("Black Cat", triggers.triggerConditions['onDeath'], '[self.targets_chosen[0].discard(random=True)]', None, ['opponent'], False)
 
-add_trigger("Thraben Inspector", triggers.triggerConditions['onEtB'], '[self.controller.investigate()]', None, [])
+add_trigger("Champion of the Parish", triggers.triggerConditions['onControllerCreatureEtB'], '[self.card.add_counter("+1/+1")]', lambda self: self.trigger_source.has_subtype("Human") and self.trigger_source != self.card, [], False)
+
+add_trigger("Thraben Inspector", triggers.triggerConditions['onEtB'], '[self.controller.investigate()]', None, [], False)
+
+add_trigger("Anafenza, Kin-Tree Spirit", triggers.triggerConditions['onControllerCreatureEtB'], '[self.controller.bolster()]', lambda self: not self.trigger_source.is_token and self.trigger_source != self.card, [], False)
 
 add_activated_ability("Selfless Spirit", 'Sacrifice ~', '(lambda self=self: [c.add_effect("gainAbility", "Indestructible", self, self.game.eot_time) for c in self.controller.battlefield if c.is_creature])()', [])
 
-add_trigger("Wall of Omens", triggers.triggerConditions['onEtB'], '[self.controller.draw()]', None, [])
+add_trigger("Wall of Omens", triggers.triggerConditions['onEtB'], '[self.controller.draw()]', None, [], False)
 
-add_trigger("Blade Splicer", triggers.triggerConditions['onEtB'], '[self.controller.create_token("3/3 colorless Golem artifact")]', None, [])
+add_trigger("Blade Splicer", triggers.triggerConditions['onEtB'], '[self.controller.create_token("3/3 colorless Golem artifact")]', None, [], False)
 add_static_effect("Blade Splicer", 'controller', "gainAbility", "First Strike", lambda eff: eff.apply_target.is_creature and eff.apply_target.has_subtype("Golem"))
 
-add_trigger("Felidar Guardian", triggers.triggerConditions['onEtB'], '[self.targets_chosen[0].flicker() if self.controller.make_choice("Would you like to flicker another permanent?") else None]', None, [lambda self, p: p.is_permanent and p.controller == self.controller and p != self.card])
+add_trigger("Mentor of the Meek", triggers.triggerConditions['onControllerCreatureEtB'], '[self.controller.draw() if self.player.pay(self.controller.make_choice("Would you like to pay 1 to draw a card? If yes, enter mana symbol")) else None]', lambda self: self.trigger_source.power <= 2 and self.trigger_source != self.card, [], False)
 
-add_trigger("Restoration Angel", triggers.triggerConditions['onEtB'], '[self.targets_chosen[0].flicker() if self.controller.make_choice("Would you like to flicker a non-Angel creature?") else None]', None, [lambda self, p: p.is_creature and p.controller == self.controller and not p.has_subtype("Angel")])
+add_trigger("Felidar Guardian", triggers.triggerConditions['onEtB'], '[self.targets_chosen[0].flicker() if self.controller.make_choice("Would you like to flicker another permanent?") else None]', None, [lambda self, p: p.is_permanent and p.controller == self.controller and p != self.card], False)
+
+add_trigger("Restoration Angel", triggers.triggerConditions['onEtB'], '[self.targets_chosen[0].flicker() if self.controller.make_choice("Would you like to flicker a non-Angel creature?") else None]', None, [lambda self, p: p.is_creature and p.controller == self.controller and not p.has_subtype("Angel")], False)
 

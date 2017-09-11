@@ -20,6 +20,7 @@ class Player():
     def __init__(self, deck, name='player',
                  startingLife=20, maxHandSize=7, game=None):
         self.name = name
+        self.game = game
         self.timestamp = -1
         self.life = startingLife
         self.startingLife = startingLife
@@ -41,7 +42,6 @@ class Player():
         self.graveyard = zone.Graveyard(self)
         self.exile = zone.Exile(self)
         self.mana = mana.ManaPool(self)
-        self.game = game
         self.lost = False
         self.won = False
 
@@ -52,6 +52,11 @@ class Player():
         self.last_turn_events = defaultdict(lambda: None)
 
         self.static_effects = []
+
+        # tracks which permanents cares about each player-init triggers
+        # trigger_listeners[condition] = list of (permanent, tstamp), where permanent cares about condition
+        #       and tstamp is stored to check permanent expiration
+        self.trigger_listeners = defaultdict(lambda: [])
 
         # todo: cost modifier tracker
 
@@ -272,6 +277,7 @@ class Player():
 
                 elif answer[:2] == '__':  # for dev purposes
                     exec(answer[2:])
+                    return '__continue'
 
                 else:
                     raise BadFormatException()
@@ -325,6 +331,35 @@ class Player():
         # each permanent should auto-remove since source's timestamp has changed
 
 
+    def trigger(self, condition, source=None, amount=1):
+        """Pass player-init triggers to relevant permanents
+
+        e.g. onControllerLifeGain
+        """
+        if isinstance(condition, str):
+            condition = triggers.triggerConditions[condition]
+
+        if condition == triggers.triggerConditions.onUpkeep:
+            def f(p):
+                p.status.summoning_sick = False
+            self.apply_to_battlefield(f)
+
+        elif condition == triggers.triggerConditions.onCleanup:
+            def f(p):
+                p.status.damage_taken = 0
+            self.apply_to_battlefield(f)
+
+
+        if condition in self.trigger_listeners:
+            # make copy so we can remove while iterating
+            for p, tstamp in self.trigger_listeners[condition][:]:
+                if p.timestamp == tstamp:
+                    p.trigger(condition, source, amount)
+                else:  # expired
+                    print("player-based trigger {} expired".format((p, tstamp)))
+                    self.trigger_listeners[condition].remove((p, tstamp))
+
+
     def play_card(self, card):
         if isinstance(card, str):  # convert card name to Card object
             card = cards.card_from_name(card)
@@ -336,6 +371,8 @@ class Player():
             self.game.stack.add(play)  # add to stack
 
     def draw(self, num=1):
+        self.trigger('onControllerDrawCard')
+        self.game.trigger('onDrawCard')
         for i in range(num):
             try:
                 card = self.library.pop()
@@ -356,7 +393,9 @@ class Player():
         If down_to is specified, number is ignored and set to len(self.hand) - down_to
         """
 
-        # TODO: triggers
+        self.trigger('onControllerDiscard')
+        self.trigger('onPlayerDiscard')
+
         if num == -1:
             num = len(self.hand)  # -1 to discard whole hand
         if down_to:
@@ -413,6 +452,35 @@ class Player():
 
     def investigate(self, num=1):
         self.create_token('colorless Clue artifact', num, [], [['2, T, Sacrifice ~', 'self.controller.draw()']])
+
+    def boolster(self, num=1):
+        creatures = [(p, p.toughness) for p in self.battlefield if p.is_creature]
+        if not creatures:
+            return None
+        min_toughness = min(creatures, key=lambda i: i[1])
+        creatures = [p[0] for p in creatures if p[1] == min_toughness]
+
+        print("Bolster targets avaliable: {}".format(creatures))
+
+        if len(creatures) == 1:
+            target = creatures[0]
+        else:
+            while True:
+                ans = self.make_choice("Which creature would you like to bolster?")
+                try:
+                    ans = int(ans)
+                    if ans >= len(creatures):
+                        raise ValueError
+                    target = creatures[ans]
+                    break
+                except ValueError:
+                    print("wrong format")
+                    continue
+
+        print("Bolstering {}".format(target))
+        target.add_counter("+1/+1", num)
+
+
 
     def sacrifice(self, num=1, filter_func=lambda p: p.is_creature):
         if num <= 0:
@@ -479,12 +547,8 @@ class Player():
         self.life -= dmg
 
     def gain_life(self, amount):
-        self.game.apply_to_battlefield(
-            lambda p: p.trigger(triggers.triggerConditions.onLifeGain, amount))
-        self.game.apply_to_battlefield(
-            lambda p: p.trigger(
-                triggers.triggerConditions.onControllerLifeGain, amount),
-            lambda p: p.controller == self)
+        self.trigger(triggers.triggerConditions.onControllerLifeGain, amount=amount)
+        self.game.trigger(triggers.triggerConditions.onLifeGain, amount=amount)
 
         if self.turn_events['life gain']:
             self.turn_events['life gain'] += amount
@@ -494,12 +558,8 @@ class Player():
         self.life += amount
 
     def lose_life(self, amount):
-        self.game.apply_to_battlefield(
-            lambda p: p.trigger(triggers.triggerConditions.onLifeLoss, amount))
-        self.game.apply_to_battlefield(
-            lambda p: p.trigger(
-                triggers.triggerConditions.onControllerLifeLoss, amount),
-            lambda p: p.controller == self)
+        self.trigger('onLifeLoss', amount=amount)
+        self.game.trigger('onControllerLifeLoss', amount=amount)
 
         if self.turn_events['life loss']:
             self.turn_events['life loss'] += amount
@@ -510,9 +570,9 @@ class Player():
 
     def set_life_total(self, value):
         if self.life < value:
-            self.gain_life(value - life)
+            self.gain_life(value - self.life)
         elif self.life > value:
-            self.lose_life(life - value)
+            self.lose_life(self.life - value)
 
     def end_turn(self):
         self.last_turn_events = self.turn_events
@@ -546,6 +606,26 @@ class Player():
                 filt &= f
 
         return filt
+
+
+    def apply_to_battlefield(self, apply_func, condition=lambda p: True):
+        """Apply some function to permanents on the battlefield
+
+        - filter out by a condition function if necessary
+        - defaults to all permanents
+
+        return True if at least one object satisfied the condition
+        """
+
+        did_something = False
+
+      # use [:] to iterate over a copy of the list in case items get changed
+        for perm in self.battlefield[:]:
+            if condition(perm):
+                apply_func(perm)
+                did_something = True
+
+        return did_something
 
     def lose(self):
         print("{} has lost the game\n".format(self))

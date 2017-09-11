@@ -1,7 +1,11 @@
 ##############################
 Champion of the Parish
 
-#
+	Triggers:
+		onControllerCreatureEtB
+			self.card.add_counter("+1/+1")
+				Conditioned On:
+					self.trigger_source.has_subtype("Human") and self.trigger_source != self.card
 
 ##############################
 Elite Vanguard
@@ -40,7 +44,11 @@ Accorder Paladin
 ##############################
 Anafenza, Kin-Tree Spirit
 
-#
+	Triggers:
+		onControllerCreatureEtB
+			self.controller.bolster()
+				Conditioned On:
+					not self.trigger_source.is_token and self.trigger_source != self.card
 
 ##############################
 Hidden Dragonslayer
@@ -123,7 +131,14 @@ Flickerwisp
 ##############################
 Mentor of the Meek
 
-#
+	Triggers:
+		onControllerCreatureEtB
+			self.controller.draw() if self.player.pay(self.controller.make_choice("Would you like to pay 1 to draw a card? If yes, enter mana symbol")) else None
+				Conditioned On:
+					self.trigger_source.power <= 2 and self.trigger_source != self.card
+
+
+
 
 ##############################
 Thalia, Heretic Cathar

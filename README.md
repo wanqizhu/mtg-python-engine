@@ -84,7 +84,9 @@ Spell with targets have their apply function having the signature
 ```lambda self, targets, is_legal_target: do_something_to_targets_based_on_is_legal_target```
 
 `is_legal_target` is a boolean list of the spell's chosen targets' legality.
+
 If there's only one target, then is_legal_target must be `[True]` (since otherwise none of the spells' targets would be legal and it would fizzle).
+
 The reason why this is needed is because some spells' resolution have separate abilities for each target, and some spells (e.g. two creatures fighting each other) require multiple targets to be legal to resolve its effect. So this enables spells to customize which effects to resolve should some (but not all) of its targets become illegal.
 
 
@@ -150,6 +152,7 @@ Progress
 ...
 
 M15 cards: 56/256
+
 Cube cards: .../450
 
 
@@ -162,8 +165,11 @@ Comp Rules Implementation Process
 *Rule#.subrules-implemented - subrules-or-generic-exceptions-not-implemented*
 
 100/101/other generic rules - Only for 2-player, casual format
+
 102
+
 103/104 - Except for alternate win conditions (empty lib, poison); game draws
+
 105.1-2 - .3-4
 
 ...

@@ -215,6 +215,10 @@ class Permanent(gameobject.GameObject):
             # params[0] is the trigger condition
             self.trigger_listeners = {condition: [abilities.TriggeredAbility(self, *params) for params in trigs]
                                       for condition, trigs in original_card.triggers.items()}
+            for condition in self.trigger_listeners:
+                if condition._value_ > 1000: # player-initiated trigger
+                    self.controller.trigger_listeners[condition].append((self, self.timestamp))
+
             self.continuous_effects = original_card.continuous_effects
 
             for apply_to, name, value, toggle_func in original_card.static_effects:
@@ -462,9 +466,9 @@ class Permanent(gameobject.GameObject):
 
     def take_damage(self, source, dmg, is_combat=False):
         # trigger based on source
-        self.trigger('onTakeDamage', dmg)
+        self.trigger('onTakeDamage', source, dmg)
         if is_combat:
-            self.trigger('onTakeCombatDamage', dmg)
+            self.trigger('onTakeCombatDamage', source, dmg)
 
         self.status.damage_taken += dmg
         print("{} takes {} damage from {}\n".format(self, dmg, source))
@@ -479,9 +483,9 @@ class Permanent(gameobject.GameObject):
         if dmg < 0:
             return
 
-        self.trigger('onDealDamage', dmg)
+        self.trigger('onDealDamage', target, dmg)
         if is_combat:
-            self.trigger('onCombatDamage', dmg)
+            self.trigger('onCombatDamage', target, dmg)
 
         if isinstance(target, list):
             dmg_to_assign = self.power
@@ -509,13 +513,13 @@ class Permanent(gameobject.GameObject):
         else:
             # a single creature or a player
             if target.is_player:
-                self.trigger('onDealDamageToPlayers', dmg)
+                self.trigger('onDealDamageToPlayers', target, dmg)
                 if is_combat:
-                    self.trigger('onCombatDamageToPlayers', dmg)
+                    self.trigger('onCombatDamageToPlayers', target, dmg)
             else:
-                self.trigger('onDealDamageToCreature', dmg)
+                self.trigger('onDealDamageToCreature', target, dmg)
                 if is_combat:
-                    self.trigger('onCombatDamageToCreatures', dmg)
+                    self.trigger('onCombatDamageToCreatures', target, dmg)
             target.take_damage(self, dmg, is_combat)
 
         # TODO: check damage actually went through
@@ -523,7 +527,7 @@ class Permanent(gameobject.GameObject):
             self.controller.gain_life(dmg)
 
 
-    def trigger(self, condition, amount=1):
+    def trigger(self, condition, source=None, amount=1):
         """ amount: amount of life gained, damage dealt, etc. """
         # TODO: more triggers
         # technically, these aren't "triggers"; but putting them here suffices
@@ -531,19 +535,15 @@ class Permanent(gameobject.GameObject):
         if isinstance(condition, str):
             condition = triggers.triggerConditions[condition]
 
-        if condition == triggers.triggerConditions.onUpkeep:
-            self.status.summoning_sick = False
-        elif condition == triggers.triggerConditions.onCleanup:
-            self.status.damage_taken = 0
-            # clear end-of-turn effects
 
         if condition in self.trigger_listeners:
-            print("Trigger %s to be process at next priority...\n" % condition)
-
             trigs = [trig for trig in self.trigger_listeners[condition]
-                     if trig is not None and trig.condition_satisfied()]
+                     if trig is not None]
             for trig in trigs:
                 trig.trigger_amount = amount
+                trig.trigger_source = source
+
+            trigs = [trig for trig in trigs if trig.condition_satisfied()]
 
             self.controller.pending_triggers.extend(trigs)
 

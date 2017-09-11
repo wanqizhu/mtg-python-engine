@@ -32,6 +32,7 @@ class Game(object):
     # Give each player their deck.
     def __init__(self, decks, test=False):
         self.stack = zone.Stack()
+        self.stack.game = self
         self.passed_priority = 0
         self.step = None
         self.pending_turns = []
@@ -74,6 +75,10 @@ class Game(object):
         for p in self.players_list:
             p.add_static_effect(name, value, source, toggle_func)
 
+    def trigger(self, condition, source=None, amount=1):
+        for p in self.players_list:
+            p.trigger(condition, source, amount)
+
 
     def apply_stack_item(self, stack_item):
         """ resolving a spell/effect from stack"""
@@ -90,14 +95,8 @@ class Game(object):
         return True if at least one object satisfied the condition
         """
 
-        did_something = False
-
-        for _player in self.players_list:
-            # use [:] to iterate over a copy of the list in case items get changed
-            for perm in _player.battlefield[:]:
-                if condition(perm):
-                    apply_func(perm)
-                    did_something = True
+        did_something = any([plyr.apply_to_battlefield(apply_func, condition)
+                             for plyr in self.players_list])
 
         return did_something
 
@@ -171,7 +170,7 @@ class Game(object):
                 if p.pending_triggers:
                     # ask player for order
                     triggers = []
-                    if not p.autoOrderTriggers:
+                    if len(p.pending_triggers) > 1 and not p.autoOrderTriggers:
                         ans = p.make_choice("Current triggers: %r\n"
                                             "Would you like to order them, %r?\n"
                                             % (p.pending_triggers, p))
@@ -212,6 +211,8 @@ class Game(object):
                     self.apply_stack_item(self.stack.pop())
                     self.passed_priority = 0
                     priority = self.players_list.index(self.current_player)
+            elif _play is '__continue':  # used for debugging
+                pass
             else:
                 # responds with something; must have everyone re-pass priority
                 self.passed_priority = 0
@@ -230,8 +231,7 @@ class Game(object):
                 _player.landPlayed = 0
 
         elif step is gamesteps.Step.UPKEEP:
-            self.apply_to_battlefield(lambda p: p.trigger(
-                triggers.triggerConditions.onUpkeep))
+            self.trigger(triggers.triggerConditions.onUpkeep)
             self.handle_priority(step)
 
         elif step is gamesteps.Step.DRAW:
@@ -249,20 +249,16 @@ class Game(object):
     # TODO
     def handle_combat_phase(self, step):
         if step is gamesteps.Step.BEGINNING_OF_COMBAT:
-            self.apply_to_battlefield(
-                lambda p: p.trigger(triggers.triggerConditions.onEnterCombat))
+            self.trigger(triggers.triggerConditions.onEnterCombat)
 
         elif step is gamesteps.Step.DECLARE_ATTACKERS:
-            self.apply_to_battlefield(
-                lambda p: p.trigger(triggers.triggerConditions.onDeclareAttackers))
+            self.trigger(triggers.triggerConditions.onDeclareAttackers)
 
         elif step is gamesteps.Step.DECLARE_BLOCKERS:
-            self.apply_to_battlefield(
-                lambda p: p.trigger(triggers.triggerConditions.onDeclareBlockers))
+            self.trigger(triggers.triggerConditions.onDeclareBlockers)
 
         elif step is gamesteps.Step.END_OF_COMBAT:
-            self.apply_to_battlefield(
-                lambda p: p.trigger(triggers.triggerConditions.onEndofCombat))
+            self.trigger(triggers.triggerConditions.onEndofCombat)
 
         if step is gamesteps.Step.DECLARE_ATTACKERS:
 
@@ -485,8 +481,8 @@ class Game(object):
             self.apply_to_battlefield(
                 lambda p: p.trigger(triggers.triggerConditions.onCleanup))
             self.apply_state_based_actions()
-            # self.apply_to_battlefield(
-            #     lambda p: p.clear_modifier())
+            
+
 
     def handle_turn(self):
         self.pending_steps = []

@@ -4,6 +4,8 @@
    - add more descriptors for printout
 
 
+- clean up player.Player.make_choice -- TOO MANY generic use cases. Make seperate helper function for when making a decision between a few choices, choosing a single item from list (e.g. choose a creature), choosng multiple items (e.g. attacking), generic input, etc.
+
 
 - other cost modifiers
 
@@ -14,14 +16,10 @@
 
 - Activated Abilities
  - IMPLEMENT COSTS OTHER THAN TAP
-
- 	- function signatures in general (?)
- 		- return True if action successful and did something
- 		- raise error if illegal
- 		- return False/None if did nothing
-
-
  	- optional targeting (up to ...)
+
+
+- Search library
 
 
 Instead of tying effect expiration to SOURCE card's timestamp, each card should have a list of 'abilities' in general, and then each effect should tie to that specific ABILITY's timestamp
@@ -42,6 +40,7 @@ rules: http://media.wizards.com/2017/downloads/MagicCompRules_20170707.pdf
 
 
 KNOWN BUGS
+	- flickering tokens does not remove them (maybe check timestamp to fix?)
 
 	- is there a better solution to each individual card class having its own variables rather than
     

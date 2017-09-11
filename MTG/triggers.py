@@ -2,6 +2,11 @@ from enum import Enum
 
 
 class triggerConditions(Enum):
+    # values over 1000 are initiated by the player (e.g. 'WHENEVER a creature etb...')
+    # 2000+ are controller specific; 1000+ are game/any-player specific
+
+    # otherwise the conditions refer to the card itself
+    # e.g. onDiscard means when THIS card is discarded
     # zone changes
     onPlay = 0
     onDraw = 1
@@ -12,25 +17,25 @@ class triggerConditions(Enum):
     onDeath = 6
     onLeaveBattlefield = 7
     # phase (ALL PLAYERS)
-    onUpkeep = 10
-    onMain1 = 11
-    onMain2 = 12
-    onEnterCombat = 13
-    onDeclareAttackers = 14
-    onDeclareBlockers = 15
-    onEndofCombat = 16
-    onEndstep = 17
-    onCleanup = 18
+    onUpkeep = 1110
+    onMain1 = 1111
+    onMain2 = 1112
+    onEnterCombat = 1113
+    onDeclareAttackers = 1114
+    onDeclareBlockers = 1115
+    onEndofCombat = 1116
+    onEndstep = 1117
+    onCleanup = 1118
     # phase (CONTROLLER ONLY)
-    onControllerUpkeep = 110
-    onControllerMain1 = 111
-    onControllerMain2 = 112
-    onControllerEnterCombat = 113
-    onControllerDeclareAttackers = 114
-    onControllerDeclareBlockers = 115
-    onControllerEndofCombat = 116
-    onControllerEndstep = 117
-    onControllerCleanup = 118
+    onControllerUpkeep = 2110
+    onControllerMain1 = 2111
+    onControllerMain2 = 2112
+    onControllerEnterCombat = 2113
+    onControllerDeclareAttackers = 2114
+    onControllerDeclareBlockers = 2115
+    onControllerEndofCombat = 2116
+    onControllerEndstep = 2117
+    onControllerCleanup = 2118
     # events
     onUntap = 8
     onTap = 9
@@ -46,10 +51,24 @@ class triggerConditions(Enum):
     onCombatDamageToCreatures = 27
     onTakeCombatDamage = 28
     # global events
-    onRevolt = 30  # permanent leaving battlefield
-    onControllerLifeLoss = 31
-    onLifeLoss = 32
-    onControllerLifeGain = 33
-    onLifeGain = 34
-    onCounterPutOnPermanent = 35
-    onDrawCard = 36
+
+
+    onLifeLoss = 1000
+    onControllerLifeLoss = 2000
+    onLifeGain = 1001
+    onControllerLifeGain = 2001
+    onCounterPutOnPermanent = 1002
+    onControllerCounterPutOnPermanent = 2002
+    onDrawCard = 1003
+    onControllerDrawCard = 2003
+    onPlayerDiscard = 1004
+    onControllerDiscard = 2004
+
+    onPermanentLtB = 1030
+    onRevolt = 2030  # controller permanent leaving battlefield
+    onPermanentEtB = 1031
+    onControllerPermanentEtB = 2031
+    onCreatureEtB = 1032
+    onControllerCreatureEtB = 2032
+
+

@@ -481,13 +481,13 @@ class TestPlayer(unittest.TestCase):
         """ Test optional trigger on controller life gain"""
         with mock.patch('builtins.input', side_effect=[
                 '__self.battlefield.add("Ajani\'s Pridemate")',
-                '__self.gain_life(3)', '',
+                '__self.gain_life(3)',
                 '', '', 'yes',  # resolving trigger
                 '__self.tmp = self.battlefield[0].power == 3',
-                '__self.gain_life(2)', '',
+                '__self.gain_life(2)',
                 '', '', '',  # resolving trigger, saying 'no'
                 '__self.tmp = self.tmp and self.battlefield[0].power == 3',
-                '__self.gain_life(1)', '',
+                '__self.gain_life(1)',
                 '', '', 'yes',  # resolving trigger
                 '__self.tmp = self.tmp and self.battlefield[0].toughness == 4',
                 '', '',
@@ -503,10 +503,10 @@ class TestPlayer(unittest.TestCase):
         """Testing casting +4/+4 and -3/-3 until eot effects (plus +1/+1 counters)"""
         with mock.patch('builtins.input', side_effect=[
                 '__self.battlefield.add("Ajani\'s Pridemate")',
-                '__self.gain_life(1)', '',
+                '__self.gain_life(1)',
                 '', '', 'yes',  # resolving trigger
                 '__self.tmp = self.battlefield[0].power == 3',
-                '__self.gain_life(1)', '',
+                '__self.gain_life(1)',
                 '', '', 'yes',
                 '__self.tmp = self.tmp and self.battlefield[0].power == 4',
                 '__self.draw_card("Ulcerate")',
@@ -752,6 +752,26 @@ class TestPlayer(unittest.TestCase):
             self.assertTrue(all(self.player.tmp), self.player.tmp)
 
 
+    def test_intervening_if_triggers(self):
+        with mock.patch('builtins.input', side_effect=[
+                '__self.lose_life(5)',
+                '__self.battlefield.add("Resolute Archangel")',
+                '', '',  # let trigger resolve
+                '__self.tmp = [self.life == 20]',  # reset life to 20
+                '__self.battlefield[0].flicker()',
+                '__self.tmp.append(len(self.game.stack) == 0)',  # shouldn't trigger since life !< 20
+                '__self.lose_life(5)',
+                '__self.battlefield[0].flicker()',
+                '__self.tmp.append(len(self.game.stack) == 1)',  # should trigger
+                '__self.gain_life(10)',
+                '', '',
+                '__self.tmp.append((self.life == 25))',  # triggeredAbility should fizzle and NOT reset life
+                                                         # since now our life total is !< 20
+               
+                's upkeep', 's upkeep'
+        ]):
+            self.GAME.handle_turn()
+            self.assertTrue(all(self.player.tmp), self.player.tmp)
 
 
     # def test_trigger_ordering(self):

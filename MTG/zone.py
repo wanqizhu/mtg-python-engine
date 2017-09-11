@@ -30,6 +30,8 @@ class Zone():
             for ele in elements:
                 ele.controller = controller
         self.controller = controller
+        if controller:
+            self.game = self.controller.game
 
     def __repr__(self):
         return 'zone.Zone %r controlled by %r len=%s\n%r' % (self.__class__.__name__,
@@ -125,14 +127,17 @@ class Battlefield(Zone):
         obj.controller = self.controller
 
         if isinstance(obj, card.Card):  # convert card to Permanent
-            obj = permanent.make_permanent(obj)
+            obj = permanent.make_permanent(obj)  # this will call Battlefield.add(...) again
         else:
             obj.zone = self
             self.elements.append(obj)
             obj.status = permanent.Status()  # reset status upon entering battlefield
-
-        # obj.timestamp = obj.game.timestamp  # no need; timestamp already reset when init permanent / leaving battlefield
-        obj.trigger(triggers.triggerConditions.onEtB)
+            obj.trigger('onEtB', obj)
+            obj.controller.trigger('onControllerPermanentEtB', obj)
+            obj.game.trigger('onPermanentEtB', obj)
+            if obj.is_creature:
+                obj.controller.trigger('onControllerCreatureEtB', obj)
+                obj.game.trigger('onCreatureEtB', obj)
 
 
 class Stack(Zone):

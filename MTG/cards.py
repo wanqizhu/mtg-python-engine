@@ -150,7 +150,7 @@ def add_aura_effect(cardname, effects, target_criterias=['creature']):
     card.continuous_effects = effects
 
 def add_trigger(cardname, condition, effect, requirements=lambda self: True,
-                target_criterias=None, target_prompts=None):
+                target_criterias=None, target_prompts=None, intervening_if=True):
     """
     Each effect is a function of the form
         lambda self: do_something
@@ -188,7 +188,7 @@ def add_trigger(cardname, condition, effect, requirements=lambda self: True,
     # that trigger from the same effect, e.g. tap AND draw a card on etb
     # each of them will go into a separate play.Play object and be put onto the stack
     card.triggers[condition].append((effect, requirements,
-                                     target_criterias, target_prompts))
+                                     target_criterias, target_prompts, intervening_if))
 
 def add_static_effect(cardname, apply_to, name, value, toggle_func=lambda eff: False):
     if not name_to_id(cardname):
@@ -319,24 +319,37 @@ def parse_card_from_lines(lines, log=None):
                 target_prompts.append(bytes(line, "utf-8").decode("unicode_escape"))  # remove quotes, convert to string
 
         elif stage == 'triggers':
-            if ind_lv == 2:  # new trigger condition
+            if ind_lv == 2:  # new trigger
+                # [condition, [list of effects](, optional trigger requirements)]
                 _triggers.append([line, []])
                 _trigger_targets.append([])
             elif ind_lv == 3:
                     _triggers[-1][-1].append(line)  # trigger effect
             elif ind_lv == 4:
-                if line == 'If:':
+                if line == 'Conditioned On:':  # whenever ...
                     substage = 'requirements'
+                elif line == 'If:':  # ... if ...  -- MUST COME AFTER 'Conditioned On' if both present
+                    substage = 'intervening if'
                 elif line == 'Targets:':
                     substage = 'targets'
 
             elif ind_lv == 5:
-                if substage == 'requirements':
-                    _triggers[-1].append(line)  # optional trigger requirements
+                if substage == 'requirements':  # optional trigger requirements
+                    _triggers[-1].append(line)
+
+                if substage == 'intervening if':
+                    if len(_triggers[-1]) == 2:  # no seperate requirements
+                        _triggers[-1].append(line)
+                        _triggers[-1].append(True)  # intervening-if
+                    else:
+                        _triggers[-1].append(line)
+
                 elif substage == 'targets':
                     if line[0] != "'":
                         line = 'lambda self, p: ' + line
                     _trigger_targets[-1].append(line)
+
+
 
         elif stage == 'aura':
             if ind_lv == 2:
@@ -387,10 +400,13 @@ def parse_card_from_lines(lines, log=None):
             if len(trig) == 2:  # optional trigger requirements
                 trig.append(None)
             else:
-                trig[2] =  "lambda self: " + trig[2]   
+                trig[2] =  "lambda self: " + trig[2]
+
+            if len(trig) == 3:  # requirements but no intervening-if
+                trig.append(False)
                 
-            str_to_exe += "add_trigger(%s, triggers.triggerConditions[%r], %r, %s, %s)\n" % (
-                                    name, trig[0], trig[1], trig[2], _trig_targets)
+            str_to_exe += "add_trigger(%s, triggers.triggerConditions[%r], %r, %s, %s, %s)\n" % (
+                                    name, trig[0], trig[1], trig[2], _trig_targets, trig[3])
 
 
     if effects:

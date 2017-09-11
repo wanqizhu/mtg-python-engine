@@ -191,19 +191,22 @@ class GameObject():
 
     def change_zone(self, target_zone, from_top=0, shuffle=True):
         current_zone = self.zone
-        if current_zone.remove(self):
-            if current_zone.is_battlefield and self.original_card:
-                self.controller.remove_static_effect(self)  # remove static effects
-                c = self.original_card  # shift from permanent back to card
-                c.previousState = self
-                self.timestamp = self.game.timestamp  # reset timestamp
+        if not current_zone:
+            c = self
+        else:
+            if current_zone.remove(self):
+                if current_zone.is_battlefield and self.original_card:
+                    self.controller.remove_static_effect(self)  # remove static effects
+                    c = self.original_card  # shift from permanent back to card
+                    c.previousState = self
+                    self.timestamp = self.game.timestamp  # reset timestamp
+                else:
+                    c = self
             else:
-                c = self
+                return False
 
 
-            if target_zone.is_library:
-                return target_zone.add(c, from_top, shuffle)
-            else:
-                return target_zone.add(c)
-
-        return False
+        if target_zone.is_library:
+            return target_zone.add(c, from_top, shuffle)
+        else:
+            return target_zone.add(c)
