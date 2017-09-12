@@ -149,8 +149,8 @@ def add_aura_effect(cardname, effects, target_criterias=['creature']):
     card = card_from_name(cardname, get_instance=False)
     card.continuous_effects = effects
 
-def add_trigger(cardname, condition, effect, requirements=lambda self: True,
-                target_criterias=None, target_prompts=None, intervening_if=True):
+def add_trigger(cardname, condition, effect, requirements=None,
+                target_criterias=None, target_prompts=None, intervening_if=None):
     """
     Each effect is a function of the form
         lambda self: do_something
@@ -229,7 +229,6 @@ def parse_card_from_lines(lines, log=None):
     targets = []
     target_prompts = []
     _triggers = []  # _ since we import MTG.triggers
-    _trigger_targets = []
 
     aura_targets = []
     aura_effects = []
@@ -320,11 +319,10 @@ def parse_card_from_lines(lines, log=None):
 
         elif stage == 'triggers':
             if ind_lv == 2:  # new trigger
-                # [condition, [list of effects](, optional trigger requirements)]
-                _triggers.append([line, []])
-                _trigger_targets.append([])
+                # [condition, [list of effects](, optional trigger requirements, targets, intervening-if's)]
+                _triggers.append([line, [], None, [], None])
             elif ind_lv == 3:
-                    _triggers[-1][-1].append(line)  # trigger effect
+                    _triggers[-1][1].append(line)  # trigger effect
             elif ind_lv == 4:
                 if line == 'Conditioned On:':  # whenever ...
                     substage = 'requirements'
@@ -335,19 +333,16 @@ def parse_card_from_lines(lines, log=None):
 
             elif ind_lv == 5:
                 if substage == 'requirements':  # optional trigger requirements
-                    _triggers[-1].append(line)
+                    _triggers[-1][2] = "lambda self: " + line
 
                 if substage == 'intervening if':
-                    if len(_triggers[-1]) == 2:  # no seperate requirements
-                        _triggers[-1].append(line)
-                        _triggers[-1].append(True)  # intervening-if
-                    else:
-                        _triggers[-1].append(line)
+                    _triggers[-1][4] = "lambda self: " + line  # intervening-if
+
 
                 elif substage == 'targets':
                     if line[0] != "'":
                         line = 'lambda self, p: ' + line
-                    _trigger_targets[-1].append(line)
+                    _triggers[-1][3].append(line)
 
 
 
@@ -393,20 +388,13 @@ def parse_card_from_lines(lines, log=None):
     #     turning them from strings into statements
 
     if _triggers:
-        for trig, _trig_targets in zip(_triggers, _trigger_targets):
+        for trig in _triggers:
             trig[1] = '[' + ', '.join(trig[1]) + ']'
-            _trig_targets = '[' + ', '.join(_trig_targets) + ']'
-
-            if len(trig) == 2:  # optional trigger requirements
-                trig.append(None)
-            else:
-                trig[2] =  "lambda self: " + trig[2]
-
-            if len(trig) == 3:  # requirements but no intervening-if
-                trig.append(False)
-                
-            str_to_exe += "add_trigger(%s, triggers.triggerConditions[%r], %r, %s, %s, %s)\n" % (
-                                    name, trig[0], trig[1], trig[2], _trig_targets, trig[3])
+            trig[3] = '[' + ', '.join(trig[3]) + ']'
+     
+            # todo: also parse target prompts
+            str_to_exe += "add_trigger(%s, triggers.triggerConditions[%r], %r, %s, %s, intervening_if=%s)\n" % (
+                                    name, *trig)
 
 
     if effects:

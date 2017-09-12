@@ -1,4 +1,4 @@
-# Formating help
+# FORMATING GUIDE
 
 # cards are separated by 30 '#'s
 
@@ -14,7 +14,10 @@
 # 											like
 # 									this
 # 				will work
+
 # 		but this is a new cost: new effect
+#			Targets:
+#				and this one has targets
 
 
 # 	Targets:
@@ -33,9 +36,20 @@
 
 # 		triggerCondition2
 # 			effect2
+#
+#				Targets:
+#					trigger targets, if any; follow same style as spell 'Targets:'
+#
+
+#				Conditioned On:
+#					optional appendix to trigger condition (e.g. whenever a HUMAN etb, instead than just any creature)
+#					this will be checked before trigger goes on stack
 
 # 				If:
 # 					intervening-if statement (optional) goes here
+#					this will be checked before it resolves
+#					if 'Conditioned On' is not present, then this gets copied to conditioned on and will also be checked before trigger goes on stack (thus intervening-if)
+#						the reason why we don't do this automatically if b/c sometimes there's an extra initial condition that's not intervening
 
 
 # 	# called using lambda self: __effect__ if no targets
