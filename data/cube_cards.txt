@@ -83,7 +83,12 @@ Selfless Spirit
 ##############################
 Squadron Hawk
 
-#
+	Triggers:
+		onEtB
+			self.controller.search_lib(lambda c: c.name == 'Squadron Hawk', num=-1)
+
+
+
 
 ##############################
 Stoneforge Mystic
@@ -223,7 +228,19 @@ Shrine of Loyal Legions
 ##############################
 Path to Exile
 
-#
+	Targets:
+		'creature'
+
+	targets[0].exile()
+
+	# make it etb tapped
+	targets[0].controller.search_lib(lambda c: c.is_basic_land, target_zone=None,
+				todo_func=lambda c: c.change_zone(targets[0].controller.battlefield, status_mod=['tapped']))
+					if targets[0].controller.make_choice("Would you like to search for a basic land?")
+					else None
+
+
+
 
 ##############################
 Swords to Plowshares

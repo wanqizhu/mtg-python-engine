@@ -473,11 +473,11 @@ Ephemeral Shields
 ##############################
 Heliod's Pilgrim
 
-	# Triggers:
-	# 	onEtB
-	# 		self.controller.search_lib(subtype='Aura') if self.controller.make_choice(
-	# 						"Would you like to search your library for an aura?")
-	# 															else None 
+	Triggers:
+		onEtB
+			self.controller.search_lib(lambda c: c.is_aura) if self.controller.make_choice(
+							"Would you like to search your library for an aura?")
+																else None 
 
 
 

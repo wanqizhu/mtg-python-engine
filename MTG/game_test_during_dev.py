@@ -13,18 +13,19 @@ cards.set_up_cards()
 with mock.patch('builtins.input', side_effect=[
         's main',
         's main',
+        '__self.discard(7)', '',
+        '__self.discard(7)', '',
+        '__self.draw_card("Path to Exile")',
         '__self.battlefield.add("Sungrace Pegasus")',
-        '__self.draw_card("Battle Mastery")',
-        '__self.mana.add(mana.Mana.WHITE, 3)',
-        'p Battle Mastery',
-        'b 0', '',
         '', '',
+        's upkeep', 's upkeep',
         's upkeep', 's upkeep'
         ]):
     decks = [cards.read_deck('data/decks/deck1.txt'),
         cards.read_deck('data/decks/deck1.txt')]
     GAME = Game(decks)
     GAME.set_up_game()
+    GAME.handle_turn()
     GAME.handle_turn()
 
 

@@ -598,6 +598,33 @@ class TestPlayer(unittest.TestCase):
                 len([c for c in self.player.creatures if c.status.tapped]), 8)
             self.assertTrue(self.player.battlefield[-1].has_ability("Flying"))
 
+
+    def test_squadron_hawk(self):
+        """Testing search library, optional varibale number of cards"""
+        with mock.patch('builtins.input', side_effect=[
+                '__self.draw_card("Squadron Hawk")',
+                '__self.library.add("Squadron Hawk")',
+                '__self.library.add("Squadron Hawk")',
+                '__self.library.add("Squadron Hawk")',
+                '__self.tmp = [len(self.library)]',
+                's main', 's main', '__self.mana.add(mana.Mana.WHITE, 10)',
+                'p Squadron Hawk', '', '', '', '',
+                '0 2',  # choose 2 out of the 3 squadron hawks in library
+                '__self.tmp.extend([c.name == "Squadron Hawk" for c in self.hand[-2:]])',
+                'p Squadron Hawk', '', '', '', '',
+                '',     # don't search
+                'p Squadron Hawk', '', '', '', '',
+                '0',
+                'p Squadron Hawk', '', '', '', '',
+                '',
+                '__self.tmp[0] = len(self.library) == __self.tmp[0] - 3',  # confirm we've removed the hawks
+                's upkeep', 's upkeep'  # player 0's turn again
+        ]):
+            self.player.autoPayMana = True
+            self.GAME.handle_turn()
+            self.assertTrue(self.player.tmp)
+
+
     def test_target_fizzling(self):
         """Testing convoke, tokens, Spirit token has flying"""
         with mock.patch('builtins.input', side_effect=[

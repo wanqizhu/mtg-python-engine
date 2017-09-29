@@ -181,7 +181,8 @@ class Effect():
 
 
 class Permanent(gameobject.GameObject):
-    def __init__(self, characteristics, controller, owner=None, original_card=None, status=None, modifications=[]):
+    def __init__(self, characteristics, controller, owner=None, original_card=None,
+                 status=None, modifications=[]):
         self.characteristics = characteristics
         self.controller = controller
         self.game = controller.game
@@ -239,14 +240,11 @@ class Permanent(gameobject.GameObject):
             self.trigger_listeners = {}
             self.continuous_effects = ''
 
-
-
-        self.controller.battlefield.add(self)
+  
         self.is_token = False
         self.auras = []
         self.equipments = []
         # pdb.set_trace()
-        print("making permanent... {}\n".format(self))
 
     def __repr__(self):
         return (self.__str__() +
@@ -436,16 +434,15 @@ class Permanent(gameobject.GameObject):
         return self.is_creature and not self.status.tapped
 
     def attacks(self, player):
-        # trigger
+        self.trigger("onAttack", player)
         self.status.is_attacking = player
         if not self.has_ability("Vigilance"):
             self.tap()
 
     def blocks(self, creature):
         if self.can_block(creature):
-            # trigger
-            # if self.status.is_blocking is None:
-            #     self.status.is_blocking = []
+            self.trigger("onBlock", creature)
+
             self.status.is_blocking.append(creature)
             if type(creature.status.is_attacking) == type(self.controller):
                 creature.status.is_attacking = []
@@ -547,11 +544,12 @@ class Permanent(gameobject.GameObject):
 
             self.controller.pending_triggers.extend(trigs)
 
-    def change_zone(self, target_zone, from_top=0, shuffle=True):
+    def change_zone(self, target_zone, from_top=0, shuffle=True,
+                    status_mod=None, modi_func=None):
         for aura in self.auras[:]:
             aura.disenchant()
 
-        return super(Permanent, self).change_zone(target_zone, from_top, shuffle)
+        return super(Permanent, self).change_zone(target_zone, from_top, shuffle, status_mod, modi_func)
 
     def dies(self):
         # trigger first so we can use last-known state (while it's still a permanent)
@@ -617,8 +615,11 @@ class Aura(Permanent):
 
 
 
-def make_permanent(card):
-    return Permanent(card.characteristics, card.controller, card.owner, card)
+def make_permanent(card, status_mod=None, modi_func=None):
+    p = Permanent(card.characteristics, card.controller, card.owner, card)
+    print("making permanent... {}\n".format(p))
+    return p.controller.battlefield.add(p, status_mod, modi_func)
+
 
 def make_aura(card, enchant_target):
     return Aura(enchant_target, card.characteristics, card.controller, card.owner, card)

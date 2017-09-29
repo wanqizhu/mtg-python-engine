@@ -12,6 +12,7 @@ class Token(permanent.Permanent):
     # todo: add abilities
     def __init__(self, characteristics, controller, activated_abilities=[]):
         super(Token, self).__init__(characteristics, controller)
+        self.controller.battlefield.add(self)
         self.is_token = True
 
         self.activated_abilities = [abilities.ActivatedAbility(self, *params) for params in activated_abilities]

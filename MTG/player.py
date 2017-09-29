@@ -309,6 +309,42 @@ class Player():
         #     ## TODO: unit tests
         #     pass
 
+    def make_choice_items_in_list(self, items, num=1, up_to=False, repetition=False):
+        print(items)
+        l = len(items)
+
+        if num == -1:  # any number
+            num = l
+            up_to = True
+
+        while True:
+            chosen = []
+            try:
+                ans = input("Choose %d items:\n" % num)
+                if not ans:
+                    break
+                ans = ans.split(" ")
+                if not up_to:
+                    assert len(ans) == num
+                else:
+                    assert len(ans) <= num
+
+                for i in ans:
+                    i = int(i)
+                    assert i < l
+                    if not repetition:
+                        assert items[i] not in chosen
+
+                    chosen.append(items[i])
+
+                break
+
+            except (AssertionError, ValueError):
+                print("Bad input")
+                pass
+
+        return chosen
+
 
     def add_static_effect(self, name, value, source, toggle_func, exempt_source=False):
         """ toggle_func: condition func on which permanents the static effect affects -- lambda eff: True
@@ -386,6 +422,53 @@ class Player():
         card is either a string (name of card) or a Card object
         """
         self.hand.add(card)
+
+    def search_lib(self, criteria_funcs, num=1, target_zone='hand', todo_func=None, face_up=True):
+        """ criteria_funcs validates the searched set
+
+        If num=1 (searching one card), then that's just the validating function
+
+        If num > 1 and criteria_funcs is a single function, then we're searching
+            multiple cards under the same condition (e.g. get 2 lands)
+
+        Else, criteria_funcs is a list
+            0: overall validating function lambda items: True if items as a whole is valid
+            1..n: individual functions that validate card #1..n being searched
+
+        So if we want to search 2 creatures with total power < 4, we'd have
+
+        [
+            lambda creatures: sum(p.power) < 4,
+            lambda c: c.is_creature,
+            lambda c: c.is_creature
+        ]
+        """
+
+        if target_zone == 'hand':
+            target_zone = self.hand
+
+        if num == 1 or type(criteria_funcs) != list:
+            cards = list(self.library.filter(filter_func=criteria_funcs))
+            chosen = self.make_choice_items_in_list(cards, num)
+
+            if target_zone:
+                for c in chosen:
+                    c.change_zone(target_zone)
+
+            if todo_func:
+                if len(chosen) == 1:
+                    todo_func(chosen[0])
+                else:
+                    todo_func(chosen)
+
+            self.library.shuffle()
+
+            if face_up:
+                print(chosen)
+            return chosen
+
+        else:
+            pass
 
     def discard(self, num=1, down_to=None, rand=False):
         """Discarding from hand; prompts user for card choices

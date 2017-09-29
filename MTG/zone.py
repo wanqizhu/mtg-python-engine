@@ -1,5 +1,5 @@
 from enum import Enum
-import random
+import random, pdb
 
 from MTG import gameobject
 from MTG import cards
@@ -121,17 +121,25 @@ class Battlefield(Zone):
     zone_type = 'BATTLEFIELD'
     is_battlefield = True
 
-    def add(self, obj):
+    def add(self, obj, status_mod=None, modi_func=None):
         if type(obj) is str:  # convert string (card's name) to a Card object
             obj = cards.card_from_name(obj)
         obj.controller = self.controller
 
+
         if isinstance(obj, card.Card):  # convert card to Permanent
-            obj = permanent.make_permanent(obj)  # this will call Battlefield.add(...) again
+            obj = permanent.make_permanent(obj, status_mod, modi_func)  # this will call Battlefield.add(...) again
         else:
             obj.zone = self
             self.elements.append(obj)
             obj.status = permanent.Status()  # reset status upon entering battlefield
+            if status_mod:
+                if 'tapped' in status_mod:
+                    status.tapped = True
+            
+            if modi_func:  # apply "enter the battlefield with ..." effects: e.g. tapped
+                modi_func(self)
+
             obj.trigger('onEtB', obj)
             obj.controller.trigger('onControllerPermanentEtB', obj)
             obj.game.trigger('onPermanentEtB', obj)
@@ -179,6 +187,8 @@ class Library(Zone):
 
         When you draw, you draw from self.pop(), or self.elements[-1]
         """
+        if type(obj) is str:
+            obj = cards.card_from_name(obj)
         assert isinstance(obj, gameobject.GameObject)
         obj.controller = self.controller
         obj.game = self.controller.game
@@ -196,7 +206,10 @@ class Library(Zone):
 
         return obj
 
-    def remove(self, obj):
-        super(Battlefield, self).remove(self, obj)
+    def remove(self, obj, shuffle=False):
+        if shuffle:
+            self.shuffle()
+
+        return super(Library, self).remove(obj)
 
 

@@ -7,6 +7,9 @@
 - clean up player.Player.make_choice -- TOO MANY generic use cases. Make seperate helper function for when making a decision between a few choices, choosing a single item from list (e.g. choose a creature), choosng multiple items (e.g. attacking), generic input, etc.
 
 
+- etb tapped / with other modifiers
+
+
 - other cost modifiers
 
 - move player triggers to player.Player()'s own trigger_listener dict
@@ -18,8 +21,6 @@
  - IMPLEMENT COSTS OTHER THAN TAP
  	- optional targeting (up to ...)
 
-
-- Search library
 
 
 Instead of tying effect expiration to SOURCE card's timestamp, each card should have a list of 'abilities' in general, and then each effect should tie to that specific ABILITY's timestamp

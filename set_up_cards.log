@@ -96,6 +96,8 @@ add_trigger("Kinsbaile Skirmisher", triggers.triggerConditions['onEtB'], '[self.
 add_targets("Ephemeral Shields", ['creature'], prompts=[])
 add_play_func_with_targets("Ephemeral Shields", lambda self, targets, is_legal_target: [self.targets_chosen[0].add_effect('gainAbility', 'Indestructible', self, self.game.eot_time)])
 
+add_trigger("Heliod's Pilgrim", triggers.triggerConditions['onEtB'], '[self.controller.search_lib(lambda c: c.is_aura) if self.controller.make_choice( "Would you like to search your library for an aura?") else None]', None, [], intervening_if=None)
+
 add_activated_ability("Selfless Cathar", '1W, Sacrifice ~', "(lambda self=self: [c.add_effect('modifyPT', (1, 1), self, self.game.eot_time) for c in self.controller.battlefield if c.is_creature])()", [])
 
 add_trigger("Wall of Essence", triggers.triggerConditions['onTakeCombatDamage'], '[self.controller.gain_life(self.trigger_amount)]', None, [], intervening_if=None)
@@ -130,6 +132,8 @@ add_trigger("Anafenza, Kin-Tree Spirit", triggers.triggerConditions['onControlle
 
 add_activated_ability("Selfless Spirit", 'Sacrifice ~', '(lambda self=self: [c.add_effect("gainAbility", "Indestructible", self, self.game.eot_time) for c in self.controller.battlefield if c.is_creature])()', [])
 
+add_trigger("Squadron Hawk", triggers.triggerConditions['onEtB'], "[self.controller.search_lib(lambda c: c.name == 'Squadron Hawk', num=-1)]", None, [], intervening_if=None)
+
 add_trigger("Wall of Omens", triggers.triggerConditions['onEtB'], '[self.controller.draw()]', None, [], intervening_if=None)
 
 add_trigger("Blade Splicer", triggers.triggerConditions['onEtB'], '[self.controller.create_token("3/3 colorless Golem artifact")]', None, [], intervening_if=None)
@@ -140,4 +144,7 @@ add_trigger("Mentor of the Meek", triggers.triggerConditions['onControllerCreatu
 add_trigger("Felidar Guardian", triggers.triggerConditions['onEtB'], '[self.targets_chosen[0].flicker() if self.controller.make_choice("Would you like to flicker another permanent?") else None]', None, [lambda self, p: p.is_permanent and p.controller == self.controller and p != self.card], intervening_if=None)
 
 add_trigger("Restoration Angel", triggers.triggerConditions['onEtB'], '[self.targets_chosen[0].flicker() if self.controller.make_choice("Would you like to flicker a non-Angel creature?") else None]', None, [lambda self, p: p.is_creature and p.controller == self.controller and not p.has_subtype("Angel")], intervening_if=None)
+
+add_targets("Path to Exile", ['creature'], prompts=[])
+add_play_func_with_targets("Path to Exile", lambda self, targets, is_legal_target: [targets[0].exile(), targets[0].controller.search_lib(lambda c: c.is_basic_land, target_zone=None, todo_func=lambda c: c.change_zone(targets[0].controller.battlefield, status_mod=['tapped'])) if targets[0].controller.make_choice("Would you like to search for a basic land?") else None])
 

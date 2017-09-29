@@ -124,6 +124,12 @@ class GameObject():
         return cardtype.CardType.LAND in self.characteristics.types
 
     @property
+    def is_basic_land(self):
+        return (cardtype.CardType.LAND in self.characteristics.types
+                and cardtype.SuperType.BASIC in self.characteristics.supertype)
+
+
+    @property
     def is_creature(self):
         return cardtype.CardType.CREATURE in self.characteristics.types
 
@@ -142,6 +148,11 @@ class GameObject():
     @property
     def is_aura(self):
         return self.is_enchantment and 'Aura' in self.characteristics.subtype
+
+    @property
+    def is_equipment(self):
+        return self.is_artifact and 'Equipment' in self.characteristics.subtype
+
 
     @property
     def power(self):
@@ -189,7 +200,8 @@ class GameObject():
 
 
 
-    def change_zone(self, target_zone, from_top=0, shuffle=True):
+    def change_zone(self, target_zone, from_top=0, shuffle=True,
+                    status_mod=None, modi_func=None):
         current_zone = self.zone
         if not current_zone:
             c = self
@@ -208,5 +220,7 @@ class GameObject():
 
         if target_zone.is_library:
             return target_zone.add(c, from_top, shuffle)
+        elif target_zone.is_battlefield:
+            return target_zone.add(c, status_mod, modi_func)
         else:
             return target_zone.add(c)
