@@ -2,13 +2,10 @@ import mock
 import sys
 import os
 
-sys.path.append('/Users/wanqi/Desktop/Python-MTG')
-os.chdir('/Users/wanqi/Desktop/Python-MTG')
-
 from MTG.game import *
 from MTG import cards
 
-cards.set_up_cards()
+cards.setup_cards()
 
 with mock.patch('builtins.input', side_effect=[
         's main',
@@ -24,7 +21,7 @@ with mock.patch('builtins.input', side_effect=[
     decks = [cards.read_deck('data/decks/deck1.txt'),
         cards.read_deck('data/decks/deck1.txt')]
     GAME = Game(decks)
-    GAME.set_up_game()
+    GAME.setup_game()
     GAME.handle_turn()
     GAME.handle_turn()
 

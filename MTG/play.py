@@ -50,6 +50,9 @@ class Play(object):
     def apply(self):
         fizzles = False
 
+        # check target validity by affirming that at least one timestamp is the same
+        # AND targets are still valid (e.g. still a creature)
+        # TODO: shroud/hexproof/protection
         if self.targets_chosen and not any([c(self, t) and t.timestamp == time for c, t, time in zip(self.target_criterias,
                                            self.targets_chosen, self.target_timestamps)]):
             print("All targets invalid. %r fizzles." % self)
@@ -62,7 +65,6 @@ class Play(object):
         if not self.apply_condition():
             print("Intervening-if for %r not satisfied" % self)
             fizzles = True
-
 
         if fizzles:
             if self.original_card:

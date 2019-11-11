@@ -6,7 +6,11 @@ This is intended to be an implementation of the algorithm described in the [Magi
 Magic: the Gathering is owned by Wizards of the Coast.
 
 
-Note: In the following documentation, `filename.funcOrClassName()` refers to the function/class defined in MTG/filename.py. If we refer to a specific card, look for how that card is parsed in data/cards.txt or set_up_cards.log.
+Note: In the following documentation, `filename.funcOrClassName()` refers to the function/class defined in MTG/filename.py. If we refer to a specific card, look for how that card is parsed in `data/[SETNAME]_cards.txt`.
+
+
+To see the engine in action, run `python -m MTG.game`.
+You cannot run the script directly due to [shadowed imports.](http://python-notes.curiousefficiency.org/en/latest/python_concepts/import_traps.html#the-double-import-trap)
 
 
 Cards
@@ -14,11 +18,11 @@ Cards
 
 Raw card data are obtained from mtgjson (json) or cockatrice (xml, obsolele; should use json from now on). They are then fed through their respective [parsers](parser/), where each card turns into its own class inheriting from card.Card(). [An example of a parsed file](data/M15_cards.py) contains all the printed information on the card (power, toughness, text, manacost, etc). It has an associated *id_to_name_dict* and *name_to_id_dict* so that we can easily refence a card's class based on its display string name.
 
-Keyword abilities are automatically parsed. Other abilities are implemented manually in [data/cards.txt](data/cards.txt), following a set format outlined at the top of the file.
+Keyword abilities are automatically parsed. Other abilities are implemented manually in [data/M15_cards.txt](data/M15_cards.txt), following a set format outlined at the top of the file.
 
-These abilities are parsed by [MTG/cards.py's set_up_cards() function](MTG/cards.py), and various othr functions in cards.py detail how each ability is processed from the text file to the game engine.
+These abilities are parsed by [MTG/cards.py's setup_cards() function](MTG/cards.py), and various othr functions in cards.py detail how each ability is processed from the text file to the game engine.
 
-The actual code that's executed from `set_up_cards` is logged in [set_up_cards.log](set_up_cards.log).
+The actual code that's executed from `setup_cards` is logged in [setup_cards.log](setup_cards.log).
 
 
 Abilities
@@ -28,15 +32,22 @@ Abilities in general are stored in the individual card class (e.g. `class c38318
 
 ### Activated Ability
 
-An example of an activated ability:
+```python
+def add_activated_ability(cardname, cost, effect, 
+                          target_criterias=None, prompts=None)
+```
 
-```add_activated_ability("Soulmender", 'T', 'self.controller.gain_life(1)', [])```
+An example of an activated ability, which we specify in `setup_cards.log`:
 
-...processed by `cards.add_activated_ability()`. The last param is empty because this ability has no targets.
+```python
+add_activated_ability("Soulmender", 'T', 'self.controller.gain_life(1)', [])
+```
 
-When a permanent is initiated (`p = permanent.make_permanent(card)`), it turns all activated abilities of the original card into `abilities.ActivatedAbility()` instances. They can be accessed as `p.activated_abilities`, and when activated the individual abilities, NOT the permanent, is passed onto the stack. Abilities refer back to the original card via `self.card` (see Ajani's Pridemate).
+The last param is empty because this ability has no targets.
 
-Abilities are activated when a player inputs `a N_M`, where M defaults to 0 if _M is ommitted. *a* stands for *activate*, *N* refers to the N-th object on that player's battlefield and *M* is the M-th activated ability of that object. See `player.get_action() ...elif answer[:2] == 'a '`.
+When a permanent is initiated (`p = permanent.make_permanent(card)`), it turns all activated abilities of the original card into `abilities.ActivatedAbility()` instances. They can be accessed as `p.activated_abilities`, and when activated the individual abilities, as its standalone object, is passed onto the stack. Abilities refer back to the original card via `self.card` (see Ajani's Pridemate).
+
+Abilities are activated via console interface when a player inputs `a N_M`, where M defaults to 0 if ommitted. *a* stands for *activate*, *N* refers to the N-th object on that player's battlefield and *M* is the M-th activated ability of that object. See `player.get_action() ...elif answer[:2] == 'a '`.
 
 If an activation is illegal (cannot pay costs, no legal targets, etc.), the game rewinds (by setting itself equal to a previous Deepcopy). Whether a cost can be paid is determined by checking each part of the cost function, when paid, returns True. For example, `permanent.Permanent.tap()` returns True iff the permanent can be tapped. See `abilities.ActivatedAbilities.can_activate()`.
 
@@ -74,7 +85,7 @@ Spell without targets have their apply function having the signature
 
 where self refers to the spell. This functionality is implemented via `cards.add_play_func_no_targets()`.
 
-All permanent spells (except auras) have no targets. Their apply_func defaults to `permanent.make_permanent(card)`, which is the default `card.Card.play_func` (which is passed to `play.Play.__init__` as `play.Play.apply_func`).
+All permanent spells (except auras) have no targets. Their apply_func defaults to `permanent.make_permanent(card)`, which is the default `card.Card.play_func`.
 
 
 ### With targets
@@ -143,6 +154,28 @@ Other Game Rules
 SBAs: `game.check_state_based_actions()`
 
 Tokens: `token.create_token(); player.create_token()` A Permanent p is a token iff `p.is_token == True`.
+
+
+Parser
+==========
+The `parser` folder contains raw card information in text format, e.g. json/xml, and parsing code that translation raw text into individual card classes that extend `card.Card`.
+
+Example from `data/M15_cards.py`:
+```python
+class c383181(card.Card):
+    "Ajani's Pridemate"
+    def __init__(self):
+        super(c383181, self).__init__(gameobject.Characteristics(**{'mana_cost': '1W', 'text': "Whenever you gain life, you may put a +1/+1 counter on Ajani's Pridemate.", 'subtype': ['Cat', 'Soldier'], 'power': 2, 'color': ['W'], 'name': "Ajani's Pridemate", 'toughness': 2}, supertype=[], types=[cardtype.CardType.CREATURE], abilities=[]))
+
+```
+
+To generate this, run `python -m parser.parse_mtgjson`.
+
+Notice this only has static information. To give the card its actual ability, we need to encode it manually in [data/M15_cards.txt](data/M15_cards.txt), which then gets processed by `cards.setup_cards()`.
+
+```python
+add_trigger("Ajani's Pridemate", triggers.triggerConditions['onControllerLifeGain'], '[self.card.add_counter("+1/+1") if self.controller.make_choice( "Would you like to put a +1/+1 counter on %r?" % self.card) else None]', None, [], intervening_if=None)
+```
 
 
 

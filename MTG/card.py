@@ -13,8 +13,8 @@ class Attributes():
 
 
 class Card(gameobject.GameObject):
-    target_criterias = None
-    target_prompts = None
+    target_criterias = None  # if targets, this is a list of boolean functions
+    target_prompts = None  # list of strings
     targets_chosen = None
 
     triggers = {}
@@ -40,6 +40,17 @@ class Card(gameobject.GameObject):
         if isinstance(targets_chosen, list):
             self.targets_chosen = targets_chosen
         return targets_chosen
+
+
+    ''' Returns a list of booleans, signifying each target's legality '''
+    def target_legality(self):
+        if (not isinstance(self.targets_chosen, list) or 
+            not isinstance(self.target_criterias, list)):
+            return []
+
+        return [c(self, t) for c, t in 
+                zip(self.target_criterias, self.targets_chosen)]
+
 
     def ID(self):
         pass

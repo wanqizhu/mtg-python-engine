@@ -9,7 +9,7 @@ from MTG import permanent
 from MTG.exceptions import *
 
 
-cards.set_up_cards()
+cards.setup_cards()
 f = open('test_game_time.log', 'w')
 
 
@@ -19,7 +19,7 @@ class TestPlayer(unittest.TestCase):
         decks = [cards.read_deck('data/decks/deck1.txt'),
                  cards.read_deck('data/decks/deck1.txt')]
         self.GAME = game.Game(decks, test=True)
-        self.GAME.set_up_game()
+        self.GAME.setup_game()
         self.player = self.GAME.players_list[0]
         self.player.tmp = False
         self.opponent = self.GAME.players_list[1]

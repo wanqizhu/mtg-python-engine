@@ -133,12 +133,17 @@ class Player():
                 elif answer == 'mana':
                     print(self.mana)
 
+                ## debug
                 elif answer == 'addmana':
                     self.mana.add_str('WWWWWUUUUUBBBBBRRRRRGGGGG11111')
 
                 elif answer == 'debug':
                     # pdb.set_trace()
                     pass
+
+                elif answer[:2] == '__':  # for dev purposes
+                    exec(answer[2:])
+                    return '__continue'
 
                 elif answer[0] == 'p':  # playing card from hand
                     try:
@@ -274,10 +279,6 @@ class Player():
                     assert answer[2:].upper() in gamesteps.Step._member_names_
                     self.passPriorityUntil = gamesteps.Step[answer[2:].upper()]
                     break
-
-                elif answer[:2] == '__':  # for dev purposes
-                    exec(answer[2:])
-                    return '__continue'
 
                 else:
                     raise BadFormatException()

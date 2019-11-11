@@ -6,9 +6,6 @@ import pdb
 
 from copy import deepcopy
 
-sys.path.append('/Users/wanqi/Desktop/Python-MTG')
-os.chdir('/Users/wanqi/Desktop/Python-MTG')
-
 from MTG import player
 from MTG import zone
 from MTG import cards
@@ -113,7 +110,7 @@ class Game(object):
 
     # TODO
     def apply_state_based_actions(self):
-        print("Applying state based actions")
+        # iterate through cards that could possibly cause a state-based action
         _any_action = False
         def any_action():
             nonlocal _any_action
@@ -140,7 +137,7 @@ class Game(object):
         for _player in self.players_list:
             if _player.life <= 0:
                 _player.lose()
-            if _player.lost:  # PROBLEM with multiplayer -- maybe skip over rest of turn / destroy all cards owned by that player?
+            if _player.lost:  # TODO: PROBLEM with multiplayer -- maybe skip over rest of turn / destroy all cards owned by that player?
                 any_action()
                 self.players_list.remove(_player)
                 self.num_players -= 1
@@ -149,6 +146,7 @@ class Game(object):
             raise GameOverException
 
         if _any_action:
+            print("Applying state based actions")
             self.apply_state_based_actions()
 
 
@@ -540,7 +538,7 @@ class Game(object):
     #     return self.print_game_state()
 
     # TODO
-    def set_up_game(self):
+    def setup_game(self):
         print("setting up game...")
         for _player in self.players_list:
             _player.draw(7)
@@ -550,7 +548,7 @@ class Game(object):
         self.current_player = self.pending_turns.pop(0)
 
     def run_game(self):
-        self.set_up_game()
+        self.setup_game()
 
         while self.num_players > 1:
             try:
@@ -559,10 +557,15 @@ class Game(object):
                 break
 
 
-if __name__ == '__main__':
-    cards.set_up_cards()
+
+def start_game():
+    global GAME
+    cards.setup_cards()
     decks = [cards.read_deck('data/decks/deck1.txt'),
              cards.read_deck('data/decks/deck1.txt')]
     GAME = Game(decks)
     GAME_PREVIOUS_STATE = None
     GAME.run_game()
+
+if __name__ == '__main__':
+    start_game()

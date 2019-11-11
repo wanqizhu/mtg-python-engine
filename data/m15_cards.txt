@@ -2,6 +2,8 @@
 
 # cards are separated by 30 '#'s
 
+# MAKE SURE INDENTATION IS IN TABS
+
 # ##############################
 # Name
 

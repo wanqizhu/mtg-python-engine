@@ -116,19 +116,26 @@ def add_targets(cardname, criterias=[lambda self, p: True], prompts=None):
     card.target_prompts = prompts
 
 
+'''
+@outcome: function which takes in [CARD], targets, is_legal_target
+'''
 def add_play_func_with_targets(cardname, outcome=lambda self, t, l: True):
     if not name_to_id(cardname):
         return
     card = card_from_name(cardname, get_instance=False)
 
     def play_func(self):
-        legality = [c(self, t) for c, t in zip(self.target_criterias, self.targets_chosen)]
+        legality = self.target_legality()
         if any(legality):
             outcome(self, self.targets_chosen, legality)
             if not self.is_aura:
                 self.controller.graveyard.add(self)
+
+            return True
         else:
+            # no valid target on a spell that requires target
             self.controller.graveyard.add(self)
+            return False
 
     card.play_func = play_func
 
@@ -424,15 +431,15 @@ def parse_card_from_lines(lines, log=None):
     exec(str_to_exe)
 
 
-def set_up_cards(FILES=['data/m15_cards.txt', 'data/cube_cards.txt']):
+def setup_cards(FILES=['data/m15_cards.txt', 'data/cube_cards.txt']):
     """
     Read in cards information from data/cards.txt
 
-    Logs in set_up_cards.log
+    Logs in setup_cards.log
 
     """
 
-    f_log = open('set_up_cards.log', 'w')
+    f_log = open('setup_cards.log', 'w')
 
     for name in FILES:
         with open(name, 'r') as f:

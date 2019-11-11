@@ -1,5 +1,3 @@
-- TEST CASES!!! (break them down into SMALLER units)
-
 - make Stack / play.Play object more readable
    - add more descriptors for printout
 
@@ -53,7 +51,10 @@ KNOWN BUGS
 
 
 
-**M15 progress
+**M15 progress**
+
+[CARDNAME] - [TODOs]
+\* indicates all done
 
 
 ---

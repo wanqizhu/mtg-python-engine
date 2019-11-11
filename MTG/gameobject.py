@@ -208,7 +208,7 @@ class GameObject():
         else:
             if current_zone.remove(self):
                 if current_zone.is_battlefield and self.original_card:
-                    self.controller.remove_static_effect(self)  # remove static effects
+                    self.controller.remove_static_effect(self)
                     c = self.original_card  # shift from permanent back to card
                     c.previousState = self
                     self.timestamp = self.game.timestamp  # reset timestamp
