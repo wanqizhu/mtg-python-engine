@@ -3,7 +3,7 @@ import inspect
 
 class Play(object):
     """
-    Represents anything a player can choose to do when they have priority.
+    Represents an ability or spell on the stack.
     """
 
     # TODO: implement targets:

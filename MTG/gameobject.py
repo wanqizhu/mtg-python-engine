@@ -6,6 +6,7 @@ from sortedcontainers import SortedListWithKey
 
 from MTG import cardtype
 from MTG import abilities
+from MTG import zone
 
 
 class Characteristics():
@@ -70,7 +71,7 @@ class GameObject():
     def __repr__(self):
         # pdb.set_trace()
         return '%r in %r (ID: %r)' % (self.name,
-                             self.zone.zone_type if self.zone else 'None',
+                             self.zone.zone_type if isinstance(self.zone, zone.Zone) else 'None',
                              id(self))
 
     def __str__(self):

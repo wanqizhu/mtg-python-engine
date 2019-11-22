@@ -108,8 +108,8 @@ add_static_effect("Warden of the Beyond", 'self', 'modifyPT', (2,2), lambda eff:
 
 add_static_effect("Aeronaut Tinkerer", 'self', 'gainAbility', 'Flying', lambda eff: eff.source.controller.controls(types="Artifact"))
 
-add_trigger("Chasm Skulker", triggers.triggerConditions['onDrawCard'], '[self.card.add_counter("+1/+1")]', None, [], intervening_if=None)
-add_trigger("Chasm Skulker", triggers.triggerConditions['onDeath'], '[self.controller.create_token("1/1 blue Squid", self.num_counters("+1/+1"), "Islandwalk")]', None, [], intervening_if=None)
+add_trigger("Chasm Skulker", triggers.triggerConditions['onControllerDrawCard'], '[self.card.add_counter("+1/+1")]', None, [], intervening_if=None)
+add_trigger("Chasm Skulker", triggers.triggerConditions['onDeath'], '[self.controller.create_token("1/1 blue Squid", self.card.num_counters("+1/+1"), "Islandwalk")]', None, [], intervening_if=None)
 
 add_trigger("Frost Lynx", triggers.triggerConditions['onEtB'], '[self.targets_chosen[0].tap(), self.targets_chosen[0].freeze()]', None, ['opponent creature'], intervening_if=None)
 
@@ -123,6 +123,8 @@ add_targets("Void Snare", [lambda self, p: p.is_permanent and not p.is_land], pr
 add_play_func_with_targets("Void Snare", lambda self, targets, is_legal_target: [p.bounce()])
 
 add_trigger("Black Cat", triggers.triggerConditions['onDeath'], '[self.targets_chosen[0].discard(random=True)]', None, ['opponent'], intervening_if=None)
+
+add_trigger("Forge Devil", triggers.triggerConditions['onEtB'], '[self.targets_chosen[0].take_damage(self, 1), self.controller.take_damage(self, 1)]', None, ['creature'], intervening_if=None)
 
 add_trigger("Champion of the Parish", triggers.triggerConditions['onControllerCreatureEtB'], '[self.card.add_counter("+1/+1")]', lambda self: self.trigger_source.has_subtype("Human") and self.trigger_source != self.card, [], intervening_if=None)
 

@@ -177,6 +177,7 @@ class Player():
 
                     # pay mana costs
                     if can_play and can_target:
+                        can_pay = False
                         cost = card.manacost
                         creatures_to_tap = []
 
@@ -219,7 +220,7 @@ class Player():
 
                         can_pay = self.mana.canPay(cost) 
 
-                    if can_pay and can_target and can_play:
+                    if can_play and can_target and can_pay:
                         self.hand.remove(card)
                         self.mana.pay(can_pay)
                         for _creature in creatures_to_tap:
@@ -234,12 +235,12 @@ class Player():
                             self.landPlayed += 1
                     else:
                         # illegal casting, revert
-                        if not can_pay:
-                            print("Cannot pay mana costs\n")
+                        if not can_play:
+                            print("Cannot play this right now\n")
                         elif not can_target:
                             print("Cannot target\n")
-                        elif not can_play:
-                            print("Cannot play this right now\n")
+                        elif not can_pay:
+                            print("Cannot pay mana costs\n")
 
                 # activate ability from battlefield -- 'a 3_1' plays 2nd (index starts at 0) ability from 3rd permanent
                 # 'a 3' playrs 1st (default) ability of the 3rd permanent
@@ -286,7 +287,6 @@ class Player():
             except ResetGameException:
                 print("Illegial action. Resetting...")
                 self = PLAYER_PREVIOUS_STATE
-                pass
 
             except:
                 traceback.print_exc()
@@ -408,6 +408,7 @@ class Player():
             self.game.stack.add(play)  # add to stack
 
     def draw(self, num=1):
+        # TODO: multiple draw triggers?
         self.trigger('onControllerDrawCard')
         self.game.trigger('onDrawCard')
         for i in range(num):
@@ -417,7 +418,7 @@ class Player():
             except IndexError:
                 raise EmptyLibraryException()
 
-    def draw_card(self, card):
+    def add_card_to_hand(self, card):
         """ draw a specific card
 
         card is either a string (name of card) or a Card object

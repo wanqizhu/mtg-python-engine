@@ -551,12 +551,12 @@ Aeronaut Tinkerer
 Chasm Skulker
 
 	Triggers:
-		onDrawCard
+		onControllerDrawCard
 			self.card.add_counter("+1/+1")
 
 		onDeath
 			self.controller.create_token("1/1 blue Squid", 
-						self.num_counters("+1/+1"), "Islandwalk")
+						self.card.num_counters("+1/+1"), "Islandwalk")
 
 
 
@@ -1107,6 +1107,12 @@ Crucible of Fire
 ##############################
 Forge Devil
 
+	Triggers:
+		onEtB
+			self.targets_chosen[0].take_damage(self, 1)
+			self.controller.take_damage(self, 1)
+				Targets:
+					'creature'
 
 
 ##############################

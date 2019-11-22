@@ -1,6 +1,8 @@
+
+
 - make Stack / play.Play object more readable
    - add more descriptors for printout
-
+   - ability object printing
 
 - clean up player.Player.make_choice -- TOO MANY generic use cases. Make seperate helper function for when making a decision between a few choices, choosing a single item from list (e.g. choose a creature), choosng multiple items (e.g. attacking), generic input, etc.
 

@@ -53,6 +53,10 @@ class Zone():
     def __getitem__(self, pos):
         return self.elements[pos]
 
+    @property
+    def isEmpty(self):
+        return len(self) == 0
+
     def add(self, obj):
         if type(obj) is str:  # convert string (card's name) to a Card object
             obj = cards.card_from_name(obj)
@@ -116,6 +120,10 @@ class Zone():
     def pop(self, pos=-1):
         return self.elements.pop(pos)
 
+    def clear(self):
+        # bypass triggers
+        self.elements = []
+
 
 class Battlefield(Zone):
     zone_type = 'BATTLEFIELD'
@@ -128,11 +136,13 @@ class Battlefield(Zone):
 
 
         if isinstance(obj, card.Card):  # convert card to Permanent
-            obj = permanent.make_permanent(obj, status_mod, modi_func)  # this will call Battlefield.add(...) again
+            # this will call Battlefield.add(...) again
+            obj = permanent.make_permanent(obj, status_mod, modi_func)
         else:
+            assert isinstance(obj, permanent.Permanent)
             obj.zone = self
             self.elements.append(obj)
-            obj.status = permanent.Status()  # reset status upon entering battlefield
+            obj.status.reset()  # reset status upon entering battlefield
             if status_mod:
                 if 'tapped' in status_mod:
                     status.tapped = True
@@ -150,6 +160,8 @@ class Battlefield(Zone):
 
 class Stack(Zone):
     zone_type = 'STACK'
+
+    #TODO: move stack printing here (from game.py)
     pass
 
 

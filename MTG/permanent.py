@@ -121,16 +121,7 @@ from MTG import abilities
 
 class Status():
     def __init__(self):
-        self.tapped = False
-        self.not_untap = 0  # 0: untap normally; 1: not untap next turn; math.inf: not untap
-        self.flipped = False
-        self.face_up = True
-        self.phased_in = True
-        self.summoning_sick = True
-        self.damage_taken = 0
-        self.is_attacking = []
-        self.is_blocking = []
-        self.counters = defaultdict(lambda: 0)
+        self.reset()
 
     def __repr__(self):
         return str(self.__dict__)
@@ -153,6 +144,19 @@ class Status():
 
         # remove empty ''
         return 'Status: ' + ', '.join([i for i in s if i])
+
+
+    def reset(self):
+        self.tapped = False
+        self.not_untap = 0  # 0: untap normally; 1: not untap next turn; math.inf: not untap
+        self.flipped = False
+        self.face_up = True
+        self.phased_in = True
+        self.summoning_sick = True
+        self.damage_taken = 0
+        self.is_attacking = []
+        self.is_blocking = []
+        self.counters = defaultdict(lambda: 0)
 
 
 
@@ -462,6 +466,9 @@ class Permanent(gameobject.GameObject):
         self.status.is_blocking = []
 
     def take_damage(self, source, dmg, is_combat=False):
+        if isinstance(source, abilities.Ability):
+            source = source.card
+
         # trigger based on source
         self.trigger('onTakeDamage', source, dmg)
         if is_combat:
@@ -469,7 +476,7 @@ class Permanent(gameobject.GameObject):
 
         self.status.damage_taken += dmg
         print("{} takes {} damage from {}\n".format(self, dmg, source))
-        if source.has_ability("Deathtouch"):
+        if source and source.has_ability("Deathtouch"):
             self.destroy()
         # pdb.set_trace()
 
@@ -553,6 +560,10 @@ class Permanent(gameobject.GameObject):
 
     def dies(self):
         # trigger first so we can use last-known state (while it's still a permanent)
+        # TODO: this should not work if the effect modifies the orig card or nearby card states
+        # we need to somehow mark this card as not being on battlefield
+        # e.g. change zones
+        # yet still remember last known states
         self.trigger('onDeath')
         print("{} has died\n".format(self))
         return self.change_zone(self.owner.graveyard)

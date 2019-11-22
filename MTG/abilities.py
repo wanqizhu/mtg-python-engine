@@ -33,7 +33,11 @@ class StaticAbilities(Enum):
     Convoke = 30
 
 
-class ActivatedAbility():
+class Ability():
+    pass
+
+
+class ActivatedAbility(Ability):
     def __init__(self, card, cost, effect, target_criterias=None, prompts=None, is_mana_ability=False):
         """ card: permanent that the ability is attached to """
         self.card = card
@@ -64,7 +68,7 @@ class ActivatedAbility():
         return targets_chosen and (lambda self: eval(cost))(_card)
 
 
-class TriggeredAbility():
+class TriggeredAbility(Ability):
     def __init__(self, card, effect, requirements, target_criterias=None,
                  prompts=None, intervening_if=None):
         self.card = card
@@ -85,6 +89,9 @@ class TriggeredAbility():
         self.targets_chosen = []
         self.trigger_amount = 1
         self.trigger_source = None
+
+    def __str__(self):
+        return str(self.effect) + " from " + str(self.card)
 
     def resolve(self):
         return eval(self.effect)

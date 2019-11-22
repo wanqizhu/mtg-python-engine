@@ -14,16 +14,10 @@ from MTG import combat
 from MTG import triggers
 from MTG.exceptions import *
 
-global GAME
-
-global GAME_PREVIOUS_STATE
-
 
 class Game(object):
     """A game object. This represents the entire state of an in-progress MTG game.
 
-
-    Full doc string goes here
     """
 
     # Give each player their deck.
@@ -164,6 +158,7 @@ class Game(object):
             #       UNTIL none avaliable
             self.apply_state_based_actions()
 
+
             for p in self.APNAP:
                 if p.pending_triggers:
                     # ask player for order
@@ -171,21 +166,25 @@ class Game(object):
                     if len(p.pending_triggers) > 1 and not p.autoOrderTriggers:
                         ans = p.make_choice("Current triggers: %r\n"
                                             "Would you like to order them, %r?\n"
+                                            "Enter a space separated list of indices, "
+                                            "starting from the trigger you'd like to put on the"
+                                            "bottom of the stack.\n"
                                             % (p.pending_triggers, p))
 
                         try:
                             ans = ans.split(" ")
                             for ind in ans:
                                 ind = int(ind)
-                                triggers.append(p.pending_triggers[ind].put_on_stack())
+                                triggers.append(p.pending_triggers[ind])
                         except (IndexError, ValueError):
+                            print("Error reading order. Auto-ordering.")
                             pass
 
                     for trig in p.pending_triggers:
                         if trig not in triggers:
-                            triggers.append(trig.put_on_stack())
+                            triggers.append(trig)
 
-
+                    triggers = [t.put_on_stack() for t in triggers]
                     self.stack.elements.extend([t for t in triggers if t is not None])
                     p.pending_triggers = []
                     self.passed_priority = 0
@@ -193,13 +192,16 @@ class Game(object):
             if self.stack:
                 print("\nstack: ", self.stack[::-1])
 
-            # auto pass priority
+            # check if player auto pass priority
             if self.players_list[priority].passPriorityUntil not in [None, step]:
                 _play = None
             else:
                 self.players_list[priority].passPriorityUntil = None
                 # ask current player for an action
+                # get_action() will return '__continue' if we're debugging and executing code directly
+                # this allows us to manipulate game state without anyone receiving priority
                 _play = self.players_list[priority].get_action()
+
 
             if _play is None:  # a player passes priority
                 self.passed_priority += 1
@@ -209,10 +211,11 @@ class Game(object):
                     self.apply_stack_item(self.stack.pop())
                     self.passed_priority = 0
                     priority = self.players_list.index(self.current_player)
-            elif _play is '__continue':  # used for debugging
-                pass
+
+            elif _play == '__continue':
+                pass  # debug
             else:
-                # responds with something; must have everyone re-pass priority
+                # new thing on top of stack; must have everyone re-pass priority
                 self.passed_priority = 0
 
                 if _play.is_mana_ability or _play.is_special_action:
@@ -559,7 +562,6 @@ class Game(object):
 
 
 def start_game():
-    global GAME
     cards.setup_cards()
     decks = [cards.read_deck('data/decks/deck1.txt'),
              cards.read_deck('data/decks/deck1.txt')]

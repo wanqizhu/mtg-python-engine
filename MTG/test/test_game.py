@@ -8,12 +8,19 @@ from MTG import cards
 from MTG import permanent
 from MTG.exceptions import *
 
-
+# test cases will fail if this is run
+# inside setUpClass, b/c cards get set up multiple times
 cards.setup_cards()
-f = open('test_game_time.log', 'w')
 
+class TestGameBase(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.f = open('test_game_time.log', 'w')
 
-class TestPlayer(unittest.TestCase):
+    @classmethod
+    def tearDownClass(cls):
+        cls.f.close()
+
     def setUp(self):
         self.startTime = time.time()
         decks = [cards.read_deck('data/decks/deck1.txt'),
@@ -21,14 +28,19 @@ class TestPlayer(unittest.TestCase):
         self.GAME = game.Game(decks, test=True)
         self.GAME.setup_game()
         self.player = self.GAME.players_list[0]
-        self.player.tmp = False
         self.opponent = self.GAME.players_list[1]
+        
+        self.player.tmp = False
         self.opponent.tmp = False
+        self.player.hand.clear()  # start w/ no cards
+        self.opponent.hand.clear()
 
     def tearDown(self):
         t = time.time() - self.startTime
-        f.write("%s: %.3f\n" % (self.id(), t))
+        self.f.write("%s: %.3f\n" % (self.id(), t))
 
+
+class TestGame(TestGameBase):
     def test_turn_do_nothing(self):
         with mock.patch('builtins.input', return_value=''):
             self.assertTrue(self.GAME.handle_turn())
@@ -65,8 +77,9 @@ class TestPlayer(unittest.TestCase):
     def test_drawing_cards(self):
         with mock.patch('builtins.input', side_effect=[
                 '', '', '', '',
+                '__self.draw(7)',
                 '__self.tmp = len(self.hand) == 7',
-                '__self.draw_card("Swamp")',
+                '__self.add_card_to_hand("Swamp")',
                 '__self.draw(5)',
                 '__self.tmp = self.tmp and len(self.hand) == 13',
                 's draw',
@@ -80,6 +93,7 @@ class TestPlayer(unittest.TestCase):
     def test_discard(self):
         with mock.patch('builtins.input', side_effect=[
                 '', '', '', '',
+                '__self.draw(7)',
                 '__self.draw(4)',
                 '__self.discard(5)', '',  # auto discard
                 's draw',
@@ -95,6 +109,7 @@ class TestPlayer(unittest.TestCase):
         """ Testing discarding DOWN TO 5 cards left in hand"""
         with mock.patch('builtins.input', side_effect=[
                 '', '', '', '',
+                '__self.draw(7)',
                 '__self.draw(4)',
                 '__self.discard(down_to = 5)', '0 2 3 5 8 1',
                 's draw',
@@ -110,6 +125,7 @@ class TestPlayer(unittest.TestCase):
         """ Testing random discard"""
         with mock.patch('builtins.input', side_effect=[
                 '', '', '', '',
+                '__self.draw(7)',
                 '__self.draw(7)',
                 '__self.discard(9, rand=True)',
                 's draw',
@@ -128,7 +144,7 @@ class TestPlayer(unittest.TestCase):
         """
 
         with mock.patch('builtins.input', side_effect=[
-                '__self.draw_card("Island")',
+                '__self.add_card_to_hand("Island")',
                 '', '', '', '',
                 'p Island',
                 'a 0',
@@ -148,7 +164,7 @@ class TestPlayer(unittest.TestCase):
         Devouring Deep costs 2U
         """
         with mock.patch('builtins.input', side_effect=[
-                '__self.draw_card("Devouring Deep")',
+                '__self.add_card_to_hand("Devouring Deep")',
                 '', '', '', '',
                 '__self.mana.add(mana.Mana.BLUE, 3)',
                 'p Devouring Deep', '',  # automatic mana payment
@@ -163,7 +179,7 @@ class TestPlayer(unittest.TestCase):
     def test_play_creature_custom_mana_payment(self):
         """Play a creature while having sufficient mana (custom payment)"""
         with mock.patch('builtins.input', side_effect=[
-                '__self.draw_card("Devouring Deep")',
+                '__self.add_card_to_hand("Devouring Deep")',
                 '', '', '', '',
                 '__self.mana.add(mana.Mana.BLUE, 1)',
                 '__self.mana.add(mana.Mana.RED, 1)',
@@ -186,10 +202,10 @@ class TestPlayer(unittest.TestCase):
 
         with mock.patch('builtins.input', side_effect=[
                 '__self.discard(-1)',
-                '__self.draw_card("Island")',
-                '__self.draw_card("Island")',
-                '__self.draw_card("Plains")',
-                '__self.draw_card("Devouring Deep")',
+                '__self.add_card_to_hand("Island")',
+                '__self.add_card_to_hand("Island")',
+                '__self.add_card_to_hand("Plains")',
+                '__self.add_card_to_hand("Devouring Deep")',
                 '', '', '', '',
                 'p Island',
                 's precombat_main',
@@ -218,7 +234,7 @@ class TestPlayer(unittest.TestCase):
 
     def test_summoning_sickness(self):
         with mock.patch('builtins.input', side_effect=[
-                '__self.draw_card("Devouring Deep")',
+                '__self.add_card_to_hand("Devouring Deep")',
                 '', '', '', '',
                 '__self.mana.add(mana.Mana.BLUE, 3)',
                 'p Devouring Deep', '',  # auto payment
@@ -235,7 +251,7 @@ class TestPlayer(unittest.TestCase):
     def test_attacking(self):
         with mock.patch('builtins.input', side_effect=[
                 '__self.discard(-1)',
-                '__self.draw_card("Devouring Deep")',
+                '__self.add_card_to_hand("Devouring Deep")',
                 '', '', '', '',
                 '__self.mana.add(mana.Mana.BLUE, 3)',
                 'p Devouring Deep', '',
@@ -269,9 +285,9 @@ class TestPlayer(unittest.TestCase):
 
         with mock.patch('builtins.input', side_effect=[
                 # p0
-                '__self.discard(-1)', '__self.draw_card("Devouring Deep")', '',
+                '__self.discard(-1)', '__self.add_card_to_hand("Devouring Deep")', '',
                 # p1
-                '__self.discard(-1)', '__self.draw_card("Devouring Deep")', '',
+                '__self.discard(-1)', '__self.add_card_to_hand("Devouring Deep")', '',
                 '', '',
                 '__self.mana.add(mana.Mana.BLUE, 3)',  # player 0
                 'p Devouring Deep', '', '', '',
@@ -343,9 +359,9 @@ class TestPlayer(unittest.TestCase):
     def test_multiple_attacker_multiple_blocker(self):
         with mock.patch('builtins.input', side_effect=[
                 # p0
-                '__self.discard(-1)', '__self.draw_card("Devouring Deep")',
-                '__self.draw_card("Devouring Deep")',
-                '__self.draw_card("Sewn-Eye Drake")',
+                '__self.discard(-1)', '__self.add_card_to_hand("Devouring Deep")',
+                '__self.add_card_to_hand("Devouring Deep")',
+                '__self.add_card_to_hand("Sewn-Eye Drake")',
                 '', '', '', '',
                 '__self.mana.add(mana.Mana.BLUE, 9)',  # player 0, main step
                 '__self.mana.add(mana.Mana.BLACK, 1)',
@@ -357,10 +373,10 @@ class TestPlayer(unittest.TestCase):
                 's precombat_main',
                 '0',  # attacking for 3 w/ haste
 
-                '__self.discard(-1)', '__self.draw_card("Devouring Deep")',
+                '__self.discard(-1)', '__self.add_card_to_hand("Devouring Deep")',
                 # player 1's turn, main step
-                '__self.draw_card("Devouring Deep")',
-                '__self.draw_card("Sewn-Eye Drake")',
+                '__self.add_card_to_hand("Devouring Deep")',
+                '__self.add_card_to_hand("Sewn-Eye Drake")',
                 '__self.mana.add(mana.Mana.BLUE, 9)',
                 '__self.mana.add(mana.Mana.BLACK, 1)',
                 'p Devouring Deep', '', '', '',  # pay mana, letting it resolve
@@ -448,9 +464,9 @@ class TestPlayer(unittest.TestCase):
                 '__self.autoPayMana = True',
                 '__self.battlefield.add("Sewn-Eye Drake")', '',
                 '__self.battlefield.add("Devouring Deep")', '',  # player 1
-                '__self.draw_card("Lightning Strike")',
-                '__self.draw_card("Lightning Strike")',
-                '__self.draw_card("Lightning Strike")',
+                '__self.add_card_to_hand("Lightning Strike")',
+                '__self.add_card_to_hand("Lightning Strike")',
+                '__self.add_card_to_hand("Lightning Strike")',
                 '__self.mana.add(mana.Mana.RED, 6)',
                 'p Lightning Strike',
                 'b 0',
@@ -477,107 +493,13 @@ class TestPlayer(unittest.TestCase):
             self.GAME.handle_turn()
             self.assertTrue(self.player.tmp)
 
-    def test_ajanis_pridemate(self):
-        """ Test optional trigger on controller life gain"""
-        with mock.patch('builtins.input', side_effect=[
-                '__self.battlefield.add("Ajani\'s Pridemate")',
-                '__self.gain_life(3)',
-                '', '', 'yes',  # resolving trigger
-                '__self.tmp = self.battlefield[0].power == 3',
-                '__self.gain_life(2)',
-                '', '', '',  # resolving trigger, saying 'no'
-                '__self.tmp = self.tmp and self.battlefield[0].power == 3',
-                '__self.gain_life(1)',
-                '', '', 'yes',  # resolving trigger
-                '__self.tmp = self.tmp and self.battlefield[0].toughness == 4',
-                '', '',
-                '', '__self.gain_life(1)', '',  # opponent gains life
-                '__self.tmp = self.tmp and not self.stack',  # no trigger
-                's upkeep',
-                's upkeep']):  # no attack
-
-            self.GAME.handle_turn()
-            self.assertTrue(self.player.tmp)
-
-    def test_pt_modifiers(self):
-        """Testing casting +4/+4 and -3/-3 until eot effects (plus +1/+1 counters)"""
-        with mock.patch('builtins.input', side_effect=[
-                '__self.battlefield.add("Ajani\'s Pridemate")',
-                '__self.gain_life(1)',
-                '', '', 'yes',  # resolving trigger
-                '__self.tmp = self.battlefield[0].power == 3',
-                '__self.gain_life(1)',
-                '', '', 'yes',
-                '__self.tmp = self.tmp and self.battlefield[0].power == 4',
-                '__self.draw_card("Ulcerate")',
-                '__self.draw_card("Titanic Growth")',
-                '__self.mana.add("BGG")',
-                'p Ulcerate', 'b 0',  # target
-                '', '',
-                '__self.tmp = self.tmp and self.battlefield[0].toughness == 1',
-                'p Titanic Growth', 'b 0', '', # target
-                '', '',
-                '__self.tmp = self.tmp and self.battlefield[0].toughness == 5',
-                's upkeep',
-                's upkeep']):
-
-            self.GAME.handle_turn()
-            self.assertTrue(self.player.tmp)
-            # both ulcerate and titanic growth should have fallen off
-            self.assertEqual(self.player.battlefield[0].power, 4)
-
-    def test_zof_shade(self):
-        """Testing activated ability to self buff until eot """
-        with mock.patch('builtins.input', side_effect=[
-                '__self.battlefield.add("Zof Shade")',
-                '__self.mana.add(mana.Mana.BLACK, 9)',
-                'a 0', '', '',
-                '__self.tmp = self.battlefield[0].power == 4',
-                'a 0', 'a 0', '', '',
-                '__self.tmp = self.tmp and self.battlefield[0].power == 6',
-                '', '',
-                '__self.tmp = self.tmp and self.battlefield[0].power == 8',
-                's end', 's end',
-                # should still keep the power at beginning of end step
-                '__self.tmp = self.tmp and self.battlefield[0].power == 8',
-                's upkeep',
-                's upkeep']):
-
-            self.player.autoPayMana = True
-            self.GAME.handle_turn()
-            self.assertTrue(self.player.tmp)
-            # buffs should off
-            self.assertEqual(self.player.battlefield[0].power, 2)
-
-    def test_first_response(self):
-        """Testing trigger on each upkeep -- if lost life last turn, create token"""
-        with mock.patch('builtins.input', side_effect=[
-                '__self.battlefield.add("First Response")',
-                '__self.lose_life(3)',
-                's upkeep', 's upkeep', '', '',
-                's upkeep',  # player 1's turn
-                # player 0 verifying token
-                '__self.tmp = self.battlefield[1].power == 1'
-            ' and self.battlefield[1].is_color(["W"])', 's upkeep',
-                '', '', 's upkeep', 's upkeep',  # player 0's turn again
-                '0'  # attacking with token
-        ]):
-
-            self.player.autoDiscard = True
-            self.opponent.autoDiscard = True
-            self.GAME.handle_turn()
-            self.GAME.handle_turn()
-            self.GAME.handle_turn()
-            self.assertTrue(self.player.tmp)
-            # buffs should off
-            self.assertEqual(self.player.opponent.life, 19)
-
+    
     def test_triplicate_spirits(self):
         """Testing convoke, tokens, Spirit token has flying"""
         with mock.patch('builtins.input', side_effect=[
-                '__self.draw_card("Triplicate Spirits")',
-                '__self.draw_card("Triplicate Spirits")',
-                '__self.draw_card("Triplicate Spirits")',
+                '__self.add_card_to_hand("Triplicate Spirits")',
+                '__self.add_card_to_hand("Triplicate Spirits")',
+                '__self.add_card_to_hand("Triplicate Spirits")',
                 '__self.battlefield.add("Soulmender")',
                 '__self.battlefield.add("Child of Night")',
                 's main', 's main', '__self.mana.add(mana.Mana.WHITE, 10)',
@@ -602,7 +524,7 @@ class TestPlayer(unittest.TestCase):
     def test_squadron_hawk(self):
         """Testing search library, optional varibale number of cards"""
         with mock.patch('builtins.input', side_effect=[
-                '__self.draw_card("Squadron Hawk")',
+                '__self.add_card_to_hand("Squadron Hawk")',
                 '__self.library.add("Squadron Hawk")',
                 '__self.library.add("Squadron Hawk")',
                 '__self.library.add("Squadron Hawk")',
@@ -628,10 +550,9 @@ class TestPlayer(unittest.TestCase):
     def test_target_fizzling(self):
         """Testing convoke, tokens, Spirit token has flying"""
         with mock.patch('builtins.input', side_effect=[
-                '__self.discard(7)',
-                '__self.draw_card("Peel from Reality")',
-                '__self.draw_card("Peel from Reality")',
-                '__self.draw_card("Ulcerate")',
+                '__self.add_card_to_hand("Peel from Reality")',
+                '__self.add_card_to_hand("Peel from Reality")',
+                '__self.add_card_to_hand("Ulcerate")',
                 '__self.battlefield.add("Soulmender")',
                 '__self.battlefield.add("Soulmender")', '',
                 '__self.battlefield.add("Soulmender")', '',
@@ -648,114 +569,14 @@ class TestPlayer(unittest.TestCase):
             self.assertEqual(len(self.player.battlefield), 0)  # everything should be bounced
             self.assertEqual(len(self.opponent.battlefield), 0)
             self.assertEqual(self.player.life, 20)
-            self.assertEqual(len(self.player.graveyard), 10)  # 7 discarded + 3 spells cast
+            self.assertEqual(len(self.player.graveyard), 3)  # 3 spells cast
 
 
-    def test_activated_ability_targeting(self):
-        """Testing Grindclock: mill based on # counters"""
-        with mock.patch('builtins.input', side_effect=[
-                '', '',
-                '__self.battlefield.add("Grindclock")',
-                'a 0_1', 'p',  # mill myself; the amount should be checked on RESOLUTION
-                '__self.battlefield[0].untap()',
-                'a 0_0',
-                '__self.battlefield[0].untap()',
-                'a 0_0',  # put 2 charge counters; activated in respond, so they should resolve first
-                's upkeep', 's upkeep'
-        ]):
-            self.GAME.handle_turn()
-            self.assertEqual(len(self.player.graveyard), 2)  # mill 2 cards
-
-
-    def test_triggered_ability_targeting(self):
-        """Testing Kinsbaile Skirmisher"""
-        with mock.patch('builtins.input', side_effect=[
-                's main', 's main',
-                '__self.battlefield.add("Soulmender")',
-                '__self.draw_card("Kinsbaile Skirmisher")',
-                '__self.draw_card("Kinsbaile Skirmisher")',
-                '__self.mana.add(mana.Mana.WHITE, 4)',
-                'p Kinsbaile Skirmisher',
-                '', '',
-                'b 0',
-                '', '',
-                '__self.tmp = [self.battlefield[0].power == 2]',  # buffed soulmender
-                'p Kinsbaile Skirmisher',
-                '', '',
-                'b 2',  # buff itself
-                '', '',
-                '__self.tmp.append(self.battlefield[2].toughness == 3)',
-                's upkeep', 's upkeep'
-        ]):
-            self.player.autoPayMana = True
-            self.GAME.handle_turn()
-            self.assertTrue(all(self.player.tmp))
-
-
-    def test_board_affecting_static_abilities(self):
-        """Testing Kinsbaile Skirmisher"""
-        with mock.patch('builtins.input', side_effect=[
-                '__self.battlefield.add("Soulmender")',
-                '__self.battlefield.add("Paragon of New Dawns")',
-                '__self.battlefield.add("Child of Night")',
-                '__self.tmp = [[p.power for p in self.battlefield] == [2, 2, 2]]',
-                '__self.battlefield.add("Paragon of New Dawns")',
-                '__self.tmp.append([p.power for p in self.battlefield] == [3, 3, 2, 3])',
-                'addmana',
-                '__self.draw_card("Lightning Bolt")',
-                'p Lightning Bolt', 'b 1', '', '',
-                '__self.tmp.append([p.power for p in self.battlefield] == [2, 2, 2])',
-                '__self.battlefield.add("Paragon of New Dawns")',
-                '__self.battlefield.add("Paragon of New Dawns")',
-                '__self.battlefield.add("Soulmender")',
-                's end', 's end',
-                '__self.tmp.append([p.power for p in self.battlefield] == [4, 2, 4, 4, 4, 4])',
-                's upkeep', 's upkeep'
-        ]):
-            self.player.autoPayMana = True
-            self.GAME.handle_turn()
-            # assert effect still holds
-            self.player.tmp.append([p.power for p in self.player.battlefield] == [4, 2, 4, 4, 4, 4])
-            self.assertTrue(all(self.player.tmp), self.player.tmp)
-
-
-    def test_conditional_self_affecting_static_abilities(self):
-        """Testing Dauntless River Marshall & Warden of the Beyond
-
-        Conditional +1/+1 (or +2/+2) -- examples of self-affecting static abilities
-        """
-        with mock.patch('builtins.input', side_effect=[
-                '__self.battlefield.add("Dauntless River Marshal")',
-                '__self.battlefield.add("Warden of the Beyond")',
-                '__self.tmp = [[p.power for p in self.battlefield] == [2, 2]]',
-                's main', 's main',
-                '__self.draw_card("Island")',
-                'p Island',
-                '__self.tmp.append([p.power for p in self.battlefield if p.is_creature] == [3, 2])',
-                '',
-                '__self.battlefield.add("Plains")',  # player 1 exiles a card
-                '__self.battlefield[0].exile()',
-                '',
-                '__self.tmp.append([p.power for p in self.battlefield if p.is_creature] == [3, 4])',
-                'addmana',
-                '__self.draw_card("Lightning Bolt")',
-                'p Lightning Bolt', 'b 1', '', '',  # deal 3 dmg to warden, which is currently a 4/4
-                '__self.tmp.append(len(self.battlefield) == 3)',  # warden should still be alive
-                '__self.opponent.exile.pop()',  # clear opponent exile
-                '', '',  # apply SBAs,
-                '__self.tmp.append(len(self.battlefield) == 2)',  # warden should die
-                '__self.battlefield.add("Dauntless River Marshal")',  # new River Marshal should immediately get buff
-                '__self.tmp.append([p.power for p in self.battlefield if p.is_creature] == [3, 3])',
-                's upkeep', 's upkeep'
-        ]):
-            self.player.autoPayMana = True
-            self.GAME.handle_turn()
-            self.assertTrue(all(self.player.tmp), self.player.tmp)
-
+    
 
     def test_indestructible(self):
         with mock.patch('builtins.input', side_effect=[
-                '__self.draw_card("Ephemeral Shields")',
+                '__self.add_card_to_hand("Ephemeral Shields")',
                 '__self.battlefield.add("Soulmender")',
                 '__self.battlefield.add("Soulmender")',
                 'p Ephemeral Shields',
@@ -765,18 +586,18 @@ class TestPlayer(unittest.TestCase):
                 '__self.battlefield[0].destroy()',
                 '', '',
                 '__self.tmp.append(len(self.battlefield == 2))',  # shouldn't be destroyed
-                '__self.draw_card("Lightning Bolt")',
+                '__self.add_card_to_hand("Lightning Bolt")',
                 'addmana',
                 'p Lightning Bolt', 'b 0', '', '',  # damage shouldn't kill
                 '__self.tmp.append(len(self.battlefield == 2))',
-                '__self.draw_card("Ulcerate")',
+                '__self.add_card_to_hand("Ulcerate")',
                 'p Ulcerate', 'b 0', '', '',    # however, lowering toughness below 0 should
                 '__self.tmp.append(len(self.battlefield == 1))',
                 's upkeep', 's upkeep'
         ]):
             self.player.autoPayMana = True
             self.GAME.handle_turn()
-            self.assertTrue(all(self.player.tmp), self.player.tmp)
+            self.assertTrue(all(self.player.tmp), msg=self.player.tmp)
 
 
     def test_intervening_if_triggers(self):
@@ -798,23 +619,8 @@ class TestPlayer(unittest.TestCase):
                 's upkeep', 's upkeep'
         ]):
             self.GAME.handle_turn()
-            self.assertTrue(all(self.player.tmp), self.player.tmp)
+            self.assertTrue(all(self.player.tmp), msg=self.player.tmp)
 
-
-    # def test_trigger_ordering(self):
-        """ Test trigger ordering"""
-        # with mock.patch('builtins.input', side_effect=[
-        #         '__self.battlefield.add("Ajani\'s Pridemate")',
-        #         '__self.gain_life(3)', '__self.gain_life(2)',
-        #         '__self.gain_life(1)', '',
-        #         '', '', 'yes',  # resolving trigger
-        #
-        #         's upkeep',
-        #         's upkeep']):  # no attack
-
-        #     self.player.autoOrderTriggers = False
-        #     self.GAME.handle_turn()
-        #     self.assertTrue(self.player.tmp)
 
 
 if __name__ == '__main__':

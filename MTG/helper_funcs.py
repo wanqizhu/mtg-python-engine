@@ -52,18 +52,20 @@ def choose_targets(source):
     if not source.target_criterias:
         return True
 
-    print("choosing targets...\n")
     targets_chosen = []
     for criteria, prompt in zip(source.target_criterias, source.target_prompts):
-
-        answer = source.controller.make_choice(prompt)
-        card = get_card_from_user_input(source.controller, answer)
-        if not card:
-            return False
-
+        
+        # keep choosing until we get a valid target
+        # TODO: allow optional targeting;
+        # TODO: if no valid target available, fizzles
+        card = None
         try:
-            if not criteria(source, card):
-                return False
+            while not card:
+                answer = source.controller.make_choice(prompt)
+                card = get_card_from_user_input(source.controller, answer)
+                if card is None: continue
+                if not criteria(source, card):
+                    card = None
         except:
             traceback.print_exc()
             return False
