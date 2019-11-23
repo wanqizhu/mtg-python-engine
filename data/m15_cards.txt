@@ -817,6 +817,10 @@ Military Intelligence
 
 Negate
 
+	Targets:
+		'instant or sorcery spell'
+
+	targets[0].counter(source=self)
 
 
 ##############################
@@ -1638,6 +1642,10 @@ Inspired Charge
 ##############################
 Cancel
 
+	Targets:
+		'spell'
+
+	targets[0].counter(source=self)
 
 
 ##############################
@@ -1653,6 +1661,8 @@ Sengir Vampire
 ##############################
 Furnace Whelp
 
+	Abilities:
+		R: self.card.add_effect('modifyPT', (1, 0), self, self.game.eot_time)
 
 
 ##############################

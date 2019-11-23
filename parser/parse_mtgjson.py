@@ -2,7 +2,7 @@ import sys
 import json
 import pickle
 
-from MTG import abilities
+from MTG import static_abilities
 
 
 # SET = 'M15'
@@ -32,7 +32,7 @@ def run():
     fout.write("from MTG import card\n"
                "from MTG import gameobject\n"
                "from MTG import cardtype\n"
-               "from MTG import abilities\n"
+               "from MTG import static_abilities\n"
                "from MTG import mana\n\n")
 
 
@@ -81,13 +81,13 @@ def run():
             # static abilities
 
             texts = characteristics['text'].replace(' ', '_')
-            for ability in abilities.StaticAbilities._member_names_:
+            for ability in static_abilities.StaticAbilities._member_names_:
                 if ability in texts or ',_' + ability.lower() in texts.lower():
                     _abilities.append(ability)
 
             if len(_abilities):
-                _abilities = '[abilities.StaticAbilities.' + \
-                    ', abilities.StaticAbilities.'.join(_abilities) + ']'
+                _abilities = '[static_abilities.StaticAbilities.' + \
+                    ', static_abilities.StaticAbilities.'.join(_abilities) + ']'
 
         except:
             print("\n\n")
@@ -104,17 +104,7 @@ def run():
 """.format(ID, name, ID, characteristics, supertype, types, _abilities))
 
         name_to_id[name] = ID
-
-
-#     fout.write(
-# """id_to_name_dict = {}
-
-# name_to_id_dict = {}
-
-
-# """.format(id_to_name, name_to_id))
-
-
+        
 
     with open("data/%s_name_to_id_dict.pkl" % NAME, "wb") as f:
         pickle.dump(name_to_id, f)

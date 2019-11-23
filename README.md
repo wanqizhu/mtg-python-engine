@@ -69,7 +69,7 @@ The details are implemented in `cards.add_trigger_ability()` and `abilities.Trig
 
 ### Static Ability
 
-Evergreen Abilities: (`abilities.StaticAbilities`)
+Evergreen Abilities: (`static_abilities.StaticAbilities`)
 
 Other static effects: See Permanents --> Effects below.
 
@@ -110,7 +110,7 @@ Targeting
 
 A spell/ability on the stack (`play.Play()`) tracks its own targets_chosen and target_criterias. Before resolution, if the targets are illegal, the spell fizzles.
 
-When a spell/ability requires its user to choose a target, `helper_funcs.choose_targets()` is called. See `helper_funcs.get_target_from_user_input()` for details (e.g. 'b 2' gets the 2nd (0-indexed) permanent on your side of the battlefield).
+When a spell/ability requires its user to choose a target, `utils.choose_targets()` is called. See `utils.get_target_from_user_input()` for details (e.g. 'b 2' gets the 2nd (0-indexed) permanent on your side of the battlefield).
 
 
 Permanents

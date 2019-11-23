@@ -1,7 +1,7 @@
 from MTG import card
 from MTG import gameobject
 from MTG import cardtype
-from MTG import abilities
+from MTG import static_abilities
 from MTG import mana
 
 class c27255(card.Card):
@@ -42,7 +42,7 @@ class c26805(card.Card):
 class c79145(card.Card):
     "Hundred-Talon Kami"
     def __init__(self):
-        super(c79145, self).__init__(gameobject.Characteristics(**{'power': 2, 'mana_cost': '4W', 'color': ['W'], 'text': 'Flying\nSoulshift 4 (When this creature dies, you may return target Spirit card with converted mana cost 4 or less from your graveyard to your hand.)', 'toughness': 3, 'name': 'Hundred-Talon Kami', 'subtype': ['Spirit']}, supertype=[], types=[cardtype.CardType.CREATURE], abilities=[abilities.StaticAbilities.Flying]))
+        super(c79145, self).__init__(gameobject.Characteristics(**{'power': 2, 'mana_cost': '4W', 'color': ['W'], 'text': 'Flying\nSoulshift 4 (When this creature dies, you may return target Spirit card with converted mana cost 4 or less from your graveyard to your hand.)', 'toughness': 3, 'name': 'Hundred-Talon Kami', 'subtype': ['Spirit']}, supertype=[], types=[cardtype.CardType.CREATURE], abilities=[static_abilities.StaticAbilities.Flying]))
 
 class c370698(card.Card):
     "Blood Bairn"
@@ -62,12 +62,12 @@ class c34243(card.Card):
 class c174799(card.Card):
     "Hellspark Elemental"
     def __init__(self):
-        super(c174799, self).__init__(gameobject.Characteristics(**{'power': 3, 'mana_cost': '1R', 'color': ['R'], 'text': 'Trample, haste\nAt the beginning of the end step, sacrifice Hellspark Elemental.\nUnearth {1}{R} ({1}{R}: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)', 'toughness': 1, 'name': 'Hellspark Elemental', 'subtype': ['Elemental']}, supertype=[], types=[cardtype.CardType.CREATURE], abilities=[abilities.StaticAbilities.Haste, abilities.StaticAbilities.Trample]))
+        super(c174799, self).__init__(gameobject.Characteristics(**{'power': 3, 'mana_cost': '1R', 'color': ['R'], 'text': 'Trample, haste\nAt the beginning of the end step, sacrifice Hellspark Elemental.\nUnearth {1}{R} ({1}{R}: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)', 'toughness': 1, 'name': 'Hellspark Elemental', 'subtype': ['Elemental']}, supertype=[], types=[cardtype.CardType.CREATURE], abilities=[static_abilities.StaticAbilities.Haste, static_abilities.StaticAbilities.Trample]))
 
 class c179594(card.Card):
     "Sewn-Eye Drake"
     def __init__(self):
-        super(c179594, self).__init__(gameobject.Characteristics(**{'power': 3, 'mana_cost': '2(U/R)B', 'color': ['U', 'B', 'R'], 'text': 'Flying, haste', 'toughness': 1, 'name': 'Sewn-Eye Drake', 'subtype': ['Zombie', 'Drake']}, supertype=[], types=[cardtype.CardType.CREATURE], abilities=[abilities.StaticAbilities.Flying, abilities.StaticAbilities.Haste]))
+        super(c179594, self).__init__(gameobject.Characteristics(**{'power': 3, 'mana_cost': '2(U/R)B', 'color': ['U', 'B', 'R'], 'text': 'Flying, haste', 'toughness': 1, 'name': 'Sewn-Eye Drake', 'subtype': ['Zombie', 'Drake']}, supertype=[], types=[cardtype.CardType.CREATURE], abilities=[static_abilities.StaticAbilities.Flying, static_abilities.StaticAbilities.Haste]))
 
 class c29973(card.Card):
     "Price of Glory"
@@ -117,7 +117,7 @@ class c96920(card.Card):
 class c1476(card.Card):
     "Devouring Deep"
     def __init__(self):
-        super(c1476, self).__init__(gameobject.Characteristics(**{'power': 1, 'mana_cost': '2U', 'color': ['U'], 'text': 'Islandwalk', 'toughness': 2, 'name': 'Devouring Deep', 'subtype': ['Fish']}, supertype=[], types=[cardtype.CardType.CREATURE], abilities=[abilities.StaticAbilities.Islandwalk]))
+        super(c1476, self).__init__(gameobject.Characteristics(**{'power': 1, 'mana_cost': '2U', 'color': ['U'], 'text': 'Islandwalk', 'toughness': 2, 'name': 'Devouring Deep', 'subtype': ['Fish']}, supertype=[], types=[cardtype.CardType.CREATURE], abilities=[static_abilities.StaticAbilities.Islandwalk]))
 
 class c49055(card.Card):
     "Temporal Cascade"
@@ -177,12 +177,12 @@ class c369080(card.Card):
 class c142027(card.Card):
     "Silkbind Faerie"
     def __init__(self):
-        super(c142027, self).__init__(gameobject.Characteristics(**{'power': 1, 'mana_cost': '2(W/U)', 'color': ['W', 'U'], 'text': 'Flying\n{1}{(w/u)}, {Q}: Tap target creature. ({Q} is the untap symbol.)', 'toughness': 3, 'name': 'Silkbind Faerie', 'subtype': ['Faerie', 'Rogue']}, supertype=[], types=[cardtype.CardType.CREATURE], abilities=[abilities.StaticAbilities.Flying]))
+        super(c142027, self).__init__(gameobject.Characteristics(**{'power': 1, 'mana_cost': '2(W/U)', 'color': ['W', 'U'], 'text': 'Flying\n{1}{(w/u)}, {Q}: Tap target creature. ({Q} is the untap symbol.)', 'toughness': 3, 'name': 'Silkbind Faerie', 'subtype': ['Faerie', 'Rogue']}, supertype=[], types=[cardtype.CardType.CREATURE], abilities=[static_abilities.StaticAbilities.Flying]))
 
 class c21320(card.Card):
     "Battlefield Percher"
     def __init__(self):
-        super(c21320, self).__init__(gameobject.Characteristics(**{'power': 2, 'mana_cost': '3BB', 'color': ['B'], 'text': 'Flying\nBattlefield Percher can block only creatures with flying.\n{1}{B}: Battlefield Percher gets +1/+1 until end of turn.', 'toughness': 2, 'name': 'Battlefield Percher', 'subtype': ['Bird']}, supertype=[], types=[cardtype.CardType.CREATURE], abilities=[abilities.StaticAbilities.Flying]))
+        super(c21320, self).__init__(gameobject.Characteristics(**{'power': 2, 'mana_cost': '3BB', 'color': ['B'], 'text': 'Flying\nBattlefield Percher can block only creatures with flying.\n{1}{B}: Battlefield Percher gets +1/+1 until end of turn.', 'toughness': 2, 'name': 'Battlefield Percher', 'subtype': ['Bird']}, supertype=[], types=[cardtype.CardType.CREATURE], abilities=[static_abilities.StaticAbilities.Flying]))
 
 class c212614(card.Card):
     "I Bask in Your Silent Awe"

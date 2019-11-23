@@ -1,12 +1,8 @@
-from MTG.game_object import GameObject
+from MTG import gameobject
+from MTG import card
 
+class Spell(card.Card):
+    """ Spells are instances of card.Card on the stack """
 
-class Spell(GameObject):
-    def __init__(self, characteristics, controller, status=None):
-        GameObject.__init__(self, characteristics)
-        self.controller = controller
-        
-   
-
-def make_spell(card, controller):
-    return Spell(card.characteristics, controller)
+    def __init__(self):
+        pass

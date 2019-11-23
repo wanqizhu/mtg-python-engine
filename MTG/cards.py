@@ -9,7 +9,7 @@ from MTG.exceptions import *
 from MTG import abilities
 from MTG import triggers
 from MTG import mana
-from MTG import helper_funcs
+from MTG import utils
 from MTG import permanent
 
 
@@ -89,13 +89,13 @@ def add_activated_ability(cardname, cost, effect, target_criterias=None, prompts
     card = card_from_name(cardname, get_instance=False)
     is_mana_ability = 'mana.add' in effect
 
-    costs = helper_funcs.parse_ability_costs(cost)
+    costs = utils.parse_ability_costs(cost)
 
     if not card.activated_abilities:  # hasn't been initiated yet
         card.activated_abilities = []
 
     if target_criterias:
-        target_criterias = helper_funcs.parse_targets(target_criterias)
+        target_criterias = utils.parse_targets(target_criterias)
     else:
         target_criterias = None
 
@@ -110,7 +110,7 @@ def add_targets(cardname, criterias=[lambda self, p: True], prompts=None):
     if not prompts:
         prompts = ["Choose a target\n"] * len(criterias)
 
-    criterias = helper_funcs.parse_targets(criterias)
+    criterias = utils.parse_targets(criterias)
 
     card.target_criterias = criterias
     card.target_prompts = prompts
@@ -185,7 +185,7 @@ def add_trigger(cardname, condition, effect, requirements=None,
 
 
     if target_criterias:
-        target_criterias = helper_funcs.parse_targets(target_criterias)
+        target_criterias = utils.parse_targets(target_criterias)
         if not target_prompts:
             target_prompts = ["Choose a target\n"] * len(target_criterias)
     else:

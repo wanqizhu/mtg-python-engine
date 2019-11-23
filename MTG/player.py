@@ -16,6 +16,10 @@ from MTG.exceptions import *
 
 class Player():
     is_player = True
+    is_permanent = False
+    is_creature = False
+    is_land = False
+    is_spell = False
 
     def __init__(self, deck, name='player',
                  startingLife=20, maxHandSize=7, game=None):
@@ -87,6 +91,23 @@ class Player():
     @property
     def lands(self):
         return self.battlefield.filter(filter_func=lambda p: p.is_land)
+
+    @property
+    def stack(self):
+        return self.game.stack if self.game else None
+    
+
+    def get_zone(self, zone_type):
+        return {
+            zone.ZoneType.LIBRARY: self.library,
+            zone.ZoneType.HAND: self.hand,
+            zone.ZoneType.BATTLEFIELD: self.battlefield,
+            zone.ZoneType.GRAVEYARD: self.graveyard,
+            zone.ZoneType.STACK: self.game.stack,
+            zone.ZoneType.EXILE: self.exile,
+            # zone.ZoneType.COMMAND: self.command
+        }[zone_type]
+
 
     def get_action(self):
         """ asks the player to do something
@@ -297,18 +318,14 @@ class Player():
 
     # separate func for unit testing
     def make_choice(self, prompt_string):
-        # if not TEST:
         ans = input(prompt_string)
-        if ans == 'debug':
+        if ans == 'debug':  # TODO: only enable during dev
             pdb.set_trace()
 
         if not self.game or self.game.test:  # for debug
             print(prompt_string[:-1])  # remove ending \n
             print(ans)
         return ans
-        # else:
-        #     ## TODO: unit tests
-        #     pass
 
     def make_choice_items_in_list(self, items, num=1, up_to=False, repetition=False):
         print(items)
@@ -692,25 +709,30 @@ class Player():
 
         return filt
 
-
-    def apply_to_battlefield(self, apply_func, condition=lambda p: True):
-        """Apply some function to permanents on the battlefield
+    def apply_to_zone(self, apply_func, zone, condition=lambda p: True):
+        """Apply some function to all cards in a (public) zone
 
         - filter out by a condition function if necessary
-        - defaults to all permanents
+        - defaults to all cards
 
         return True if at least one object satisfied the condition
         """
 
         did_something = False
+        # use [:] to iterate over a copy of the list in case items get changed
+        cards = self.get_zone(zone)[:]
 
-      # use [:] to iterate over a copy of the list in case items get changed
-        for perm in self.battlefield[:]:
-            if condition(perm):
-                apply_func(perm)
+        for card in cards:
+            if condition(card):
+                apply_func(card)
                 did_something = True
 
         return did_something
+
+
+    def apply_to_battlefield(self, apply_func, condition=lambda p: True):
+        return self.apply_to_zone(apply_func, zone.ZoneType.BATTLEFIELD, condition)
+
 
     def lose(self):
         print("{} has lost the game\n".format(self))

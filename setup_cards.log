@@ -124,7 +124,15 @@ add_play_func_with_targets("Void Snare", lambda self, targets, is_legal_target: 
 
 add_trigger("Black Cat", triggers.triggerConditions['onDeath'], '[self.targets_chosen[0].discard(random=True)]', None, ['opponent'], intervening_if=None)
 
+add_targets("Negate", ['instant or sorcery spell'], prompts=[])
+add_play_func_with_targets("Negate", lambda self, targets, is_legal_target: [targets[0].counter(source=self)])
+
 add_trigger("Forge Devil", triggers.triggerConditions['onEtB'], '[self.targets_chosen[0].take_damage(self, 1), self.controller.take_damage(self, 1)]', None, ['creature'], intervening_if=None)
+
+add_targets("Cancel", ['spell'], prompts=[])
+add_play_func_with_targets("Cancel", lambda self, targets, is_legal_target: [targets[0].counter(source=self)])
+
+add_activated_ability("Furnace Whelp", 'R', "self.card.add_effect('modifyPT', (1, 0), self, self.game.eot_time)", [])
 
 add_trigger("Champion of the Parish", triggers.triggerConditions['onControllerCreatureEtB'], '[self.card.add_counter("+1/+1")]', lambda self: self.trigger_source.has_subtype("Human") and self.trigger_source != self.card, [], intervening_if=None)
 

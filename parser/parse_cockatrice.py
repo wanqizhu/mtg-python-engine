@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 import pickle
 
 from MTG import cardtype
-from MTG import abilities
+from MTG import static_abilities
 
 
 
@@ -22,7 +22,7 @@ def run():
     fout.write("from MTG import card\n"
         "from MTG import gameobject\n"
         "from MTG import cardtype\n"
-        "from MTG import abilities\n"
+        "from MTG import static_abilities\n"
         "from MTG import mana\n\n")
 
     id_to_name = {}
@@ -60,12 +60,12 @@ def run():
             _abilities = []
 
             texts = characteristics['text'].replace(' ', '_')
-            for ability in abilities.StaticAbilities._member_names_:
+            for ability in static_abilities.StaticAbilities._member_names_:
                 if ability in texts or ',_' + ability.lower() in texts.lower():
                     _abilities.append(ability)
 
             if len(_abilities):
-                _abilities = '[abilities.StaticAbilities.' + ', abilities.StaticAbilities.'.join(_abilities) + ']'
+                _abilities = '[static_abilities.StaticAbilities.' + ', static_abilities.StaticAbilities.'.join(_abilities) + ']'
 
         except:
 

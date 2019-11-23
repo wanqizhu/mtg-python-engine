@@ -34,6 +34,8 @@ class TestGameBase(unittest.TestCase):
         self.opponent.tmp = False
         self.player.hand.clear()  # start w/ no cards
         self.opponent.hand.clear()
+        self.player.autoPayMana = True
+        self.opponent.autoPayMana = True
 
     def tearDown(self):
         t = time.time() - self.startTime
@@ -158,7 +160,7 @@ class TestGame(TestGameBase):
             self.assertTrue(self.player.tmp)
             self.assertEqual(self.player.landPlayed, 1)
 
-    def test_play_creature_basic(self):
+    def test_play_creature_basic_mana_payment(self):
         """Play a creature while having sufficient mana (automatic payment)
 
         Devouring Deep costs 2U
@@ -172,6 +174,7 @@ class TestGame(TestGameBase):
                 's draw',
                 '']):
 
+            self.player.autoPayMana = False
             self.assertTrue(self.GAME.handle_turn())
             self.assertTrue(self.player.battlefield.get_card_by_name(
                             "Devouring Deep"))
@@ -189,6 +192,7 @@ class TestGame(TestGameBase):
                 's draw',
                 '']):
 
+            self.player.autoPayMana = False
             self.assertTrue(self.GAME.handle_turn())
             self.assertTrue(
                 self.player.battlefield.get_card_by_name("Devouring Deep"))
@@ -215,7 +219,7 @@ class TestGame(TestGameBase):
                 's precombat_main',
                 'p Island',
                 'a 0', 'a 1', 'a 2',
-                'p Devouring Deep', '',
+                'p Devouring Deep',
                 '__self.tmp = len(self.game.stack) == 1',
                 '', '',
                 's precombat_main',
@@ -237,7 +241,7 @@ class TestGame(TestGameBase):
                 '__self.add_card_to_hand("Devouring Deep")',
                 '', '', '', '',
                 '__self.mana.add(mana.Mana.BLUE, 3)',
-                'p Devouring Deep', '',  # auto payment
+                'p Devouring Deep',
                 '', '',  # letting it resolve
                 '__self.tmp = not self.battlefield.get_card_by_name("Devouring Deep").can_attack()',
                 's draw',
@@ -356,7 +360,8 @@ class TestGame(TestGameBase):
             self.assertEqual(len(self.player.graveyard), 1)
             self.assertEqual(len(self.opponent.graveyard), 1)
 
-    def test_multiple_attacker_multiple_blocker(self):
+    def test_multiple_turns_alltogether(self):
+        """multiple_attacker_multiple_blocker_custom_mana_pay"""
         with mock.patch('builtins.input', side_effect=[
                 # p0
                 '__self.discard(-1)', '__self.add_card_to_hand("Devouring Deep")',
@@ -417,6 +422,8 @@ class TestGame(TestGameBase):
                         ' and self.graveyard.get_card_by_name("Sewn-Eye Drake")',
                 's draw']):
 
+            self.player.autoPayMana = False
+            self.opponent.autoPayMana = False
             self.GAME.handle_turn()
             self.GAME.handle_turn()
             self.GAME.handle_turn()
@@ -461,7 +468,6 @@ class TestGame(TestGameBase):
     def test_lightning_strike(self):
         """Casts three lightning Strike in succession, using auto-pay mana; verify stack resolve order"""
         with mock.patch('builtins.input', side_effect=[
-                '__self.autoPayMana = True',
                 '__self.battlefield.add("Sewn-Eye Drake")', '',
                 '__self.battlefield.add("Devouring Deep")', '',  # player 1
                 '__self.add_card_to_hand("Lightning Strike")',
@@ -513,6 +519,7 @@ class TestGame(TestGameBase):
                 's upkeep', 's upkeep',  # player 0's turn again
         ]):
 
+            self.player.autoPayMana = False
             self.GAME.handle_turn()
             self.assertTrue(self.player.tmp)
             self.assertEqual(len(self.player.battlefield), 11)
@@ -542,7 +549,6 @@ class TestGame(TestGameBase):
                 '__self.tmp[0] = len(self.library) == __self.tmp[0] - 3',  # confirm we've removed the hawks
                 's upkeep', 's upkeep'  # player 0's turn again
         ]):
-            self.player.autoPayMana = True
             self.GAME.handle_turn()
             self.assertTrue(self.player.tmp)
 
@@ -562,7 +568,6 @@ class TestGame(TestGameBase):
                 'p Peel from Reality', 'b 1', 'ob 0',
                 's upkeep', 's upkeep'
         ]):
-            self.player.autoPayMana = True
             self.player.autoDiscard = True
             self.opponent.autoDiscard = True
             self.GAME.handle_turn()
@@ -595,7 +600,6 @@ class TestGame(TestGameBase):
                 '__self.tmp.append(len(self.battlefield == 1))',
                 's upkeep', 's upkeep'
         ]):
-            self.player.autoPayMana = True
             self.GAME.handle_turn()
             self.assertTrue(all(self.player.tmp), msg=self.player.tmp)
 
@@ -620,6 +624,25 @@ class TestGame(TestGameBase):
         ]):
             self.GAME.handle_turn()
             self.assertTrue(all(self.player.tmp), msg=self.player.tmp)
+
+
+    def test_counterspells(self):
+        with mock.patch('builtins.input', side_effect=[
+                '__self.add_card_to_hand("Cancel")',
+                '__self.add_card_to_hand("Negate")',
+                '__self.add_card_to_hand("Cancel")',
+                '__self.add_card_to_hand("Ajani\'s Pridemate")',
+                's main', 's main', 'addmana',
+                'p Ajani\'s Pridemate',
+                'p Cancel',
+                's 0',  # targetting Ajani's Pridemate
+                '', '',  # spell should be countered now
+                '__self.tmp = self.stack[0].countered',
+                's upkeep', 's upkeep'
+        ]):
+            self.GAME.handle_turn()
+            self.assertTrue(self.player.tmp)
+            # self.assertTrue(all(self.player.tmp), msg=self.player.tmp)
 
 
 

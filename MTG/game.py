@@ -52,7 +52,6 @@ class Game(object):
         i = self.players_list.index(self.current_player)
         return self.players_list[i:] + self.players_list[:i]
 
-
     def opponent(self, player):
         """Opponents -- return a single player in 2p game"""
         assert player in self.players_list
@@ -62,7 +61,10 @@ class Game(object):
 
         return op
 
-    def add_static_effect(name, value, source, toggle_func):
+    def apply_to_players(self, func):
+        return [func(p) for p in self.players_list]
+
+    def add_static_effect(self, name, value, source, toggle_func):
         for p in self.players_list:
             p.add_static_effect(name, value, source, toggle_func)
 
@@ -77,30 +79,27 @@ class Game(object):
         stack_item.apply()
 
 
-    def apply_to_battlefield(self, apply_func, condition=lambda p: True):
-        """Apply some function to permanents on the battlefield
+    def apply_to_zone(self, apply_func, _zone, condition=lambda p: True):
+        """Apply some function to all cards in a certain zone
 
         - filter out by a condition function if necessary
-        - defaults to all permanents
+        - defaults to all cards
 
         return True if at least one object satisfied the condition
         """
 
-        did_something = any([plyr.apply_to_battlefield(apply_func, condition)
+        if isinstance(_zone, str):
+            _zone = zone.str_to_zone_type(_zone)
+
+        did_something = any([plyr.apply_to_zone(apply_func, _zone, condition)
                              for plyr in self.players_list])
 
         return did_something
 
-    # def get_zone(self, zone_type, player=None):
-    #     return {
-    #         ZoneType.LIBRARY: player.library,
-    #         ZoneType.HAND: player.hand,
-    #         ZoneType.BATTLEFIELD: player.battlefield,
-    #         ZoneType.GRAVEYARD: player.graveyard,
-    #         ZoneType.STACK: self.stack,
-    #         ZoneType.EXILE: player.exile,
-    #         # ZoneType.COMMAND: player.command
-    #     }[zone_type]
+
+    def apply_to_battlefield(self, apply_func, condition=lambda p: True):
+        return self.apply_to_zone(apply_func, zone.ZoneType.BATTLEFIELD, condition)
+
 
     # TODO
     def apply_state_based_actions(self):

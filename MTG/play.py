@@ -1,15 +1,22 @@
 import inspect
+from MTG import gameobject
+from MTG import zone
 
-
-class Play(object):
+class Play(gameobject.GameObject):
     """
     Represents an ability or spell on the stack.
+
+    Spells: card = original card
+    Abilities: source = card that owns this ability
     """
 
-    # TODO: implement targets:
-    # target selection, validation, conditional targeting, etc.
-    def __init__(self, apply_func, apply_condition=lambda: True, card=None, source=None,
-                name=None, targets_chosen=None, target_criterias=None, is_mana_ability=False):
+    # TODO: unify this with gameObject init (particularly with targetting)
+    def __init__(self, apply_func, apply_condition=lambda: True, 
+                 card=None, source=None, name=None,
+                 targets_chosen=None, target_criterias=None, is_mana_ability=False):
+        super().__init__(zone=zone.ZoneType.STACK,
+                         characteristics=card.characteristics if card else None)
+
         self.is_special_action = False
         self.is_mana_ability = is_mana_ability
         self.apply_func = apply_func
@@ -18,17 +25,13 @@ class Play(object):
         self.source = source
         self.targets_chosen = targets_chosen
         self.target_criterias = target_criterias
-        self.name = name
         self.countered = False
-        if not name and card:
-            self.name = card.name
-        if not name and not card and source:
-            self.name = source.name
 
         if card:
             self.controller = card.controller
         elif source:
             self.controller = source.controller
+            self.characteristics.name = name
         else:
             self.controller = None
 
@@ -47,27 +50,43 @@ class Play(object):
         return str(self.name)
         # + '\n' + inspect.getsource(self.apply)
 
+    @property
+    def is_spell(self):
+        return self.original_card is not None
+
+
+    # TODO: make this modifiable via temporary effects
+    def can_be_countered(self, source=None):
+        return True
+
+    def counter(self, source):
+        if not self.countered and self.can_be_countered(source):
+            self.countered = True
+            return True
+        return False
+
     def apply(self):
         fizzles = False
-
-        # check target validity by affirming that at least one timestamp is the same
-        # AND targets are still valid (e.g. still a creature)
-        # TODO: shroud/hexproof/protection
-        if self.targets_chosen and not any([c(self, t) and t.timestamp == time for c, t, time in zip(self.target_criterias,
-                                           self.targets_chosen, self.target_timestamps)]):
-            print("All targets invalid. %r fizzles." % self)
-            fizzles = True
 
         if self.countered:
             print("%r was countered" % self)
             fizzles = True
 
-        if not self.apply_condition():
+        # check target validity by affirming that at least one timestamp is the same
+        # AND targets are still valid (e.g. still a creature)
+        # TODO: shroud/hexproof/protection
+        elif self.targets_chosen and not any([c(self, t) and t.timestamp == time for c, t, time in zip(self.target_criterias,
+                                           self.targets_chosen, self.target_timestamps)]):
+            print("All targets invalid. %r fizzles." % self)
+            fizzles = True
+
+
+        elif not self.apply_condition():
             print("Intervening-if for %r not satisfied" % self)
             fizzles = True
 
         if fizzles:
-            if self.original_card:
+            if self.original_card is not None:
                 self.original_card.owner.graveyard.add(self.original_card)
             return
 

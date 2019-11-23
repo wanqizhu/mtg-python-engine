@@ -4,8 +4,8 @@ from collections import defaultdict
 from MTG import permanent
 from MTG import gameobject
 from MTG import cardtype
-from MTG import abilities
-from MTG import helper_funcs
+from MTG import static_abilities
+from MTG import utils
 
 
 class Token(permanent.Permanent):
@@ -24,8 +24,8 @@ creature_token_pattern = re.compile('\d/\d '
 
 
 # token_ability_dict = defaultdict(lambda: [])
-# token_ability_dict['Spirit'] = [abilities.StaticAbilities.Flying]
-# token_ability_dict['Thopter'] = [abilities.StaticAbilities.Flying]
+# token_ability_dict['Spirit'] = [static_abilities.StaticAbilities.Flying]
+# token_ability_dict['Thopter'] = [static_abilities.StaticAbilities.Flying]
 
 
 
@@ -59,7 +59,7 @@ def create_token(attributes, controller, num=1, keyword_abilities=[], activated_
             print("with %s" % ' '.join(keyword_abilities))
 
         for ablty in activated_abilities:
-            ablty[0] = helper_funcs.parse_ability_costs(ablty[0])
+            ablty[0] = utils.parse_ability_costs(ablty[0])
 
 
         for i in range(num):
@@ -69,6 +69,6 @@ def create_token(attributes, controller, num=1, keyword_abilities=[], activated_
                                                          toughness=t,
                                                          subtype=c_type,
                                                          color=[color],
-                                                         abilities=[abilities.StaticAbilities[a] for a in keyword_abilities])
+                                                         abilities=[static_abilities.StaticAbilities[a] for a in keyword_abilities])
 
             Token(characteristics, controller, activated_abilities)

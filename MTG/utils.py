@@ -20,7 +20,7 @@ def get_card_from_user_input(player, string):
     if not string:
         return None
 
-    if string[0] == 'o':  # opponent
+    if string[0] == 'o':  # opponent; continue parsing rest of string
         string = string[1:]
         player = player.game.opponent(player)
 
@@ -49,8 +49,14 @@ def get_card_from_user_input(player, string):
 
 
 def choose_targets(source):
-    if not source.target_criterias:
+    # TODO: ensure boolean/card return values of this func
+    # is being parsed correctly.
+    if source.target_criterias is None:
         return True
+
+    # No valid targets
+    if not source.has_valid_target():
+        return False
 
     targets_chosen = []
     for criteria, prompt in zip(source.target_criterias, source.target_prompts):
@@ -100,6 +106,12 @@ def parse_targets(criterias):
         if v == 'creature or player':
             criterias[i] = (lambda self, p: p.is_player
                          or (p.is_creature and p.is_permanent))
+
+        if v == 'spell':
+            criterias[i] = lambda self, s: s.is_spell
+
+        if v == 'instant or sorcery spell':
+            criterias[i] = lambda self, s: s.is_spell and (s.is_instant or s.is_sorcery)
 
     return criterias
 

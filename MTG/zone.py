@@ -17,10 +17,21 @@ class ZoneType(Enum):
     EXILE = 5
     # COMMAND = 6
 
+def str_to_zone_type(z):
+    return {
+        'library': ZoneType.LIBRARY,
+        'hand': ZoneType.HAND,
+        'battlefield': ZoneType.BATTLEFIELD,
+        'graveyard': ZoneType.GRAVEYARD,
+        'stack': ZoneType.STACK,
+        'exile': ZoneType.EXILE
+    }[z.lower()]
+
 
 class Zone():
     is_library = False
     is_battlefield = False
+    is_public = False
 
     def __init__(self, controller=None, elements: list=None):
         if elements is None:
@@ -128,6 +139,7 @@ class Zone():
 class Battlefield(Zone):
     zone_type = 'BATTLEFIELD'
     is_battlefield = True
+    is_public = True
 
     def add(self, obj, status_mod=None, modi_func=None):
         if type(obj) is str:  # convert string (card's name) to a Card object
@@ -160,6 +172,7 @@ class Battlefield(Zone):
 
 class Stack(Zone):
     zone_type = 'STACK'
+    is_public = True
 
     #TODO: move stack printing here (from game.py)
     pass
@@ -167,22 +180,26 @@ class Stack(Zone):
 
 class Hand(Zone):
     zone_type = 'HAND'
+    is_public = False
     pass
 
 
 class Graveyard(Zone):
     zone_type = 'GRAVEYARD'
+    is_public = True
     pass
 
 
 class Exile(Zone):
     zone_type = 'EXILE'
+    is_public = True
     pass
 
 
 class Library(Zone):
     zone_type = 'LIBRARY'
     is_library = True
+    is_public = False
 
     def shuffle(self):
         random.shuffle(self.elements)

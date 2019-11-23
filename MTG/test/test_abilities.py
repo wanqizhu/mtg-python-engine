@@ -71,7 +71,6 @@ class TestPlayer(TestGameBase):
                 's upkeep',
                 's upkeep']):
 
-            self.player.autoPayMana = True
             self.GAME.handle_turn()
             self.assertTrue(self.player.tmp)
             # buffs should off
@@ -137,7 +136,6 @@ class TestPlayer(TestGameBase):
                 '__self.tmp.append(self.battlefield[2].toughness == 3)',
                 's upkeep', 's upkeep'
         ]):
-            self.player.autoPayMana = True
             self.GAME.handle_turn()
             self.assertTrue(all(self.player.tmp))
 
@@ -162,7 +160,6 @@ class TestPlayer(TestGameBase):
                 '__self.tmp.append([p.power for p in self.battlefield] == [4, 2, 4, 4, 4, 4])',
                 's upkeep', 's upkeep'
         ]):
-            self.player.autoPayMana = True
             self.GAME.handle_turn()
             # assert effect still holds
             self.player.tmp.append([p.power for p in self.player.battlefield] == [4, 2, 4, 4, 4, 4])
@@ -198,7 +195,6 @@ class TestPlayer(TestGameBase):
                 '__self.tmp.append([p.power for p in self.battlefield if p.is_creature] == [3, 3])',
                 's upkeep', 's upkeep'
         ]):
-            self.player.autoPayMana = True
             self.GAME.handle_turn()
             self.assertTrue(all(self.player.tmp), msg=self.player.tmp)
 
@@ -284,7 +280,6 @@ class TestPlayer(TestGameBase):
 
             self.player.autoOrderTriggers = False
             self.opponent.autoOrderTriggers = False
-            self.player.autoPayMana = True
            
             self.GAME.handle_turn()
             self.assertTrue(all(self.player.tmp), self.player.tmp)

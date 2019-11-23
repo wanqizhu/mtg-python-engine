@@ -5,8 +5,8 @@ from collections import defaultdict, namedtuple
 from sortedcontainers import SortedListWithKey
 
 from MTG import cardtype
-from MTG import abilities
-from MTG import zone
+from MTG import static_abilities
+from MTG import utils
 
 
 class Characteristics():
@@ -55,8 +55,15 @@ class GameObject():
     is_player = False
     is_token = False
 
-    def __init__(self, characteristics=Characteristics(),
-                 controller=None, owner=None, zone=None, previousState=None):
+    target_criterias = None  # if targets, this is a list of boolean functions
+    target_prompts = None  # list of strings
+    targets_chosen = None
+
+    def __init__(self, characteristics=None,
+                 controller=None, owner=None, zone=None, 
+                 previousState=None):
+        if not characteristics:
+            characteristics = Characteristics()
         self.characteristics = characteristics
         self.controller = controller
         self._owner = owner
@@ -68,10 +75,11 @@ class GameObject():
                                            [], lambda x : x.timestamp))
         self.timestamp = None
 
+
     def __repr__(self):
         # pdb.set_trace()
         return '%r in %r (ID: %r)' % (self.name,
-                             self.zone.zone_type if isinstance(self.zone, zone.Zone) else 'None',
+                             self.zone.zone_type if self.zone is not None else 'None',
                              id(self))
 
     def __str__(self):
@@ -169,7 +177,7 @@ class GameObject():
                 return True
 
         ability = ability.replace(' ', '_')
-        return abilities.StaticAbilities[ability] in self.characteristics.abilities
+        return static_abilities.StaticAbilities[ability] in self.characteristics.abilities
 
     def share_color(self, other):
         return bool(set(self.characteristics.color) & set(other.characteristics.color))
@@ -200,9 +208,62 @@ class GameObject():
         self.change_zone(self.owner.exile)
 
 
+    ### Targeting ###
+
+    def targets(self):
+        targets_chosen = utils.choose_targets(self)
+        if isinstance(targets_chosen, list):
+            self.targets_chosen = targets_chosen
+        return targets_chosen
+
+
+    ''' Returns a list of booleans, signifying each target's legality '''
+    def target_legality(self):
+        if (not isinstance(self.targets_chosen, list) or 
+            not isinstance(self.target_criterias, list)):
+            return []
+
+        return [c(self, t) for c, t in 
+                zip(self.target_criterias, self.targets_chosen)]
+
+    def has_valid_target(self):
+        if self.target_criterias is None:
+            return True
+
+        # for each target criteria, check if at least one TARGETABLE OBJECT
+        # somewhere satisfies this criteria (i.e. is targetable)
+        for crit in self.target_criterias:
+            has_valid_target = False
+            for _zone in ['battlefield', 'stack',
+                          'graveyard', 'exile']:
+                has_valid_target = self.game.apply_to_zone(lambda _: True, _zone, lambda card: crit(self, card))
+                if has_valid_target:
+                    break
+
+            # see if it can target players
+            if not has_valid_target:
+                has_valid_target = self.game.apply_to_players(lambda p: crit(self, p))
+
+            if not has_valid_target:
+                print(f"{self}: No valid targets.")
+                return False
+
+        return True
+
+
+    def choose_targets(self):
+        targets_chosen = utils.choose_targets(self)
+        if isinstance(targets_chosen, list):
+            self.targets_chosen = targets_chosen
+
+        return targets_chosen
+
 
     def change_zone(self, target_zone, from_top=0, shuffle=True,
                     status_mod=None, modi_func=None):
+        if target_zone == self.zone:
+            return False
+
         current_zone = self.zone
         if not current_zone:
             c = self
@@ -212,12 +273,13 @@ class GameObject():
                     self.controller.remove_static_effect(self)
                     c = self.original_card  # shift from permanent back to card
                     c.previousState = self
-                    self.timestamp = self.game.timestamp  # reset timestamp
                 else:
                     c = self
             else:
                 return False
 
+        if target_zone.is_public:
+            self.timestamp = self.game.timestamp  # reset timestamp
 
         if target_zone.is_library:
             return target_zone.add(c, from_top, shuffle)
