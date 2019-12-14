@@ -69,21 +69,19 @@ class GameObject():
         self._owner = owner
         self.zone = zone
         self.previousState = previousState
-        if self.controller:
-            self.game = self.controller.game
         self.effects = defaultdict(lambda: SortedListWithKey(
                                            [], lambda x : x.timestamp))
-        self.timestamp = None
+
+        self.timestamp = self.game.timestamp if self.game else None
 
 
     def __repr__(self):
-        # pdb.set_trace()
         return '%r in %r (ID: %r)' % (self.name,
-                             self.zone.zone_type if self.zone is not None else 'None',
-                             id(self))
+                         self.zone.zone_type if self.zone is not None else 'None',
+                         id(self))
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
     def __eq__(x, y):
         return isinstance(y, x.__class__) and x.__repr__() == y.__repr__()
@@ -91,10 +89,13 @@ class GameObject():
     def __hash__(self):
         return hash(self.__repr__())
 
-
     @property
     def owner(self):
         return self._owner if self._owner else self.controller
+
+    @property
+    def game(self):
+        return self.controller.game if self.controller else None
 
     @property
     def is_permanent(self):
@@ -102,6 +103,7 @@ class GameObject():
 
     @property
     def is_spell(self):
+        # TODO: what about abilities?
         return self.zone.zone_type == 'STACK' if self.zone else False
 
     @property
@@ -137,7 +139,6 @@ class GameObject():
         return (cardtype.CardType.LAND in self.characteristics.types
                 and cardtype.SuperType.BASIC in self.characteristics.supertype)
 
-
     @property
     def is_creature(self):
         return cardtype.CardType.CREATURE in self.characteristics.types
@@ -145,6 +146,10 @@ class GameObject():
     @property
     def is_instant(self):
         return cardtype.CardType.INSTANT in self.characteristics.types
+
+    @property
+    def is_sorcery(self):
+        return cardtype.CardType.SORCERY in self.characteristics.types
 
     @property
     def is_artifact(self):

@@ -74,9 +74,10 @@ class Game(object):
 
 
     def apply_stack_item(self, stack_item):
-        """ resolving a spell/effect from stack"""
+        """ resolving a spell/effect from stack, removing it from the stack """
         print(stack_item)
         stack_item.apply()
+        self.stack.remove(stack_item)
 
 
     def apply_to_zone(self, apply_func, _zone, condition=lambda p: True):
@@ -207,7 +208,7 @@ class Game(object):
                 priority = (priority + 1) % self.num_players
                 if self.passed_priority == self.num_players and self.stack:
                     # resolve top stack item; active player gets priority
-                    self.apply_stack_item(self.stack.pop())
+                    self.apply_stack_item(self.stack[-1])
                     self.passed_priority = 0
                     priority = self.players_list.index(self.current_player)
 

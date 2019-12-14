@@ -12,7 +12,6 @@ class Ability(gameobject.GameObject):
         super(Ability, self).__init__()
         self.card = card
         self.controller = card.controller
-        self.game = self.controller.game
         self.effect = effect
 
         self.target_criterias = target_criterias

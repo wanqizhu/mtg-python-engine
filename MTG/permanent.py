@@ -189,7 +189,6 @@ class Permanent(gameobject.GameObject):
                  status=None, modifications=[]):
         self.characteristics = characteristics
         self.controller = controller
-        self.game = controller.game
         self._owner = owner
         self.zone = self.controller.battlefield
         self.original_card = original_card

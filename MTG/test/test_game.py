@@ -577,8 +577,6 @@ class TestGame(TestGameBase):
             self.assertEqual(len(self.player.graveyard), 3)  # 3 spells cast
 
 
-    
-
     def test_indestructible(self):
         with mock.patch('builtins.input', side_effect=[
                 '__self.add_card_to_hand("Ephemeral Shields")',
@@ -629,20 +627,27 @@ class TestGame(TestGameBase):
     def test_counterspells(self):
         with mock.patch('builtins.input', side_effect=[
                 '__self.add_card_to_hand("Cancel")',
-                '__self.add_card_to_hand("Negate")',
                 '__self.add_card_to_hand("Cancel")',
                 '__self.add_card_to_hand("Ajani\'s Pridemate")',
                 's main', 's main', 'addmana',
                 'p Ajani\'s Pridemate',
                 'p Cancel',
                 's 0',  # targetting Ajani's Pridemate
-                '', '',  # spell should be countered now
-                '__self.tmp = self.stack[0].countered',
+                '',     # opponent
+                '__self.add_card_to_hand("Negate")',
+                'addmana',
+                'p Negate',  # opponent counterspelling our cancel
+                's 1', '',
+                'p Cancel',  # self, countering opponent's spell
+                's 2', '',
+                '',  # Let Cancel resolve, Negate should be countered now,
+                '__self.tmp = [len(self.stack) == 2]',  # should be moved off stack
+                '', '',  # Ajani's Pridemate should be countered now
+                '__self.tmp.append(len(self.stack) == 0)',
                 's upkeep', 's upkeep'
         ]):
             self.GAME.handle_turn()
-            self.assertTrue(self.player.tmp)
-            # self.assertTrue(all(self.player.tmp), msg=self.player.tmp)
+            self.assertTrue(all(self.player.tmp), msg=self.player.tmp)
 
 
 

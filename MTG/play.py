@@ -14,7 +14,18 @@ class Play(gameobject.GameObject):
     def __init__(self, apply_func, apply_condition=lambda: True, 
                  card=None, source=None, name=None,
                  targets_chosen=None, target_criterias=None, is_mana_ability=False):
-        super().__init__(zone=zone.ZoneType.STACK,
+        
+        # TODO: okay this is really ugly and bug-prone.
+        # Think about how to fix this initialization.
+        if card:
+            controller = card.controller
+        elif source:
+            controller = source.controller
+        else:
+            controller = None
+
+        super().__init__(zone=controller.stack if controller else None,
+                         controller = controller,
                          characteristics=card.characteristics if card else None)
 
         self.is_special_action = False
@@ -27,13 +38,8 @@ class Play(gameobject.GameObject):
         self.target_criterias = target_criterias
         self.countered = False
 
-        if card:
-            self.controller = card.controller
-        elif source:
-            self.controller = source.controller
+        if self.characteristics and name:
             self.characteristics.name = name
-        else:
-            self.controller = None
 
         if not targets_chosen and card:
             self.targets_chosen = card.targets_chosen
@@ -47,13 +53,8 @@ class Play(gameobject.GameObject):
 
 
     def __repr__(self):
-        return str(self.name)
+        return "%s (ID: %r)" % (self.name, id(self))
         # + '\n' + inspect.getsource(self.apply)
-
-    @property
-    def is_spell(self):
-        return self.original_card is not None
-
 
     # TODO: make this modifiable via temporary effects
     def can_be_countered(self, source=None):
@@ -62,6 +63,8 @@ class Play(gameobject.GameObject):
     def counter(self, source):
         if not self.countered and self.can_be_countered(source):
             self.countered = True
+            self.game.apply_stack_item(self)  # will trigger fizzle, 
+                                              # remove from stack, move to graveyard
             return True
         return False
 

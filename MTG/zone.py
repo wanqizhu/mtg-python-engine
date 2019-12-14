@@ -41,7 +41,7 @@ class Zone():
             for ele in elements:
                 ele.controller = controller
         self.controller = controller
-        if controller:
+        if controller is not None:
             self.game = self.controller.game
 
     def __repr__(self):
@@ -84,7 +84,6 @@ class Zone():
         if not isinstance(self, Stack):
             assert isinstance(obj, gameobject.GameObject)
             obj.controller = self.controller
-            obj.game = self.controller.game
 
         obj.zone = self
         self.elements.append(obj)
@@ -220,7 +219,6 @@ class Library(Zone):
             obj = cards.card_from_name(obj)
         assert isinstance(obj, gameobject.GameObject)
         obj.controller = self.controller
-        obj.game = self.controller.game
         obj.zone = self
 
         if from_top == 0:

@@ -159,7 +159,7 @@ class Player():
                     self.mana.add_str('WWWWWUUUUUBBBBBRRRRRGGGGG11111')
 
                 elif answer == 'debug':
-                    # pdb.set_trace()
+                    pdb.set_trace()
                     pass
 
                 elif answer[:2] == '__':  # for dev purposes
