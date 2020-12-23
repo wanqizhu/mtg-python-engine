@@ -12,7 +12,7 @@ Magic: the Gathering is owned by Wizards of the Coast.
 Note: In the following documentation, `filename.funcOrClassName()` refers to the function/class defined in MTG/filename.py. If we refer to a specific card, look for how that card is parsed in `data/[SETNAME]_cards.txt`.
 
 
-To see the engine in action, run `python -m MTG.game`.
+To see the engine in action, run `pip install -r requirements.txt` then `python -m MTG.game`.
 You cannot run the script directly due to [shadowed imports.](http://python-notes.curiousefficiency.org/en/latest/python_concepts/import_traps.html#the-double-import-trap)
 
 
